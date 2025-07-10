@@ -81,15 +81,17 @@
       text-overflow: ellipsis;
     }
 
-    .name, .price {
-    height: 24px; /* 固定高度，調整合適值 */
-    display: flex;
-    justify-content: flex-end; /* 垂直往底 */
-    align-items: center;       /* 水平置中 */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.name, .price {
+  height: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
   </style>
 </head>
 <body>
