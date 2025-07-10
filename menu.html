@@ -73,32 +73,30 @@
 
   /* 商品卡 a 或 div */
   .product {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 100px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    padding: 6px 4px 8px;
-    box-sizing: border-box;
-    user-select: none;
-    cursor: pointer;
-    text-decoration: none !important;
-    color: #333 !important;
-    transition: box-shadow 0.3s;
-  }
+  width: 100%;
+  max-width: none; /* 不限制最大寬度，電腦、平板會自動放大 */
+  max-width: none;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 6px 4px 8px;
+  box-sizing: border-box;
+  user-select: none;
+  cursor: pointer;
+  text-decoration: none !important;
+  color: #333 !important;
+  transition: box-shadow 0.3s;
+}
 
   .product:hover {
     box-shadow: 0 0 0 2px var(--role-color);
   }
 
-  .product img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    margin-bottom: 4px;
-  }
+.product img {
+  width: 100%;  /* 填滿商品卡寬度 */
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
 
   .status {
   font-size: 10px;
@@ -156,22 +154,27 @@
     user-select: none;
   }
 
-  @media (max-width: 767px) {
-    #product-list {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      padding: 12px 10px 20px;
-    }
-
-    .product {
-      max-width: 80px;
-      padding: 4px 2px 6px;
-    }
-
-    .name, .price {
-      font-size: 10px;
-    }
+@media (max-width: 767px) {
+  #product-list {
+    /* 如果不想限制一排4張，可以調整這裡或移除 grid-template-columns */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 12px 10px 20px;
   }
+
+  .product {
+    max-width: 82px;  /* 手機時固定寬度 */
+    padding: 4px 2px 6px;
+  }
+
+  .product img {
+    width: 80px;  /* 手機時圖片固定寬度 */
+  }
+
+  .name, .price {
+    font-size: 10px;
+  }
+}
 
   @media (prefers-color-scheme: dark) {
     body {
