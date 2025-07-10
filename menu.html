@@ -52,24 +52,26 @@
 
   /* 分類分隔線跨滿整行，置中有實線 */
   .type-divider {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0 6px;
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
-    user-select: none;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 6px;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  gap: 12px;  /* 加個間距 */
+  user-select: none;
+}
 
-  .type-divider::before,
-  .type-divider::after {
-    content: "";
-    flex: 1;
-    border-top: 2px solid #333;
-    margin: 0 12px;
-  }
+.type-divider::before,
+.type-divider::after {
+  content: "";
+  flex-grow: 1;
+  border-top: 1px solid #333;
+  /* 用固定寬度讓線段顯示明顯 */
+  min-width: 30px;
+  max-width: 50%;
+}
 
   /* 商品卡 a 或 div */
   .product {
