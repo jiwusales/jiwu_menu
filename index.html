@@ -36,7 +36,7 @@
     /* 輪播容器，正方形 */
     .carousel {
       position: relative;
-      width: 100%;
+      width: 90%;
       max-width: 600px;
       aspect-ratio: 1 / 1; /* 正方形 */
       margin: 0 auto 15px auto;
@@ -168,6 +168,17 @@
       display: block;
       margin-top: 4px;
       font-size: 0.85em;
+    }
+
+    /* 這段是讓角色目錄連結文字看起來是純文字，非藍色有底線 */
+    .role-buttons a {
+      color: #333333;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .role-buttons a:hover {
+      color: #555555;
+      text-decoration: underline;
     }
 
     .separator {
