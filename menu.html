@@ -362,21 +362,25 @@
             }
           }
 
-          let price = "";
-          if (p["售價"] === "-") price = "組合出售";
-          else if (!p["售價"]) price = `<a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener">私訊花花</a>`;
-          else price = p["售價"];
+  let price = "";
+  if (p["售價"] === "-") price = "組合出售";
+  else if (!p["售價"]) price = `<a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener">私訊花花</a>`;
+  else price = p["售價"];
 
-          const product = document.createElement("div");
-          product.className = "product";
-          product.innerHTML = `
-            <img src="${p["圖片"]}" alt="">
-            ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
-            <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
-            <div class="price">${price}</div>
-          `;
-          container.appendChild(product);
-        });
+  let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  product.innerHTML = `
+    <img src="${imageUrl}" alt="">
+    ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
+    <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
+    <div class="price">${price}</div>
+  `;
+
+  container.appendChild(product);
+});
       });
     })
     .catch(err => {
