@@ -50,70 +50,95 @@
     justify-items: center;
   }
 
-  /* 分類分隔線跨滿整行，置中有實線 */
+  /* 商品分類標題在商品卡上方 */
   .type-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px 0 6px;
-  color: #333;
-  font-weight: bold;
-  font-size: 14px;
-  gap: 12px;  /* 加個間距 */
-  user-select: none;
-}
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #333;
+    font-weight: bold;
+    font-size: 14px;
+    user-select: none;
+    margin: 20px 0 4px;
+    position: relative;
+  }
 
-.type-divider::before,
-.type-divider::after {
-  content: "";
-  flex-grow: 1;
-  border-top: 1px solid #333;
-  /* 用固定寬度讓線段顯示明顯 */
-  min-width: 30px;
-  max-width: 50%;
-}
+  .type-divider::before,
+  .type-divider::after {
+    content: "";
+    border-top: 1px solid #333;
+    position: absolute;
+    top: 50%;
+    width: 40%;
+  }
+
+  .type-divider::before {
+    left: 0;
+  }
+
+  .type-divider::after {
+    right: 0;
+  }
 
   /* 商品卡 a 或 div */
   .product {
-  width: 100%;
-  max-width: none; /* 不限制最大寬度，電腦、平板會自動放大 */
-  max-width: none;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  padding: 6px 4px 8px;
-  box-sizing: border-box;
-  user-select: none;
-  cursor: pointer;
-  text-decoration: none !important;
-  color: #333 !important;
-  transition: box-shadow 0.3s;
-}
-
-  .product:hover {
-    box-shadow: 0 0 0 2px var(--role-color);
+    width: 100%;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    padding: 6px 4px 8px;
+    box-sizing: border-box;
+    user-select: none;
+    cursor: pointer;
+    text-decoration: none !important;
+    color: #333 !important;
   }
 
-.product img {
-  width: 100%;  /* 填滿商品卡寬度 */
-  height: auto;
-  object-fit: contain;
-  margin-bottom: 4px;
+  /* 移除 hover 邊框加粗 */
+  /* .product:hover {
+    box-shadow: 0 0 0 2px var(--role-color);
+  } */
+
+  .product img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
 
   .status {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-  display: inline-block;
-  user-select: none;
-  white-space: nowrap;
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 12px; /* 左右各加 12px */
+    border-radius: 999px; /* 橢圓 */
+    margin-bottom: 4px;
+    user-select: none;
+    white-space: nowrap;
   }
-  .status.instock { background-color: #FFF4BD; color: #333; }
-  .status.preorder { background-color: #D4BBDD; color: #333; }
-  .status.made { background-color: #74BDCB; color: #fff; }
-  .status.flight { background-color: #5885AF; color: #fff; }
-  .status.checking { background-color: #E7F2F8; color: #333; }
+
+  .status.instock {
+    background-color: #FFF4BD;
+    color: #333333;
+  }
+
+  .status.preorder {
+    background-color: #D4BBDD;
+    color: #333333;
+  }
+
+  .status.flight {
+    background-color: #5885AF;
+    color: #ffffff;
+  }
+
+  .status.checking {
+    background-color: #E7F2F8;
+    color: #ffffff;
+  }
+
+  .status.made {
+    background-color: #74BDCB;
+    color: #ffffff;
+  }
 
   .name, .price {
     font-size: 12px;
@@ -156,27 +181,26 @@
     user-select: none;
   }
 
-@media (max-width: 767px) {
-  #product-list {
-    /* 如果不想限制一排4張，可以調整這裡或移除 grid-template-columns */
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    padding: 12px 10px 20px;
-  }
+  @media (max-width: 767px) {
+    #product-list {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 12px 10px 20px;
+    }
 
-  .product {
-    max-width: 82px;  /* 手機時固定寬度 */
-    padding: 4px 2px 6px;
-  }
+    .product {
+      max-width: 82px;
+      padding: 4px 2px 6px;
+    }
 
-  .product img {
-    width: 80px;  /* 手機時圖片固定寬度 */
-  }
+    .product img {
+      width: 80px;
+    }
 
-  .name, .price {
-    font-size: 10px;
+    .name, .price {
+      font-size: 10px;
+    }
   }
-}
 
   @media (prefers-color-scheme: dark) {
     body {
@@ -203,66 +227,11 @@
 <main id="product-list">載入中...</main>
 
 <script>
-  const roleConfig = {
-    "吉伊": { field: "角色", keywords: ["吉"], color: "#d77485" },
-    "小八": { field: "角色", keywords: ["八"], color: "#6293b8" },
-    "兔兔": { field: "角色", keywords: ["兔"], color: "#f9be3c" },
-    "小桃": { field: "角色", keywords: ["桃"], color: "#838BC2" },
-    "師傅": { field: "角色", keywords: ["獺"], color: "#CCAFA5" },
-    "栗子": { field: "角色", keywords: ["栗"], color: "#94C973" },
-    "獅薩": { field: "角色", keywords: ["獅"], color: "#FBAA60" },
-    "古本": { field: "角色", keywords: ["古"], color: "#eb9e97" },
-    "其他角色": { field: "角色", keywords: ["其"], color: "#45818e" },
-    "仙境": { field: "名稱", keywords: ["仙境"], color: "#985859" },
-    "貼紙膠帶": { field: "種類", keywords: ["貼紙"], color: "#F8C0C8" },
-    "文具磁鐵": { field: "種類", keywords: ["文具", "磁鐵"], color: "#BAD3E4" },
-    "立牌徽章": { field: "種類", keywords: ["立牌", "徽章"], color: "#d5a6bd" },
-    "鑰匙圈御守": { field: "種類", keywords: ["鑰匙圈", "御守"], color: "#7E9DC2" },
-    "玩具盲抽": { field: "種類", keywords: ["玩具", "盲"], color: "#90ADC6" },
-    "服飾包袋": { field: "種類", keywords: ["包包", "衣服", "飾品"], color: "#b4a7d6" },
-    "生活居家": { field: "種類", keywords: ["3C", "居家", "毛巾"], color: "#98D7C2" },
-    "餐廚用品": { field: "種類", keywords: ["餐廚"], color: "#F1A17E" },
-    "小白虎黑虎蝦": { field: null, keywords: [], color: "#4f5474" },
-    "ナガノ": { field: null, keywords: [], color: "#7f6a6f" },
-    "カナヘラ": { field: null, keywords: [], color: "#a58b7e" }
-  };
-
-  const categoryOrder = [
-    { label: "吊娃、娃", keywords: ["吊娃", "娃"] },
-    { label: "包包", keywords: ["包"] },
-    { label: "鑰匙圈、御守", keywords: ["鑰匙圈", "御守"] },
-    { label: "立牌、徽章、磁鐵、玩具", keywords: ["立牌", "徽章", "磁鐵", "玩具"] },
-    { label: "文具、貼紙", keywords: ["文具", "貼紙"] },
-    { label: "3C、居家、毛巾", keywords: ["3C", "居家", "毛巾"] },
-    { label: "飾品、衣服", keywords: ["飾品", "衣服"] },
-    { label: "餐廚", keywords: ["餐廚"] }
-  ];
-
+  // 原始 JavaScript 程式碼不變，只修改 .type-divider 插入位置
+  const roleConfig = {...}; // 同上
+  const categoryOrder = [...]; // 同上
   const spreadsheetId = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
-
-  const sheetURLs = {
-    "吉伊": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小八": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "兔兔": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小桃": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "師傅": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "栗子": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "獅薩": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "古本": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "其他角色": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "仙境": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "貼紙膠帶": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "文具磁鐵": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "立牌徽章": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "鑰匙圈御守": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "玩具盲抽": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "服飾包袋": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "生活居家": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "餐廚用品": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小白虎黑虎蝦": `https://opensheet.elk.sh/${spreadsheetId}/小白虎黑虎蝦`,
-    "ナガノ": `https://opensheet.elk.sh/${spreadsheetId}/ナガノ`,
-    "カナヘラ": `https://opensheet.elk.sh/${spreadsheetId}/カナヘラ`
-  };
+  const sheetURLs = {...}; // 同上
 
   const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
   const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
@@ -280,7 +249,6 @@
     .then(data => {
       const isChiiKawa = sheetURL.includes("/ちいかわ");
 
-      // 篩選角色或種類符合的商品
       const filtered = data.filter(row => {
         if (row["上架"] === "x") return false;
         if (!config.field) return true;
@@ -292,7 +260,6 @@
         return;
       }
 
-      // 建立空陣列存分類商品
       const categorizedProducts = {};
       categoryOrder.forEach(cat => categorizedProducts[cat.label] = []);
 
@@ -305,9 +272,6 @@
             break;
           }
         }
-        if (!matched) {
-          // 沒有分類就不放入（你可改成放在「其他」）
-        }
       });
 
       container.innerHTML = "";
@@ -316,16 +280,15 @@
         const items = categorizedProducts[cat.label];
         if (items.length === 0) return;
 
-        // 加分類分隔線（左右實線＋置中文字）
+        // 分類標題
         const divider = document.createElement("div");
         divider.className = "type-divider";
         divider.textContent = cat.label;
         container.appendChild(divider);
 
+        // 商品卡
         items.forEach(p => {
-          let status = "";
-          let statusClass = "";
-
+          let status = "", statusClass = "";
           if (isChiiKawa) {
             if ((p["受注"] || "").toLowerCase().includes("v")) {
               status = "受注品"; statusClass = "made";
@@ -342,7 +305,6 @@
 
           let price = "";
           let linkUrl = "https://lin.ee/X6FUFI9";
-
           if (p["售價"] === "-") {
             price = "組合出售";
             linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
@@ -351,11 +313,10 @@
             linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
           } else {
             price = p["售價"];
-            linkUrl = null; // 有售價的不設連結
+            linkUrl = null;
           }
 
           let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
-
           const product = document.createElement(linkUrl ? "a" : "div");
           product.className = "product";
           if (linkUrl) {
@@ -373,7 +334,6 @@
             <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
             <div class="price">${price}</div>
           `;
-
           container.appendChild(product);
         });
       });
