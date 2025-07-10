@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JIWU寶寶目錄</title>
+  <style>
+    :root {
+      --role-color: #ccc;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f8f8f8;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      background-color: var(--role-color);
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+      font-size: 1.2em;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); } to { transform: scale(1.05); }
+    }
+
+    main {
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+
+    .divider {
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid #aaa;
+      border-bottom: 1px solid #aaa;
+      padding: 5px;
+      margin: 20px 0 10px;
+    }
+
+    .product {
+      width: 85px;
+      border: 2px solid var(--role-color);
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .product img {
+      max-width: 100%;
+      max-height: 80px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.75em;
+      margin-bottom: 4px;
+    }
+
+    .status.instock { background: #FFF4BD; color: #333; }
+    .status.preorder { background: #D4BBDD; color: #333; }
+    .status.flight   { background: #5885AF; color: #fff; }
+    .status.checking { background: #E7F2F8; color: #fff; }
+    .status.made     { background: #74BDCB; color: #fff; }
+
+    .price {
+      font-size: 0.9em;
+      color: #d24;
+    }
+
+    .name {
+      font-size: 0.8em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <header id="header-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</header>
+  <main id="product-list">載入中...</main>
+
+  <script>
+    const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
+
+    const roleConfig = {
+      "吉伊": { field: "角色", keywords: ["吉"], color: "#d77485" },
+      "小八": { field: "角色", keywords: ["八"], color: "#6293b8" },
+      "兔兔": { field: "角色", keywords: ["兔"], color: "#f9be3c" },
+      "小桃": { field: "角色", keywords: ["桃"], color: "#838BC2" },
+      "師傅": { field: "角色", keywords: ["獺"], color: "#CCAFA5" },
+      "栗子": { field: "角色", keywords: ["栗"], color: "#94C973" },
+      "獅薩": { field: "角色", keywords: ["獅"], color: "#FBAA60" },
+      "古本": { field: "角色", keywords: ["古"], color: "#eb9e97" },
+      "其他角色": { field: "角色", keywords: ["其"], color: "#45818e" },
+      "仙境": { field: "名稱", keywords: ["仙境"], color: "#985859" },
+      "貼紙膠帶": { field: "種類", keywords: ["貼紙"], color: "#F8C0C8" },
+      "文具磁鐵": { field: "種類", keywords: ["文具", "磁鐵"], color: "#BAD3E4" },
+      "立牌徽章": { field: "種類", keywords: ["立牌", "徽章"], color: "#d5a6bd" },
+      "鑰匙圈御守": { field: "種類", keywords: ["鑰匙圈", "御守"], color: "#7E9DC2" },
+      "玩具盲抽": { field: "種類", keywords: ["玩具", "盲"], color: "#90ADC6" },
+      "服飾包袋": { field: "種類", keywords: ["包包", "衣服", "飾品"], color: "#b4a7d6" },
+      "生活居家": { field: "種類", keywords: ["3C", "居家", "毛巾"], color: "#98D7C2" },
+      "餐廚用品": { field: "種類", keywords: ["餐廚"], color: "#F1A17E" },
+      "小白虎黑虎蝦": { field: null, keywords: [], color: "#4f5474" }
+    };
+
+    const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
+    document.documentElement.style.setProperty('--role-color', config.color);
+
+    const sheetURL = "https://opensheet.elk.sh/1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY/有貨商品";
+
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.filter(row => {
+          if (row["上架"] === "x") return false;
+          if (!config.field) return true;
+          return config.keywords.some(k => row[config.field]?.includes(k));
+        });
+
+        const container = document.getElementById("product-list");
+        container.innerHTML = "";
+
+        filtered.forEach(p => {
+          const product = document.createElement("div");
+          product.className = "product";
+
+          let status = "", statusClass = "";
+          if ((p["受注"] || "").toLowerCase().includes("v")) {
+            status = "受注品"; statusClass = "made";
+          } else if (parseInt(p["庫存"]) > 0) {
+            status = "現貨"; statusClass = "instock";
+          } else if (p["庫存"] === "0" && !p["非現"]) {
+            status = "需預訂"; statusClass = "preorder";
+          } else if (p["庫存"] === "0" && p["非現"]) {
+            status = "搭飛機中"; statusClass = "flight";
+          } else {
+            status = "點貨中"; statusClass = "checking";
+          }
+
+          let price = "";
+          if (p["售價"] === "-") price = "組合出售";
+          else if (!p["售價"]) price = `<a href=\"https://lin.ee/X6FUFI9\">私訊花花</a>`;
+          else price = p["售價"];
+
+          product.innerHTML = `
+            <img src="${p["圖片"]}" alt="">
+            <div class="status ${statusClass}">${status}</div>
+            <div class="name">${p["名稱"]}</div>
+            <div class="price">${price}</div>
+          `;
+
+          container.appendChild(product);
+        });
+      });
+  </script>
+</body>
+</html>
