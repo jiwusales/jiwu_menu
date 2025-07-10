@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU首頁</title>
+  <title>JIWU吉物販售</title>
+
+  <!-- 分頁小圖（favicon）-->
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+
+  <!-- 桌面/手機主畫面捷徑圖示 -->
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/Hs75qNjR/icon026.png" />
+  <meta name="theme-color" content="#dac7b7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  
   <style>
     body {
       margin: 0;
@@ -19,51 +29,67 @@
     }
 
     .logo-container img {
-      width: 100px;
+      width: 200px; /* 改成200px */
       height: auto;
     }
 
+    /* 輪播容器，正方形 */
     .carousel {
       position: relative;
       width: 100%;
       max-width: 600px;
-      height: 300px;
-      margin: 0 auto 40px auto;
+      aspect-ratio: 1 / 1; /* 正方形 */
+      margin: 0 auto 15px auto;
       overflow: hidden;
       border-radius: 8px;
+      background: #eee;
     }
 
+    /* 輪播圖片，絕對定位，隱藏非當前 */
     .carousel img {
       position: absolute;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0;
-      animation: fade 45s infinite;
+      top: 0;
+      left: 0;
+      display: none;
+      user-select: none;
+    }
+    .carousel img.active {
+      display: block;
     }
 
-    .carousel img:nth-child(1) { animation-delay: 0s; }
-    .carousel img:nth-child(2) { animation-delay: 3s; }
-    .carousel img:nth-child(3) { animation-delay: 6s; }
-    .carousel img:nth-child(4) { animation-delay: 9s; }
-    .carousel img:nth-child(5) { animation-delay: 12s; }
-    .carousel img:nth-child(6) { animation-delay: 15s; }
-    .carousel img:nth-child(7) { animation-delay: 18s; }
-    .carousel img:nth-child(8) { animation-delay: 21s; }
-    .carousel img:nth-child(9) { animation-delay: 24s; }
-    .carousel img:nth-child(10){ animation-delay: 27s; }
-    .carousel img:nth-child(11){ animation-delay: 30s; }
-    .carousel img:nth-child(12){ animation-delay: 33s; }
-    .carousel img:nth-child(13){ animation-delay: 36s; }
-    .carousel img:nth-child(14){ animation-delay: 39s; }
-    .carousel img:nth-child(15){ animation-delay: 42s; }
+    /* 輪播按鈕 */
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0,0,0,0.3);
+      border: none;
+      color: white;
+      font-size: 24px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 4px;
+      z-index: 10;
+    }
+    .carousel-button.prev {
+      left: 10px;
+    }
+    .carousel-button.next {
+      right: 10px;
+    }
 
-    @keyframes fade {
-      0%   {opacity: 0;}
-      10%  {opacity: 1;}
-      30%  {opacity: 1;}
-      40%  {opacity: 0;}
-      100% {opacity: 0;}
+    /* 輪播下方文字區 */
+    #carousel-caption {
+      max-width: 600px;
+      margin: 0 auto 30px auto;
+      text-align: center;
+      color: #333333;
+      font-size: 1em;
+      user-select: none;
     }
 
     .section-divider {
@@ -80,7 +106,7 @@
     }
 
     .divider-3 {
-      background-color: #e6e6e6;
+      background-color: #F9F6F0; /* 改色 */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -108,6 +134,25 @@
       text-align: center;
     }
 
+    /* 日本IP角色放大1.5倍 */
+    .role-buttons.japan-ip .item {
+      width: 120px; /* 80*1.5 */
+    }
+    .role-buttons.japan-ip .item img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      transition: transform 0.3s ease;
+    }
+    .role-buttons.japan-ip .item span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      margin-top: 4px;
+      font-size: 0.85em;
+    }
+
     .role-buttons .item img {
       width: 100%;
       height: auto;
@@ -133,6 +178,7 @@
     .social-links a img {
       width: 40px;
       height: auto;
+      user-select: none;
     }
 
     footer {
@@ -140,6 +186,7 @@
       padding: 20px 10px;
       font-size: 1em;
       color: #333333;
+      user-select: none;
     }
   </style>
 </head>
@@ -151,23 +198,27 @@
 </div>
 
 <!-- 輪播 -->
-<div class="carousel">
-  <img src="https://i.postimg.cc/0QtrSk3r/run00018.png" />
-  <img src="https://i.postimg.cc/SRJRf0Fd/run00017.png" />
-  <img src="https://i.postimg.cc/kGz4jj7m/run00016.png" />
-  <img src="https://i.postimg.cc/wjKMLbW5/run00015.png" />
-  <img src="https://i.postimg.cc/vZWBzLjJ/run00014.png" />
-  <img src="https://i.postimg.cc/MKfXc8YK/run00013.png" />
-  <img src="https://i.postimg.cc/2jKV85hK/run00012.png" />
-  <img src="https://i.postimg.cc/bN5bMTmd/run00011.jpg" />
-  <img src="https://i.postimg.cc/4N8kTKcY/run00010.png" />
-  <img src="https://i.postimg.cc/CL5kmtHW/run00008.jpg" />
-  <img src="https://i.postimg.cc/FRb8C1ms/run00007.png" />
-  <img src="https://i.postimg.cc/brJDVDbQ/run00004.jpg" />
-  <img src="https://i.postimg.cc/bvxtZjp2/run00003.jpg" />
-  <img src="https://i.postimg.cc/VNQtsNQ8/run00002.jpg" />
-  <img src="https://i.postimg.cc/zBqRWPG2/run00001.jpg" />
+<div class="carousel" aria-label="輪播圖片">
+  <button class="carousel-button prev" aria-label="上一張">&#10094;</button>
+  <button class="carousel-button next" aria-label="下一張">&#10095;</button>
+
+  <img src="https://i.postimg.cc/0QtrSk3r/run00018.png" alt="輪播圖片1" class="active" />
+  <img src="https://i.postimg.cc/SRJRf0Fd/run00017.png" alt="輪播圖片2" />
+  <img src="https://i.postimg.cc/kGz4jj7m/run00016.png" alt="輪播圖片3" />
+  <img src="https://i.postimg.cc/wjKMLbW5/run00015.png" alt="輪播圖片4" />
+  <img src="https://i.postimg.cc/vZWBzLjJ/run00014.png" alt="輪播圖片5" />
+  <img src="https://i.postimg.cc/MKfXc8YK/run00013.png" alt="輪播圖片6" />
+  <img src="https://i.postimg.cc/2jKV85hK/run00012.png" alt="輪播圖片7" />
+  <img src="https://i.postimg.cc/bN5bMTmd/run00011.jpg" alt="輪播圖片8" />
+  <img src="https://i.postimg.cc/4N8kTKcY/run00010.png" alt="輪播圖片9" />
+  <img src="https://i.postimg.cc/CL5kmtHW/run00008.jpg" alt="輪播圖片10" />
+  <img src="https://i.postimg.cc/FRb8C1ms/run00007.png" alt="輪播圖片11" />
+  <img src="https://i.postimg.cc/brJDVDbQ/run00004.jpg" alt="輪播圖片12" />
+  <img src="https://i.postimg.cc/bvxtZjp2/run00003.jpg" alt="輪播圖片13" />
+  <img src="https://i.postimg.cc/VNQtsNQ8/run00002.jpg" alt="輪播圖片14" />
+  <img src="https://i.postimg.cc/zBqRWPG2/run00001.jpg" alt="輪播圖片15" />
 </div>
+<div id="carousel-caption" aria-live="polite" style="max-width:600px; margin: 0 auto 30px auto; text-align:center; color:#333;"></div>
 
 <!-- 分隔塊 1 -->
 <div class="section-divider divider-1">JIWU寶寶目錄 ᯓ★ 吉伊卡哇</div>
@@ -202,8 +253,8 @@
 <!-- 分隔塊 2 -->
 <div class="section-divider divider-2">JIWU寶寶目錄 ᯓ★ 日本IP角色</div>
 
-<!-- 角色目錄 2 -->
-<div class="role-buttons">
+<!-- 角色目錄 2 (加 class "japan-ip" 讓圖片放大 1.5 倍) -->
+<div class="role-buttons japan-ip">
   <div class="row">
     <div class="item"><a href="#自嘲熊"><img src="https://i.postimg.cc/hP8v81NH/icon019.png" /><span>自嘲熊</span></a></div>
     <div class="item"><a href="#小白虎"><img src="https://i.postimg.cc/sXB1pdRc/icon020.png" /><span>小白虎與黑虎蝦</span></a></div>
@@ -212,16 +263,90 @@
 
 <!-- 分隔塊 3：社群平台 -->
 <div class="section-divider divider-3 social-links">
-  <a href="https://www.facebook.com/jiwusales" target="_blank"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" alt="Facebook" /></a>
-  <a href="https://www.instagram.com/jiwu_sales/" target="_blank"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" alt="Instagram" /></a>
-  <a href="https://www.threads.com/@jiwu_sales" target="_blank"><img src="https://i.postimg.cc/brcYkZgy/icon023.png" alt="Threads" /></a>
-  <a href="https://lin.ee/X6FUFI9" target="_blank"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" alt="LINE" /></a>
+  <a href="https://www.facebook.com/jiwusales" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" alt="Facebook" /></a>
+  <a href="https://www.instagram.com/jiwu_sales/" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" alt="Instagram" /></a>
+  <a href="https://www.threads.com/@jiwu_sales" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/brcYkZgy/icon023.png" alt="Threads" /></a>
+  <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" alt="LINE" /></a>
 </div>
 
 <!-- Footer -->
 <footer>
   台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
 </footer>
+
+<script>
+  // 輪播功能
+  (function(){
+    const carousel = document.querySelector('.carousel');
+    const images = carousel.querySelectorAll('img');
+    const prevBtn = carousel.querySelector('.carousel-button.prev');
+    const nextBtn = carousel.querySelector('.carousel-button.next');
+    const captionDiv = document.getElementById('carousel-caption');
+
+    // 可自行修改每張圖的文字說明
+    const captions = [
+      '0718 吉伊新品 夏日打西瓜',
+      '0718 吉伊新品 夏日打西瓜',
+      '0718 吉伊再販 善惡&天使惡魔',
+      '0718 吉伊新品 善惡&天使惡魔',
+      '0718 吉伊新品 善惡&天使惡魔',
+      '0718 吉伊新品 甜點師傅',
+      '0718 吉伊新品 甜點師傅',
+      '0711 白熊新品 打蚊子',
+      '0711 白熊新品 打蚊子',
+      '0711 小白虎與黑虎蝦新品 海水浴場',
+      '0711 小白虎與黑虎蝦新品 海水浴場',
+      '🆕 BIG景品 平行小八',
+      '🆕 BIG景品 吃飯糰 🍙 小桃',
+      'BIG景品 大趴娃兔兔小桃',
+      'BIG景品 肌肉白熊',
+    ];
+
+    let currentIndex = 0;
+    let timer;
+
+    function showImage(index){
+      images.forEach((img,i) => {
+        img.classList.toggle('active', i === index);
+      });
+      captionDiv.textContent = captions[index] || '';
+      currentIndex = index;
+    }
+
+    function showNext(){
+      let nextIndex = (currentIndex + 1) % images.length;
+      showImage(nextIndex);
+    }
+
+    function showPrev(){
+      let prevIndex = (currentIndex - 1 + images.length) % images.length;
+      showImage(prevIndex);
+    }
+
+    function startAuto(){
+      timer = setInterval(showNext, 5000);
+    }
+
+    function stopAuto(){
+      clearInterval(timer);
+    }
+
+    prevBtn.addEventListener('click', () => {
+      stopAuto();
+      showPrev();
+      startAuto();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      stopAuto();
+      showNext();
+      startAuto();
+    });
+
+    showImage(currentIndex);
+    startAuto();
+  })();
+</script>
 
 </body>
 </html>
