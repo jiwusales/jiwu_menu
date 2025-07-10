@@ -36,15 +36,6 @@
       gap: 10px;
     }
 
-    .divider {
-      width: 100%;
-      text-align: center;
-      border-top: 1px solid #aaa;
-      border-bottom: 1px solid #aaa;
-      padding: 5px;
-      margin: 20px 0 10px;
-    }
-
     .product {
       width: 85px;
       border: 2px solid var(--role-color);
@@ -94,8 +85,6 @@
   <main id="product-list">載入中...</main>
 
   <script>
-    const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
-
     const roleConfig = {
       "吉伊": { field: "角色", keywords: ["吉"], color: "#d77485" },
       "小八": { field: "角色", keywords: ["八"], color: "#6293b8" },
@@ -115,57 +104,110 @@
       "服飾包袋": { field: "種類", keywords: ["包包", "衣服", "飾品"], color: "#b4a7d6" },
       "生活居家": { field: "種類", keywords: ["3C", "居家", "毛巾"], color: "#98D7C2" },
       "餐廚用品": { field: "種類", keywords: ["餐廚"], color: "#F1A17E" },
-      "小白虎黑虎蝦": { field: null, keywords: [], color: "#4f5474" }
+      "小白虎黑虎蝦": { field: null, keywords: [], color: "#4f5474" },
+      "ナガノ": { field: null, keywords: [], color: "#7f6a6f" },
+      "カナヘラ": { field: null, keywords: [], color: "#a58b7e" }
     };
 
+    const spreadsheetId = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+
+    const sheetURLs = {
+      "吉伊": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "小八": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "兔兔": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "小桃": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "師傅": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "栗子": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "獅薩": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "古本": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "其他角色": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "仙境": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "貼紙膠帶": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "文具磁鐵": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "立牌徽章": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "鑰匙圈御守": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "玩具盲抽": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "服飾包袋": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "生活居家": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+      "餐廚用品": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
+
+      "小白虎黑虎蝦": `https://opensheet.elk.sh/${spreadsheetId}/小白虎黑虎蝦`,
+      "ナガノ": `https://opensheet.elk.sh/${spreadsheetId}/ナガノ`,
+      "カナヘラ": `https://opensheet.elk.sh/${spreadsheetId}/カナヘラ`
+    };
+
+    const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
+
     const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
+
     document.documentElement.style.setProperty('--role-color', config.color);
 
-    const sheetURL = "https://opensheet.elk.sh/1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY/JIWU_MENU";
+    const sheetURL = sheetURLs[roleParam] || sheetURLs["吉伊"];
+
+    const container = document.getElementById("product-list");
+
+    container.innerHTML = "載入中...";
 
     fetch(sheetURL)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.json();
+      })
       .then(data => {
+        const isChiiKawa = sheetURL.includes("/ちいかわ");
+
         const filtered = data.filter(row => {
           if (row["上架"] === "x") return false;
           if (!config.field) return true;
-          return config.keywords.some(k => row[config.field]?.includes(k));
+          return config.keywords.some(k => (row[config.field] || "").includes(k));
         });
 
-        const container = document.getElementById("product-list");
+        if (filtered.length === 0) {
+          container.innerHTML = "找不到符合條件的商品";
+          return;
+        }
+
         container.innerHTML = "";
 
         filtered.forEach(p => {
-          const product = document.createElement("div");
-          product.className = "product";
+          let status = "";
+          let statusClass = "";
 
-          let status = "", statusClass = "";
-          if ((p["受注"] || "").toLowerCase().includes("v")) {
-            status = "受注品"; statusClass = "made";
-          } else if (parseInt(p["庫存"]) > 0) {
-            status = "現貨"; statusClass = "instock";
-          } else if (p["庫存"] === "0" && !p["非現"]) {
-            status = "需預訂"; statusClass = "preorder";
-          } else if (p["庫存"] === "0" && p["非現"]) {
-            status = "搭飛機中"; statusClass = "flight";
-          } else {
-            status = "點貨中"; statusClass = "checking";
+          if (isChiiKawa) {
+            if ((p["受注"] || "").toLowerCase().includes("v")) {
+              status = "受注品"; statusClass = "made";
+            } else if (parseInt(p["庫存"]) > 0) {
+              status = "現貨"; statusClass = "instock";
+            } else if (p["庫存"] === "0" && !p["非現"]) {
+              status = "需預訂"; statusClass = "preorder";
+            } else if (p["庫存"] === "0" && p["非現"]) {
+              status = "搭飛機中"; statusClass = "flight";
+            } else {
+              status = "點貨中"; statusClass = "checking";
+            }
           }
 
           let price = "";
           if (p["售價"] === "-") price = "組合出售";
-          else if (!p["售價"]) price = `<a href=\"https://lin.ee/X6FUFI9\">私訊花花</a>`;
+          else if (!p["售價"]) price = `<a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener">私訊花花</a>`;
           else price = p["售價"];
+
+          const product = document.createElement("div");
+          product.className = "product";
 
           product.innerHTML = `
             <img src="${p["圖片"]}" alt="">
-            <div class="status ${statusClass}">${status}</div>
-            <div class="name">${p["名稱"]}</div>
+            ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
+            <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
             <div class="price">${price}</div>
           `;
 
           container.appendChild(product);
         });
+      })
+      .catch(err => {
+        container.innerHTML = "載入資料失敗";
+        console.error(err);
       });
   </script>
 </body>
