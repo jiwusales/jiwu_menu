@@ -15,6 +15,64 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   
   <style>
+    .control-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background-color: #E7D4C0;
+  opacity: 0.5;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  transition: opacity 0.2s, transform 0.2s;
+  padding: 0;
+}
+.control-btn img {
+  width: 60%;
+  height: 60%;
+  pointer-events: none;
+  user-select: none;
+}
+.control-btn:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+.control-btn + .control-btn {
+  margin-top: 64px; /* 第二個按鈕向下位移 */
+}
+</style>
+
+<!-- 回上一頁按鈕 -->
+<button class="control-btn" onclick="history.back()" aria-label="返回上一頁">
+  <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
+</button>
+
+<!-- 重新整理按鈕 -->
+<button class="control-btn" style="margin-top: 64px;" onclick="location.reload()" aria-label="重新整理">
+  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
+</button>
+
+<script>
+/* 每日自動刷新機制 */
+(function(){
+  const today = new Date().toDateString();
+  const KEY = 'jiwu_last_visit';
+  if (localStorage.getItem(KEY) !== today) {
+    localStorage.setItem(KEY, today);
+    if (performance.getEntriesByType('navigation')[0].type !== 'reload') {
+      location.reload();
+    }
+  }
+})();
+</script>
+  
     body {
       margin: 0;
       padding: 0;
