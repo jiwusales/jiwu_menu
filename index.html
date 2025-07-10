@@ -378,21 +378,6 @@
 
     updateCarousel(currentIndex);
   })();
-
-  // 判斷 URL，只有在書籤頁 (hash 包含 #bookmark) 時顯示重新整理按鈕
-  function checkRefreshBtn() {
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (window.location.hash.includes('#bookmark')) {
-      refreshBtn.style.display = 'flex';
-    } else {
-      refreshBtn.style.display = 'none';
-    }
-  }
-  // 頁面初次載入判斷
-  window.addEventListener('load', checkRefreshBtn);
-  // hash 變動時判斷
-  window.addEventListener('hashchange', checkRefreshBtn);
-</script>
-
+  
 </body>
 </html>
