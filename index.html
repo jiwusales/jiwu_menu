@@ -18,7 +18,7 @@
     /* 按鈕樣式 */
     .control-btn {
       position: fixed;
-      top: 40px;
+      top: 20px;
       left: 10px;
       width: 45px;
       height: 45px;
@@ -251,22 +251,7 @@
 <div class="carousel" aria-label="輪播圖片">
   <button class="carousel-button prev" aria-label="上一張">&#10094;</button>
   <button class="carousel-button next" aria-label="下一張">&#10095;</button>
-
-  <img src="https://i.postimg.cc/0QtrSk3r/run00018.png" alt="輪播圖片1" class="active" />
-  <img src="https://i.postimg.cc/SRJRf0Fd/run00017.png" alt="輪播圖片2" />
-  <img src="https://i.postimg.cc/kGz4jj7m/run00016.png" alt="輪播圖片3" />
-  <img src="https://i.postimg.cc/wjKMLbW5/run00015.png" alt="輪播圖片4" />
-  <img src="https://i.postimg.cc/vZWBzLjJ/run00014.png" alt="輪播圖片5" />
-  <img src="https://i.postimg.cc/MKfXc8YK/run00013.png" alt="輪播圖片6" />
-  <img src="https://i.postimg.cc/2jKV85hK/run00012.png" alt="輪播圖片7" />
-  <img src="https://i.postimg.cc/bN5bMTmd/run00011.jpg" alt="輪播圖片8" />
-  <img src="https://i.postimg.cc/4N8kTKcY/run00010.png" alt="輪播圖片9" />
-  <img src="https://i.postimg.cc/CL5kmtHW/run00008.jpg" alt="輪播圖片10" />
-  <img src="https://i.postimg.cc/FRb8C1ms/run00007.png" alt="輪播圖片11" />
-  <img src="https://i.postimg.cc/brJDVDbQ/run00004.jpg" alt="輪播圖片12" />
-  <img src="https://i.postimg.cc/bvxtZjp2/run00003.jpg" alt="輪播圖片13" />
-  <img src="https://i.postimg.cc/VNQtsNQ8/run00002.jpg" alt="輪播圖片14" />
-  <img src="https://i.postimg.cc/zBqRWPG2/run00001.jpg" alt="輪播圖片15" />
+  <!-- 圖片會由 JS 動態產生 -->
 </div>
 <div id="carousel-caption" aria-live="polite"></div>
 
@@ -330,54 +315,102 @@
 </button>
 
 <script>
-  // 輪播功能
-  (function(){
-    const carousel = document.querySelector('.carousel');
-    const images = carousel.querySelectorAll('img');
-    const prevBtn = carousel.querySelector('.carousel-button.prev');
-    const nextBtn = carousel.querySelector('.carousel-button.next');
-    const captionDiv = document.getElementById('carousel-caption');
+(async function() {
+  const carousel = document.querySelector('.carousel');
+  const prev = carousel.querySelector('.prev');
+  const next = carousel.querySelector('.next');
+  const caption = document.getElementById('carousel-caption');
 
-    // 可自行修改每張圖的文字說明
-    const captions = [
-      '0718 吉伊新品 夏日打西瓜',
-      '0718 吉伊新品 夏日打西瓜',
-      '0718 吉伊再販 善惡&天使惡魔',
-      '0718 吉伊新品 善惡&天使惡魔',
-      '0718 吉伊新品 善惡&天使惡魔',
-      '0718 吉伊新品 甜點師傅',
-      '0718 吉伊新品 甜點師傅',
-      '0711 白熊新品 打蚊子',
-      '0711 白熊新品 打蚊子',
-      '0711 小白虎與黑虎蝦新品 海水浴場',
-      '0711 小白虎與黑虎蝦新品 海水浴場',
-      '🆕 BIG景品 平行小八',
-      '🆕 BIG景品 吃飯糰 🍙 小桃',
-      'BIG景品 神秘系列',
-      'BIG景品 神秘系列'
-    ];
+  const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
+  const SHEET_NAME = '輪播'; // ⚠️ 改成你實際工作表名稱
+  const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-    let currentIndex = 0;
+  async function fetchSheetData() {
+    const res = await fetch(API_URL);
+    const text = await res.text();
+    const json = JSON.parse(text.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
+    return json.table.rows;
+  }
 
-    function updateCarousel(index) {
-      images.forEach((img,i) => {
-        img.classList.toggle('active', i === index);
-      });
-      captionDiv.textContent = captions[index] || '';
+  function buildCarouselItems(rows) {
+    const images = [];
+    const captions = [];
+
+    rows.forEach(row => {
+      const onShelf = row.c[0]?.v?.toString().trim();
+      if (onShelf?.toLowerCase() === 'x') return;
+
+      const imgUrl = row.c[1]?.v;
+      const text = row.c[2]?.v || '';
+
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = text || '輪播圖片';
+        img.classList.add('carousel-dynamic');
+        img.style.display = 'none';
+        carousel.appendChild(img);
+        images.push(img);
+        captions.push(text);
+      }
+    });
+
+    return { images, captions };
+  }
+
+  let currentIndex = 0;
+  let intervalId;
+  let images = [];
+  let captions = [];
+
+  function show(index) {
+    images.forEach((img, i) => {
+      img.style.display = i === index ? 'block' : 'none';
+      img.classList.toggle('active', i === index);
+    });
+    caption.textContent = captions[index] || '';
+    currentIndex = index;
+  }
+
+  function startAutoPlay() {
+    intervalId = setInterval(() => {
+      show((currentIndex + 1) % images.length);
+    }, 3000);
+  }
+
+  function stopAutoPlay() {
+    clearInterval(intervalId);
+  }
+
+  prev.addEventListener('click', () => {
+    stopAutoPlay();
+    show((currentIndex - 1 + images.length) % images.length);
+    startAutoPlay();
+  });
+
+  next.addEventListener('click', () => {
+    stopAutoPlay();
+    show((currentIndex + 1) % images.length);
+    startAutoPlay();
+  });
+
+  try {
+    const rows = await fetchSheetData();
+    const result = buildCarouselItems(rows);
+    images = result.images;
+    captions = result.captions;
+    if (images.length > 0) {
+      show(0);
+      startAutoPlay();
+    } else {
+      caption.textContent = '沒有可顯示的輪播圖片';
     }
+  } catch (e) {
+    console.error('輪播載入失敗', e);
+    caption.textContent = '輪播載入失敗';
+  }
+})();
+</script>
 
-    prevBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-      updateCarousel(currentIndex);
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % images.length;
-      updateCarousel(currentIndex);
-    });
-
-    updateCarousel(currentIndex);
-  })();
-  
 </body>
 </html>
