@@ -15,64 +15,41 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   
   <style>
+    /* 按鈕樣式 */
     .control-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 52px;
-  height: 52px;
-  border: none;
-  border-radius: 50%;
-  background-color: #E7D4C0;
-  opacity: 0.5;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  transition: opacity 0.2s, transform 0.2s;
-  padding: 0;
-}
-.control-btn img {
-  width: 60%;
-  height: 60%;
-  pointer-events: none;
-  user-select: none;
-}
-.control-btn:hover {
-  opacity: 0.8;
-  transform: scale(1.05);
-}
-.control-btn + .control-btn {
-  margin-top: 64px; /* 第二個按鈕向下位移 */
-}
-</style>
-
-<!-- 回上一頁按鈕 -->
-<button class="control-btn" onclick="history.back()" aria-label="返回上一頁">
-  <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
-</button>
-
-<!-- 重新整理按鈕 -->
-<button class="control-btn" style="margin-top: 64px;" onclick="location.reload()" aria-label="重新整理">
-  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
-</button>
-
-<script>
-/* 每日自動刷新機制 */
-(function(){
-  const today = new Date().toDateString();
-  const KEY = 'jiwu_last_visit';
-  if (localStorage.getItem(KEY) !== today) {
-    localStorage.setItem(KEY, today);
-    if (performance.getEntriesByType('navigation')[0].type !== 'reload') {
-      location.reload();
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 52px;
+      height: 52px;
+      border: none;
+      border-radius: 50%;
+      background-color: #E7D4C0;
+      opacity: 0.5;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      transition: opacity 0.2s, transform 0.2s;
+      padding: 0;
     }
-  }
-})();
-</script>
-  
+    .control-btn img {
+      width: 60%;
+      height: 60%;
+      pointer-events: none;
+      user-select: none;
+    }
+    .control-btn:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+    .control-btn + .control-btn {
+      margin-top: 64px; /* 第二個按鈕向下位移 */
+    }
+
+    /* 頁面基礎樣式 */
     body {
       margin: 0;
       padding: 0;
@@ -150,6 +127,7 @@
       user-select: none;
     }
 
+    /* 分隔塊 */
     .section-divider {
       width: 100%;
       padding: 12px 0;
@@ -164,7 +142,7 @@
     }
 
     .divider-3 {
-      background-color: #F9F6F0; /* 改色 */
+      background-color: #F9F6F0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -173,6 +151,7 @@
       padding: 15px 0;
     }
 
+    /* 角色目錄按鈕區 */
     .role-buttons {
       max-width: 960px;
       margin: 20px auto 40px auto;
@@ -228,7 +207,7 @@
       font-size: 0.85em;
     }
 
-    /* 這段是讓角色目錄連結文字看起來是純文字，非藍色有底線 */
+    /* 連結樣式調整，避免看起來像超連結 */
     .role-buttons a {
       color: #333333;
       text-decoration: none;
@@ -244,6 +223,7 @@
       margin: 20px 0;
     }
 
+    /* 社群平台小圖示 */
     .social-links a img {
       width: 40px;
       height: auto;
@@ -287,7 +267,7 @@
   <img src="https://i.postimg.cc/VNQtsNQ8/run00002.jpg" alt="輪播圖片14" />
   <img src="https://i.postimg.cc/zBqRWPG2/run00001.jpg" alt="輪播圖片15" />
 </div>
-<div id="carousel-caption" aria-live="polite" style="max-width:600px; margin: 0 auto 30px auto; text-align:center; color:#333;"></div>
+<div id="carousel-caption" aria-live="polite"></div>
 
 <!-- 分隔塊 1 -->
 <div class="section-divider divider-1">JIWU寶寶目錄 ᯓ★ 吉伊卡哇</div>
@@ -343,6 +323,15 @@
   台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
 </footer>
 
+<!-- 左下角 返回上一頁 & 重新整理 按鈕 -->
+<button class="control-btn" onclick="history.back()" aria-label="返回上一頁" title="返回上一頁">
+  <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
+</button>
+
+<button class="control-btn" style="margin-top: 64px;" onclick="location.reload()" aria-label="重新整理" title="重新整理">
+  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
+</button>
+
 <script>
   // 輪播功能
   (function(){
@@ -367,53 +356,55 @@
       '0711 小白虎與黑虎蝦新品 海水浴場',
       '🆕 BIG景品 平行小八',
       '🆕 BIG景品 吃飯糰 🍙 小桃',
-      'BIG景品 大趴娃兔兔小桃',
-      'BIG景品 肌肉白熊',
+      'BIG景品 神秘系列',
+      'BIG景品 神秘系列'
     ];
 
     let currentIndex = 0;
-    let timer;
 
-    function showImage(index){
+    function updateCarousel(index) {
       images.forEach((img,i) => {
         img.classList.toggle('active', i === index);
       });
       captionDiv.textContent = captions[index] || '';
-      currentIndex = index;
     }
 
-    function showNext(){
-      let nextIndex = (currentIndex + 1) % images.length;
-      showImage(nextIndex);
+    function showNext() {
+      currentIndex = (currentIndex + 1) % images.length;
+      updateCarousel(currentIndex);
+    }
+    function showPrev() {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateCarousel(currentIndex);
     }
 
-    function showPrev(){
-      let prevIndex = (currentIndex - 1 + images.length) % images.length;
-      showImage(prevIndex);
+    prevBtn.addEventListener('click', showPrev);
+    nextBtn.addEventListener('click', showNext);
+
+    // 自動輪播：5秒切換一次
+    let autoPlay = setInterval(showNext, 5000);
+
+    // 游標移入時停止自動輪播，移出繼續
+    carousel.addEventListener('mouseenter', () => clearInterval(autoPlay));
+    carousel.addEventListener('mouseleave', () => { autoPlay = setInterval(showNext, 5000); });
+
+    updateCarousel(currentIndex);
+  })();
+
+  // 每日首次開啟自動刷新頁面 (避免重複刷新)
+  (function(){
+    const key = 'JIWU_REFRESHED_TODAY';
+    function getTodayString() {
+      const d = new Date();
+      return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
     }
-
-    function startAuto(){
-      timer = setInterval(showNext, 5000);
+    const todayStr = getTodayString();
+    if(localStorage.getItem(key) !== todayStr){
+      localStorage.setItem(key, todayStr);
+      setTimeout(() => {
+        location.reload();
+      }, 1200);
     }
-
-    function stopAuto(){
-      clearInterval(timer);
-    }
-
-    prevBtn.addEventListener('click', () => {
-      stopAuto();
-      showPrev();
-      startAuto();
-    });
-
-    nextBtn.addEventListener('click', () => {
-      stopAuto();
-      showNext();
-      startAuto();
-    });
-
-    showImage(currentIndex);
-    startAuto();
   })();
 </script>
 
