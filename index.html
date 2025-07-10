@@ -16,38 +16,41 @@
   
   <style>
     /* 按鈕樣式 */
-    .control-btn {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 52px;
-      height: 52px;
-      border: none;
-      border-radius: 50%;
-      background-color: #E7D4C0;
-      opacity: 0.5;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      transition: opacity 0.2s, transform 0.2s;
-      padding: 0;
-    }
-    .control-btn img {
-      width: 60%;
-      height: 60%;
-      pointer-events: none;
-      user-select: none;
-    }
-    .control-btn:hover {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
-    .control-btn + .control-btn {
-      margin-top: 64px; /* 第二個按鈕向下位移 */
-    }
+  .control-btn {
+    position: fixed;
+    left: 20px;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 50%;
+    background-color: #E7D4C0;
+    opacity: 0.5;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 0.2s, transform 0.2s;
+    padding: 0;
+}
+  .control-btn img {
+    width: 60%;
+    height: 60%;
+    pointer-events: none;
+    user-select: none;
+}
+  .control-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+/* 上下排列兩顆按鈕 */
+  .control-btn.back-btn {
+    bottom: 84px;
+}
+  .control-btn.refresh-btn {
+    bottom: 20px;
+}
 
     /* 頁面基礎樣式 */
     body {
@@ -162,7 +165,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 16px;
+      gap: 8px;
       margin-bottom: 10px;
     }
 
@@ -323,12 +326,12 @@
   台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
 </footer>
 
-<!-- 左下角 返回上一頁 & 重新整理 按鈕 -->
-<button class="control-btn" onclick="history.back()" aria-label="返回上一頁" title="返回上一頁">
+<!-- 左下角 返回上一頁 & 重新整理 按鈕（上下排列） -->
+<button class="control-btn back-btn" onclick="history.back()" aria-label="返回上一頁" title="返回上一頁">
   <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
 </button>
 
-<button class="control-btn" style="margin-top: 64px;" onclick="location.reload()" aria-label="重新整理" title="重新整理">
+<button class="control-btn refresh-btn" onclick="location.reload()" aria-label="重新整理" title="重新整理">
   <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
 </button>
 
