@@ -322,7 +322,7 @@
   const caption = document.getElementById('carousel-caption');
 
   const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
-  const SHEET_NAME = '輪播'; // ⚠️ 改成你實際工作表名稱
+  const SHEET_NAME = '輪播'; //
   const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
   async function fetchSheetData() {
@@ -396,7 +396,7 @@
 
   try {
     const rows = await fetchSheetData();
-    const result = buildCarouselItems(rows);
+    const result = buildCarouselItems(rows.slice(1));
     images = result.images;
     captions = result.captions;
     if (images.length > 0) {
