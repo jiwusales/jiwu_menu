@@ -70,7 +70,7 @@
     .price {
       font-size: 0.75em;
       color: #333;
-      font-weight: bold;
+      
     }
 
     .name {
@@ -80,6 +80,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+    .name, .price {
+    height: 24px; /* 固定高度，調整合適值 */
+    display: flex;
+    justify-content: flex-end; /* 垂直往底 */
+    align-items: center;       /* 水平置中 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   </style>
 </head>
 <body>
