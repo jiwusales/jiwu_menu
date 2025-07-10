@@ -16,41 +16,39 @@
   
   <style>
     /* 按鈕樣式 */
-  .control-btn {
-    position: fixed;
-    left: 20px;
-    width: 52px;
-    height: 52px;
-    border: none;
-    border-radius: 50%;
-    background-color: #E7D4C0;
-    opacity: 0.5;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    transition: opacity 0.2s, transform 0.2s;
-    padding: 0;
-}
-  .control-btn img {
-    width: 60%;
-    height: 60%;
-    pointer-events: none;
-    user-select: none;
-}
-  .control-btn:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
-}
-/* 上下排列兩顆按鈕 */
-  .control-btn.back-btn {
-    bottom: 84px;
-}
-  .control-btn.refresh-btn {
-    bottom: 20px;
-}
+    .control-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 45px;
+      height: 45px;
+      border: none;
+      border-radius: 50%;
+      background-color: #E7D4C0;
+      opacity: 0.5;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      transition: opacity 0.2s, transform 0.2s;
+      padding: 0;
+    }
+    .control-btn img {
+      width: 60%;
+      height: 60%;
+      pointer-events: none;
+      user-select: none;
+    }
+    .control-btn:hover {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+    /* 兩個按鈕上下排列 */
+    .control-btn + .control-btn {
+      margin-top: 60px;
+    }
 
     /* 頁面基礎樣式 */
     body {
@@ -165,7 +163,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 8px;
+      gap: 8px; /* 間距改成 8px */
       margin-bottom: 10px;
     }
 
@@ -326,13 +324,14 @@
   台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
 </footer>
 
-<!-- 左下角 返回上一頁 & 重新整理 按鈕（上下排列） -->
-<button class="control-btn back-btn" onclick="history.back()" aria-label="返回上一頁" title="返回上一頁">
-  <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
+<!-- 左下角 重新整理 按鈕（預設隱藏） -->
+<button id="refreshBtn" class="control-btn refresh-btn" style="display:none;" onclick="location.reload()" aria-label="重新整理" title="重新整理">
+  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
 </button>
 
-<button class="control-btn refresh-btn" onclick="location.reload()" aria-label="重新整理" title="重新整理">
-  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
+<!-- 左下角 返回上一頁 按鈕（預設隱藏） -->
+<button id="backBtn" class="control-btn back-btn" style="display:none;" onclick="history.back()" aria-label="返回上一頁" title="返回上一頁">
+  <img src="https://i.postimg.cc/qMGgKqXG/back.png" alt="Back" />
 </button>
 
 <script>
@@ -372,43 +371,32 @@
       captionDiv.textContent = captions[index] || '';
     }
 
-    function showNext() {
-      currentIndex = (currentIndex + 1) % images.length;
-      updateCarousel(currentIndex);
-    }
-    function showPrev() {
+    prevBtn.addEventListener('click', () => {
       currentIndex = (currentIndex - 1 + images.length) % images.length;
       updateCarousel(currentIndex);
-    }
+    });
 
-    prevBtn.addEventListener('click', showPrev);
-    nextBtn.addEventListener('click', showNext);
-
-    // 自動輪播：5秒切換一次
-    let autoPlay = setInterval(showNext, 5000);
-
-    // 游標移入時停止自動輪播，移出繼續
-    carousel.addEventListener('mouseenter', () => clearInterval(autoPlay));
-    carousel.addEventListener('mouseleave', () => { autoPlay = setInterval(showNext, 5000); });
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % images.length;
+      updateCarousel(currentIndex);
+    });
 
     updateCarousel(currentIndex);
   })();
 
-  // 每日首次開啟自動刷新頁面 (避免重複刷新)
-  (function(){
-    const key = 'JIWU_REFRESHED_TODAY';
-    function getTodayString() {
-      const d = new Date();
-      return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  // 判斷 URL，只有在書籤頁 (hash 包含 #bookmark) 時顯示重新整理按鈕
+  function checkRefreshBtn() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (window.location.hash.includes('#bookmark')) {
+      refreshBtn.style.display = 'flex';
+    } else {
+      refreshBtn.style.display = 'none';
     }
-    const todayStr = getTodayString();
-    if(localStorage.getItem(key) !== todayStr){
-      localStorage.setItem(key, todayStr);
-      setTimeout(() => {
-        location.reload();
-      }, 1200);
-    }
-  })();
+  }
+  // 頁面初次載入判斷
+  window.addEventListener('load', checkRefreshBtn);
+  // hash 變動時判斷
+  window.addEventListener('hashchange', checkRefreshBtn);
 </script>
 
 </body>
