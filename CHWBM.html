@@ -310,40 +310,44 @@ function getStatus(item) {
   const preorder = item.preorder?.toString().trim().toLowerCase();
   const up = item.up?.toString().trim().toLowerCase();
 
-  // ❌ 1. 不上架條件：上架欄或庫存欄為 "x" → 不該產出卡片，回傳 null
- if (stock === "x" || (up && up.trim() !== "")) {
-  return null;
-}
+  // 1. 不上架條件：上架欄有任何字元 → 不顯示
+  if (up && up !== "") {
+    return null;
+  }
 
-  // ✅ 2. 受注品（最高優先）
-// 只要受注欄有任何字元（不空白）就視為受注品
-if (preorder && preorder !== "") {
-  return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-}
+  // 2. 受注品（受注欄有任何字元）
+  if (preorder && preorder !== "") {
+    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+  }
 
-  // ✅ 3. 現貨：純數字且 > 0
+  // 3. 庫存是 "x" 也算不上架，所以不顯示
+  if (stock === "x") {
+    return null;
+  }
+
+  // 4. 現貨：純數字且 > 0
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // ✅ 4. 需預訂：庫存 = 0 且 非現為空
+  // 5. 需預訂：庫存=0且非現貨標示
   if (stock === "0" && (!notStock || notStock === "")) {
     return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
   }
 
-  // ✅ 5. 搭飛機中：庫存 = 0 且 非現有內容
+  // 6. 搭飛機中：庫存=0且有非現貨備註
   if (stock === "0" && notStock && notStock !== "") {
     return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
-  // ✅ 6. 點貨中：庫存為空，且 非現 與 受注 也都為空
+  // 7. 點貨中：庫存為空且非現貨非受注
   if ((!stock || stock === "") && (!notStock || notStock === "") && (!preorder || preorder === "")) {
     return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   }
 
-  // fallback
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
+
 
 loadSheetData();
 
