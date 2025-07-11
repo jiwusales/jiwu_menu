@@ -1,383 +1,347 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物販售．寶寶目錄</title>
-  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-  <style>
-    :root { --theme-color: #d77485; }
-    body {
-      font-family: "Noto Sans TC", Arial, sans-serif;
-      margin: 0;
-      background: #f9f9f9;
-      color: #333;
-    }
-    .top-bar {
-      background: var(--theme-color);
-      color: #fff;
-      text-align: center;
-      padding: 12px 10px;
-      font-weight: 700;
-      user-select: none;
-      animation: bounce 1.2s ease-in-out infinite alternate;
-      position: sticky;
-      top: 0;
-      z-index: 9999;
-    }
-    .top-bar a {
-      color: #fff;
-      text-decoration: none;
-    }
-    @keyframes bounce {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.1); }
-    }
-    .section-title {
-      color: #fff;
-      font-weight: 700;
-      padding: 6px 12px;
-      margin: 20px 10px 8px;
-      border-radius: 6px;
-      user-select: none;
-      font-size: 1.1em;
-    }
-    .type-divider {
-      display: flex;
-      align-items: center;
-      margin: 14px 0 8px;
-      user-select: none;
-      font-weight: 600;
-      font-size: 0.95em;
-      color: #666;
-      border-top: 1px solid #ccc;
-    }
-    .type-divider::before,
-    .type-divider::after {
-      content: "";
-      flex: 1;
-      border-top: inherit;
-      margin: 0 10px;
-    }
-    .card-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      padding: 0 10px 20px;
-      justify-items: center;
-    }
-    .card {
-      border: 2px solid var(--theme-color);
-      border-radius: 8px;
-      background: #fff;
-      width: 150px;
-      box-sizing: border-box;
-      text-align: center;
-      padding: 8px 6px;
-      user-select: none;
-      cursor: default;
-      transition: box-shadow 0.3s ease;
-    }
-    .card:hover {
-      box-shadow: 0 4px 10px rgba(215, 116, 133, 0.6);
-    }
-    .card img {
-      width: 100%;
-      height: 120px;
-      object-fit: contain;
-      border-radius: 6px;
-      user-select: none;
-    }
-    .card .name {
-      font-weight: 700;
-      margin: 8px 0 4px;
-      font-size: 1em;
-      color: #333;
-    }
-    .card .price {
-      color: var(--theme-color);
-      font-weight: 600;
-      font-size: 0.9em;
-      margin-bottom: 4px;
-    }
-    .card .stock {
-      font-size: 0.85em;
-      margin-bottom: 4px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JIWU吉物販售．寶寶目錄</title>
+<style>
+  :root { --theme-color: #d77485; }
+  body {
+    font-family: "Noto Sans TC", Arial, sans-serif;
+    margin: 0; background: #f9f9f9; color: #333;
+  }
+  .top-bar {
+    background: var(--theme-color);
+    color: #fff;
+    text-align: center;
+    padding: 12px 10px;
+    font-weight: 700;
+    user-select: none;
+    animation: bounce 1.2s ease-in-out infinite alternate;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+  }
+  .top-bar a {
+    color: #fff; text-decoration: none;
+  }
+  @keyframes bounce {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+  }
+  .section-title {
+    color: #fff;
+    font-weight: 700;
+    padding: 6px 12px;
+    margin: 20px 10px 8px;
+    border-radius: 6px;
+    user-select: none;
+    font-size: 1.1em;
+  }
+  .type-divider {
+    display: flex;
+    align-items: center;
+    margin: 14px 0 8px;
+    user-select: none;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: #666;
+    border-top: 1px solid #ccc;
+  }
+  .type-divider::before,
+  .type-divider::after {
+    content: "";
+    flex: 1;
+    border-top: inherit;
+    margin: 0 10px;
+  }
+  .card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 0 10px 20px;
+    justify-items: center;
+  }
+  .card {
+    border: 2px solid var(--theme-color);
+    border-radius: 8px;
+    background: #fff;
+    width: 150px;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 8px 6px;
+    user-select: none;
+    cursor: default;
+    transition: box-shadow 0.3s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 10px rgba(215, 116, 133, 0.6);
+  }
+  .card img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 6px;
+    user-select: none;
+  }
+  .card .name {
+    font-weight: 700;
+    margin: 8px 0 4px;
+    font-size: 1em;
+    color: #333;
+  }
+  .card .price {
+    color: var(--theme-color);
+    font-weight: 600;
+    font-size: 0.9em;
+    margin-bottom: 4px;
+  }
+  .card .stock {
+    font-size: 0.85em;
+    margin-bottom: 4px;
+  }
+</style>
 </head>
 <body>
-  <div class="top-bar">
-    <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer">訂購這邊找花花 (৹˙꒳˙ฅ)</a>
-  </div>
+<div class="top-bar">
+  <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer">訂購這邊找花花 (৹˙꒳˙ฅ)</a>
+</div>
 
-  <main id="content">資料載入中...</main>
+<main id="content">資料載入中...</main>
 
-  <script>
-  const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzw94VfqF8IsXRvpKMY";
-  const SHEET_NAME = "ちいかわ";
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+<script>
+const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzw94VfqF8IsXRvpKMY";
+const SHEET_NAME = "ちいかわ";
+const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-  // 角色關鍵字對應表
-  const roleMap = {
-    "吉伊": "吉",
-    "小八": "八",
-    "兔兔": "兔",
-    "小桃": "桃",
-    "師傅": "獺",
-    "栗子": "栗",
-    "獅薩": "獅",
-    "古本": "古",
-    "其他角色": "其"
-  };
+// 角色關鍵字對應表
+const roleMap = {
+  "吉伊": "吉",
+  "小八": "八",
+  "兔兔": "兔",
+  "小桃": "桃",
+  "師傅": "獺",
+  "栗子": "栗",
+  "獅薩": "獅",
+  "古本": "古",
+  "其他角色": "其"
+};
 
-  // 種類群組分隔設定
-  const categoryGroups = {
-    "貼紙膠帶": ["貼紙"],
-    "文具磁鐵": ["文具", "磁鐵"],
-    "立牌徽章": ["立牌", "徽章"],
-    "鑰匙圈御守": ["鑰匙圈", "御守"],
-    "玩具盲抽": ["玩具", "盲"],
-    "服飾包袋": ["包包", "衣服", "飾品"],
-    "生活居家": ["3C", "居家", "毛巾"],
-    "餐廚用品": ["餐廚"]
-  };
+// 名稱包含「仙境」的特殊群組
+const specialNameGroup = "仙境";
 
-  // 顏色對應表（角色＋種類）
-  const colorMap = {
-    "吉伊": "#d77485",
-    "小八": "#6293b8",
-    "兔兔": "#f9be3c",
-    "小桃": "#838BC2",
-    "師傅": "#CCAFA5",
-    "栗子": "#94C973",
-    "獅薩": "#FBAA60",
-    "古本": "#eb9e97",
-    "其他角色": "#45818e",
+// 種類群組分隔設定
+const categoryGroups = {
+  "貼紙膠帶": ["貼紙"],
+  "文具磁鐵": ["文具", "磁鐵"],
+  "立牌徽章": ["立牌", "徽章"],
+  "鑰匙圈御守": ["鑰匙圈", "御守"],
+  "玩具盲抽": ["玩具", "盲"],
+  "服飾包袋": ["包包", "衣服", "飾品"],
+  "生活居家": ["3C", "居家", "毛巾"],
+  "餐廚用品": ["餐廚"]
+};
 
-    "貼紙膠帶": "#F8C0C8",
-    "文具磁鐵": "#BAD3E4",
-    "立牌徽章": "#d5a6bd",
-    "鑰匙圈御守": "#7E9DC2",
-    "玩具盲抽": "#90ADC6",
-    "服飾包袋": "#b4a7d6",
-    "生活居家": "#98D7C2",
-    "餐廚用品": "#F1A17E",
-    "仙境": "#985859"
-  };
+// 角色與種類對應顏色
+const colorMap = {
+  // 角色顏色
+  "吉伊": "#d77485",
+  "小八": "#6293b8",
+  "兔兔": "#f9be3c",
+  "小桃": "#838BC2",
+  "師傅": "#CCAFA5",
+  "栗子": "#94C973",
+  "獅薩": "#FBAA60",
+  "古本": "#eb9e97",
+  "其他角色": "#45818e",
+  // 種類顏色
+  "貼紙膠帶": "#F8C0C8",
+  "文具磁鐵": "#BAD3E4",
+  "立牌徽章": "#d5a6bd",
+  "鑰匙圈御守": "#7E9DC2",
+  "玩具盲抽": "#90ADC6",
+  "服飾包袋": "#b4a7d6",
+  "生活居家": "#98D7C2",
+  "餐廚用品": "#F1A17E",
+  "仙境": "#985859"
+};
 
-  // 取得 URL 參數
-  function getQueryParams() {
-    const params = {};
-    location.search.substr(1).split("&").forEach(pair => {
-      if (!pair) return;
-      const [key, val] = pair.split("=");
-      if (key) params[key.toLowerCase()] = decodeURIComponent(val || "");
+// 讀取網址參數，取得角色名稱（若無，預設全部）
+function getQueryRole() {
+  const params = new URLSearchParams(location.search);
+  return params.get("role") || "all";
+}
+
+fetch(url)
+  .then(res => res.text())
+  .then(t => JSON.parse(t.substr(47).slice(0, -2))) // 用你原本切法
+  .then(data => {
+    const rows = data.table.rows.slice(1);
+    const allItems = rows.map(row => {
+      const c = row.c;
+      return {
+        type: c[1]?.v || "",
+        name: c[2]?.v || "",
+        role: c[0]?.v || "",
+        price: c[4]?.v || "",
+        stock: c[5]?.v || "",
+        nonStock: c[6]?.v || "",
+        onShelf: c[7]?.v || "",
+        acceptOrder: c[8]?.v || "",
+        img: c[10]?.v || "",
+      };
     });
-    return params;
-  }
 
-  const params = getQueryParams();
+    const selectedRole = getQueryRole();
 
-  fetch(url)
-    .then(res => res.text())
-    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
-    .then(data => {
-      const rows = data.table.rows.slice(1);
+    // 篩選符合角色（"all" 顯示全部）
+    let filteredItems;
+    if (selectedRole === "all") {
+      filteredItems = allItems.filter(item => !(item.onShelf && item.onShelf.toLowerCase() === "x"));
+    } else if (selectedRole === "仙境") {
+      // 名稱欄含仙境
+      filteredItems = allItems.filter(item =>
+        item.name.includes("仙境") && !(item.onShelf && item.onShelf.toLowerCase() === "x")
+      );
+    } else if (roleMap[selectedRole]) {
+      // 角色欄含指定字
+      filteredItems = allItems.filter(item =>
+        item.role.includes(roleMap[selectedRole]) && !(item.onShelf && item.onShelf.toLowerCase() === "x")
+      );
+    } else if (Object.keys(categoryGroups).includes(selectedRole)) {
+      // 種類群組（B種類欄）
+      const keywords = categoryGroups[selectedRole];
+      filteredItems = allItems.filter(item =>
+        keywords.some(kw => item.type.includes(kw)) && !(item.onShelf && item.onShelf.toLowerCase() === "x")
+      );
+    } else {
+      // 若無符合，全部顯示
+      filteredItems = allItems.filter(item => !(item.onShelf && item.onShelf.toLowerCase() === "x"));
+    }
 
-      const items = rows.map(row => {
-        const c = row.c;
-        return {
-          type: c[1]?.v || "",
-          name: c[2]?.v || "",
-          role: c[0]?.v || "",
-          price: c[4]?.v || "",
-          stock: c[5]?.v || "",
-          nonStock: c[6]?.v || "",
-          onShelf: c[7]?.v || "",
-          acceptOrder: c[8]?.v || "",
-          img: c[10]?.v || "",
-        };
+    const content = document.getElementById("content");
+    content.innerHTML = "";
+
+    if (filteredItems.length === 0) {
+      content.textContent = "查無資料。";
+      return;
+    }
+
+    // 若角色群組，依種類分群展示
+    if (roleMap[selectedRole]) {
+      // 分類群組（種類群組分類）
+      const typeGroups = {};
+      Object.keys(categoryGroups).forEach(key => typeGroups[key] = []);
+      typeGroups["其他"] = [];
+
+      filteredItems.forEach(item => {
+        let found = false;
+        for (const [groupName, keywords] of Object.entries(categoryGroups)) {
+          if (keywords.some(kw => item.type.includes(kw) || item.name.includes(kw))) {
+            typeGroups[groupName].push(item);
+            found = true;
+            break;
+          }
+        }
+        if (!found) typeGroups["其他"].push(item);
       });
 
-      // 篩選條件函式
-      function filterByParams(item) {
-        // 上架"x"不顯示
-        if (item.onShelf && item.onShelf.toLowerCase() === "x") return false;
+      // 角色區標題
+      const sectionTitle = document.createElement("div");
+      sectionTitle.className = "section-title";
+      sectionTitle.textContent = selectedRole;
+      sectionTitle.style.backgroundColor = colorMap[selectedRole] || "#d77485";
+      content.appendChild(sectionTitle);
 
-        if (params.role) {
-          const roleKeyword = roleMap[params.role];
-          if (!roleKeyword) return false;
-          if (!item.role.includes(roleKeyword)) return false;
-        }
-        if (params.name) {
-          if (!item.name.includes(params.name)) return false;
-        }
-        if (params.type) {
-          if (!item.type.includes(params.type)) return false;
-        }
-        return true;
-      }
+      // 依群組順序產生商品卡區塊
+      for (const groupName of Object.keys(categoryGroups)) {
+        const groupItems = typeGroups[groupName];
+        if (!groupItems || groupItems.length === 0) continue;
 
-      const filteredItems = items.filter(filterByParams);
+        // 種類分隔標題（加色）
+        const divider = document.createElement("div");
+        divider.className = "type-divider";
+        divider.textContent = groupName;
+        const c = colorMap[groupName] || "#666";
+        divider.style.color = c;
+        divider.style.borderTopColor = c;
+        content.appendChild(divider);
 
-      const content = document.getElementById("content");
-      content.innerHTML = "";
+        // 商品卡容器
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "card-container";
 
-      // 判斷是否用角色分組顯示（只有 role 參數才用角色分類）
-      const useRoleGroup = params.role && Object.keys(roleMap).includes(params.role);
-
-      if (useRoleGroup) {
-        // 依角色分組
-        const groupedByRole = {};
-        Object.keys(roleMap).forEach(key => groupedByRole[key] = []);
-        filteredItems.forEach(item => {
-          for (const [roleName, keyword] of Object.entries(roleMap)) {
-            if (item.role.includes(keyword)) {
-              groupedByRole[roleName].push(item);
-              break;
-            }
+        groupItems.forEach(item => {
+          let stockHtml = "";
+          if (item.acceptOrder && item.acceptOrder.toLowerCase() === "v") {
+            stockHtml = `<span style="background:#74BDCB;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">受注品</span>`;
+          } else if (item.stock && parseInt(item.stock) > 0) {
+            stockHtml = `<span style="background:#FFF4BD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">現貨</span>`;
+          } else if ((!item.stock || parseInt(item.stock) === 0) && (!item.nonStock || item.nonStock.trim() === "")) {
+            stockHtml = `<span style="background:#D4BBDD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">需預訂</span>`;
+          } else if ((!item.stock || parseInt(item.stock) === 0) && item.nonStock && item.nonStock.trim() !== "") {
+            stockHtml = `<span style="background:#5885AF;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">搭飛機中</span>`;
+          } else if (!item.stock || item.stock.trim() === "") {
+            stockHtml = `<span style="background:#E7F2F8;color:#333333;padding:2px 8px;border-radius:12px;border-radius:12px;display:inline-block;">點貨中</span>`;
           }
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
+            <div class="stock">${stockHtml}</div>
+            <div class="name">${item.name}</div>
+            <div class="price">${item.price}</div>
+          `;
+          cardContainer.appendChild(card);
         });
 
-        for (const roleName of Object.keys(roleMap)) {
-          const groupItems = groupedByRole[roleName];
-          if (!groupItems || groupItems.length === 0) continue;
-
-          // 角色區標題
-          const sectionTitle = document.createElement("div");
-          sectionTitle.className = "section-title";
-          sectionTitle.textContent = roleName;
-          sectionTitle.style.backgroundColor = colorMap[roleName] || "#d77485";
-          content.appendChild(sectionTitle);
-
-          // 依種類群組分隔分類
-          const typeGroups = {};
-          Object.keys(categoryGroups).forEach(key => typeGroups[key] = []);
-          typeGroups["其他"] = [];
-
-          groupItems.forEach(item => {
-            let found = false;
-            for (const [groupName, keywords] of Object.entries(categoryGroups)) {
-              if (keywords.some(kw => item.type.includes(kw) || item.name.includes(kw))) {
-                typeGroups[groupName].push(item);
-                found = true;
-                break;
-              }
-            }
-            if (!found) typeGroups["其他"].push(item);
-          });
-
-          // 顯示種類分組
-          for (const groupName of Object.keys(categoryGroups)) {
-            const groupItems = typeGroups[groupName];
-            if (!groupItems || groupItems.length === 0) continue;
-
-            const divider = document.createElement("div");
-            divider.className = "type-divider";
-            divider.textContent = groupName;
-            const c = colorMap[groupName] || "#666";
-            divider.style.color = c;
-            divider.style.borderTopColor = c;
-            content.appendChild(divider);
-
-            const cardContainer = document.createElement("div");
-            cardContainer.className = "card-container";
-
-            groupItems.forEach(item => {
-              let stockHtml = "";
-              if (item.acceptOrder && item.acceptOrder.toLowerCase() === "v") {
-                stockHtml = `<span style="background:#74BDCB;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">受注品</span>`;
-              } else if (item.stock && parseInt(item.stock) > 0) {
-                stockHtml = `<span style="background:#FFF4BD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">現貨</span>`;
-              } else if ((!item.stock || parseInt(item.stock) === 0) && (!item.nonStock || item.nonStock.trim() === "")) {
-                stockHtml = `<span style="background:#D4BBDD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">需預訂</span>`;
-              } else if ((!item.stock || parseInt(item.stock) === 0) && item.nonStock && item.nonStock.trim() !== "") {
-                stockHtml = `<span style="background:#5885AF;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">搭飛機中</span>`;
-              } else if (!item.stock || item.stock.trim() === "") {
-                stockHtml = `<span style="background:#E7F2F8;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">點貨中</span>`;
-              }
-
-              const card = document.createElement("div");
-              card.className = "card";
-              card.innerHTML = `
-                <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
-                <div class="stock">${stockHtml}</div>
-                <div class="name">${item.name}</div>
-                <div class="price">${item.price}</div>
-              `;
-              cardContainer.appendChild(card);
-            });
-
-            content.appendChild(cardContainer);
-          }
-        }
-      } else {
-        // 不用角色分組，直接依種類群組分隔全部顯示
-        const typeGroups = {};
-        Object.keys(categoryGroups).forEach(key => typeGroups[key] = []);
-        typeGroups["其他"] = [];
-
-        filteredItems.forEach(item => {
-          let found = false;
-          for (const [groupName, keywords] of Object.entries(categoryGroups)) {
-            if (keywords.some(kw => item.type.includes(kw) || item.name.includes(kw))) {
-              typeGroups[groupName].push(item);
-              found = true;
-              break;
-            }
-          }
-          if (!found) typeGroups["其他"].push(item);
-        });
-
-        for (const groupName of Object.keys(categoryGroups)) {
-          const groupItems = typeGroups[groupName];
-          if (!groupItems || groupItems.length === 0) continue;
-
-          const divider = document.createElement("div");
-          divider.className = "type-divider";
-          divider.textContent = groupName;
-          const c = colorMap[groupName] || "#666";
-          divider.style.color = c;
-          divider.style.borderTopColor = c;
-          content.appendChild(divider);
-
-          const cardContainer = document.createElement("div");
-          cardContainer.className = "card-container";
-
-          groupItems.forEach(item => {
-            let stockHtml = "";
-            if (item.acceptOrder && item.acceptOrder.toLowerCase() === "v") {
-              stockHtml = `<span style="background:#74BDCB;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">受注品</span>`;
-            } else if (item.stock && parseInt(item.stock) > 0) {
-              stockHtml = `<span style="background:#FFF4BD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">現貨</span>`;
-            } else if ((!item.stock || parseInt(item.stock) === 0) && (!item.nonStock || item.nonStock.trim() === "")) {
-              stockHtml = `<span style="background:#D4BBDD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">需預訂</span>`;
-            } else if ((!item.stock || parseInt(item.stock) === 0) && item.nonStock && item.nonStock.trim() !== "") {
-              stockHtml = `<span style="background:#5885AF;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">搭飛機中</span>`;
-            } else if (!item.stock || item.stock.trim() === "") {
-              stockHtml = `<span style="background:#E7F2F8;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">點貨中</span>`;
-            }
-
-            const card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-              <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
-              <div class="stock">${stockHtml}</div>
-              <div class="name">${item.name}</div>
-              <div class="price">${item.price}</div>
-            `;
-            cardContainer.appendChild(card);
-          });
-
-          content.appendChild(cardContainer);
-        }
+        content.appendChild(cardContainer);
       }
-    })
-    .catch(e => {
-      document.getElementById("content").innerHTML = "資料載入失敗，請稍後再試。";
-      console.error(e);
-    });
-  </script>
+
+    } else {
+      // 不是角色，而是單純種類或仙境名條件，全部平鋪呈現
+      const sectionTitle = document.createElement("div");
+      sectionTitle.className = "section-title";
+      sectionTitle.textContent = selectedRole;
+      sectionTitle.style.backgroundColor = colorMap[selectedRole] || "#d77485";
+      content.appendChild(sectionTitle);
+
+      const cardContainer = document.createElement("div");
+      cardContainer.className = "card-container";
+
+      filteredItems.forEach(item => {
+        let stockHtml = "";
+        if (item.acceptOrder && item.acceptOrder.toLowerCase() === "v") {
+          stockHtml = `<span style="background:#74BDCB;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">受注品</span>`;
+        } else if (item.stock && parseInt(item.stock) > 0) {
+          stockHtml = `<span style="background:#FFF4BD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">現貨</span>`;
+        } else if ((!item.stock || parseInt(item.stock) === 0) && (!item.nonStock || item.nonStock.trim() === "")) {
+          stockHtml = `<span style="background:#D4BBDD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">需預訂</span>`;
+        } else if ((!item.stock || parseInt(item.stock) === 0) && item.nonStock && item.nonStock.trim() !== "") {
+          stockHtml = `<span style="background:#5885AF;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">搭飛機中</span>`;
+        } else if (!item.stock || item.stock.trim() === "") {
+          stockHtml = `<span style="background:#E7F2F8;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">點貨中</span>`;
+        }
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
+          <div class="stock">${stockHtml}</div>
+          <div class="name">${item.name}</div>
+          <div class="price">${item.price}</div>
+        `;
+        cardContainer.appendChild(card);
+      });
+
+      content.appendChild(cardContainer);
+    }
+  })
+  .catch(e => {
+    document.getElementById("content").textContent = "資料載入失敗，請稍後再試。";
+    console.error(e);
+  });
+</script>
 </body>
 </html>
