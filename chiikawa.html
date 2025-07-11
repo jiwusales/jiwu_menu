@@ -247,47 +247,44 @@ function renderCards(items, roleName) {
     divider.textContent = category;
     container.appendChild(divider);
 
-    const groupContainer = document.createElement("div");
-    groupContainer.style.display = "flex";
-    groupContainer.style.flexWrap = "wrap";
-    groupContainer.style.justifyContent = "flex-start";
-    groupContainer.style.gap = "8px";
-    groupContainer.style.width = "352px";  // 限制寬度以顯示4張卡
-    groupContainer.style.margin = "0 auto"; // 置中
+    const groupDiv = document.createElement("div");
+groupDiv.style.display = "flex";
+groupDiv.style.flexWrap = "wrap";
+groupDiv.style.justifyContent = "flex-start";
+groupDiv.style.gap = "8px";
+groupDiv.style.maxWidth = "calc(4 * 82px + 3 * 8px)"; // 4張卡片+3個間距
+groupDiv.style.margin = "0 auto"; // 置中
 
     grouped[category].forEach(item => {
-  const status = getStatus(item);
+      const status = getStatus(item);
 
-  function countChineseChars(str) {
-    const match = str.match(/[\u4e00-\u9fff]/g);
-    return match ? match.length : 0;
-  }
+      // 如果角色欄位超過 1 個，就顯示「綜」
+      const roles = item.role.split(/[、,]/).map(r => r.trim()).filter(r => r);
+      const roleText = roles.length > 1 ? "綜" : roles[0];
 
-  const roleText = countChineseChars(item.role) > 1 ? "綜" : item.role;
+      const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
 
-  const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
+      const cardHTML = `
+        ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
+        <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
+      `;
 
-  const cardHTML = `
-    ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
-    <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-    <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
-    <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
-  `;
+      const wrapper = document.createElement(linkNeeded ? "a" : "div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
+      if (linkNeeded) {
+        wrapper.href = "https://lin.ee/X6FUFI9";
+        wrapper.target = "_blank";
+        wrapper.style.textDecoration = "none";
+        wrapper.style.color = "inherit";
+      }
+      wrapper.innerHTML = cardHTML;
 
-  const wrapper = document.createElement(linkNeeded ? "a" : "div");
-  wrapper.className = "card";
-  wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
-  if (linkNeeded) {
-    wrapper.href = "https://lin.ee/X6FUFI9";
-    wrapper.target = "_blank";
-    wrapper.style.textDecoration = "none";
-    wrapper.style.color = "inherit";
-  }
-  wrapper.innerHTML = cardHTML;
-
-  groupContainer.appendChild(wrapper);  // 這裡要用 groupContainer
-});
+      groupDiv.appendChild(wrapper);
+    });
 
     container.appendChild(groupDiv);
   });
