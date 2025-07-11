@@ -218,8 +218,9 @@ function loadSheetData() {
         preorder: row.c[7]?.v,
         up: row.c[8]?.v
       }))
-    .filter(item => item.role.includes(keyword));
-);
+    }))
+      .filter(item => item.role.includes(keyword));
+
       renderCards(items, currentRole);
     })
     .catch(err => {
