@@ -247,13 +247,13 @@ function renderCards(items, roleName) {
     divider.textContent = category;
     container.appendChild(divider);
 
-    const groupDiv = document.createElement("div");
-    groupDiv.style.display = "flex";
-    groupDiv.style.flexWrap = "wrap";
-    groupDiv.style.justifyContent = "flex-start";
-    groupDiv.style.gap = "8px";
-    groupDiv.style.width = "352px";   // 明確設定寬度，讓一排擺得下4張卡
-    groupDiv.style.margin = "0 auto"; // 置中
+    const groupContainer = document.createElement("div");
+    groupContainer.style.display = "flex";
+    groupContainer.style.flexWrap = "wrap";
+    groupContainer.style.justifyContent = "flex-start";
+    groupContainer.style.gap = "8px";
+    groupContainer.style.width = "352px";  // 限制寬度以顯示4張卡
+    groupContainer.style.margin = "0 auto"; // 置中
 
     grouped[category].forEach(item => {
       const status = getStatus(item);
