@@ -222,8 +222,8 @@ function loadSheetData() {
   item.role.includes(keyword) && 
   item.up !== "x" && 
   item.stock !== "x" && 
-  item.up !== undefined && 
-  item.stock !== undefined
+  item.up != null && 
+  item.stock != null
 );
       renderCards(items, currentRole);
     })
@@ -311,18 +311,21 @@ function formatPrice(price) {
 
 function getStatus(item) {
   if (item.preorder === "v") {
-    // 受注品優先顯示
     return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
   }
   if (item.stock > 0) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
-  if (item.stock == 0 && !item.notStock) {
+  if (item.stock === 0 && (!item.notStock || item.notStock === "")) {
     return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
   }
-  if (item.stock == 0 && item.notStock) {
+  if (item.stock === 0 && item.notStock && item.notStock !== "") {
     return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
+  if (item.stock === null || item.stock === undefined || item.stock === "") {
+    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+  }
+  // 其他預設狀態
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
