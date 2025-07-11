@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物販售．寶寶目錄</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-  <style>
+    <style>
     :root { --theme-color: #d77485; }
     body {
       font-family: "Noto Sans TC", Arial, sans-serif;
@@ -13,7 +13,6 @@
       background: #f9f9f9;
       color: #333;
     }
-    /* 頂部公告區 */
     .top-bar {
       background: var(--theme-color);
       color: #fff;
@@ -39,7 +38,6 @@
       margin: 20px 0 10px;
       font-weight: 700;
     }
-    /* 角色區標題 */
     .section-title {
       background: var(--theme-color);
       color: #fff;
@@ -50,7 +48,6 @@
       user-select: none;
       font-size: 1.1em;
     }
-    /* 種類分隔線 */
     .type-divider {
       display: flex;
       align-items: center;
@@ -67,7 +64,6 @@
       border-top: 1px solid #ccc;
       margin: 0 10px;
     }
-    /* 商品卡容器 */
     .card-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -75,7 +71,6 @@
       padding: 0 10px 20px;
       justify-items: center;
     }
-    /* 商品卡 */
     .card {
       border: 2px solid var(--theme-color);
       border-radius: 8px;
@@ -110,7 +105,11 @@
       font-size: 0.9em;
       margin-bottom: 4px;
     }
-    /* 較大螢幕調整 */
+    .card .stock {
+      font-size: 0.85em;
+      color: #555;
+      margin-bottom: 4px;
+    }
     @media (min-width: 768px) {
       .card {
         width: 180px;
@@ -137,7 +136,6 @@
     const SHEET_NAME = "ちいかわ";
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-    // 角色關鍵字對應
     const roleMap = {
       "吉伊": "吉",
       "小八": "八",
@@ -150,7 +148,6 @@
       "其他角色": "其"
     };
 
-    // 種類關鍵字對應
     const typeMap = {
       "貼紙膠帶": ["貼紙"],
       "文具磁鐵": ["文具", "磁鐵"],
@@ -162,77 +159,83 @@
       "餐廚用品": ["餐廚"]
     };
 
-    // 取得並處理試算表資料
+    // 貨況判斷，依優先順序顯示（上架、受注、非現、庫存）
+    function stockStatus(item) {
+      if (item["上架"] && item["上架"].toLowerCase() === "否") return "未上架";
+      if (item["受注"] && item["受注"].toLowerCase() === "是") return "受注中";
+      if (item["非現"] && item["非現"].toLowerCase() === "是") return "非現貨";
+      if (item["庫存"]) {
+        if (parseInt(item["庫存"]) > 0) return `庫存：${item["庫存"]}`;
+        return "已售完";
+      }
+      return "無資料";
+    }
+
     fetch(url)
       .then(res => res.text())
       .then(t => JSON.parse(t.substr(47).slice(0, -2)))
       .then(data => {
-        const rows = data.table.rows.slice(1); // 去除標題列
+        const rows = data.table.rows.slice(1);
 
-        // 解析資料
-        const items = rows.map(row => ({
-          type: row.c[0]?.v || "",
-          name: row.c[1]?.v || "",
-          role: row.c[2]?.v || "",
-          img: row.c[3]?.v || "",
-          price: row.c[4]?.v || ""
-        }));
+        // 轉成物件方便取欄位
+        const items = rows.map(row => {
+          const c = row.c;
+          return {
+            type: c[0]?.v || "",
+            name: c[1]?.v || "",
+            role: c[2]?.v || "",
+            price: c[4]?.v || "",
+            stock: c[5]?.v || "",
+            nonStock: c[6]?.v || "",
+            onShelf: c[7]?.v || "",
+            acceptOrder: c[8]?.v || "",
+            img: c[10]?.v || "",
+          };
+        });
 
-        // 分類物件，先預設仙境為空陣列
+        // 分類結果初始化
         const grouped = { "仙境": [] };
+        Object.keys(roleMap).forEach(r => grouped[r] = []);
+        grouped["其他角色"] = [];
 
-        // 將符合角色關鍵字的初始化空陣列
-        Object.keys(roleMap).forEach(roleName => grouped[roleName] = []);
-
-        // 分類邏輯：先找仙境，優先放仙境分類，其餘依角色分類
         items.forEach(item => {
           if (item.name.includes("仙境")) {
             grouped["仙境"].push(item);
             return;
           }
-
-          // 用角色關鍵字分類
-          for (const [roleName, keyword] of Object.entries(roleMap)) {
-            if (item.role.includes(keyword)) {
+          for (const [roleName, key] of Object.entries(roleMap)) {
+            if (item.role.includes(key)) {
               grouped[roleName].push(item);
               return;
             }
           }
-          // 如果不符合角色，放「其他角色」
+          // 角色判斷不到放「其他角色」
           grouped["其他角色"].push(item);
         });
 
-        // 顯示內容容器
         const content = document.getElementById("content");
         content.innerHTML = "";
 
-        // 將每個角色分類顯示
         for (const [roleName, items] of Object.entries(grouped)) {
           if (items.length === 0) continue;
 
-          // 角色區標題
           const sectionTitle = document.createElement("div");
           sectionTitle.className = "section-title";
           sectionTitle.textContent = roleName;
           content.appendChild(sectionTitle);
 
-          // 分類裡再用種類分類
+          // 分類種類
           const typeGroups = {};
-          for (const [typeName, keywords] of Object.entries(typeMap)) {
+          for (const typeName of Object.keys(typeMap)) {
             typeGroups[typeName] = [];
           }
           typeGroups["其他"] = [];
 
-          // 分配種類
           items.forEach(item => {
             let found = false;
             for (const [typeName, keywords] of Object.entries(typeMap)) {
               if (
-                keywords.some(
-                  kw =>
-                    item.type.includes(kw) ||
-                    item.name.includes(kw)
-                )
+                keywords.some(kw => item.type.includes(kw) || item.name.includes(kw))
               ) {
                 typeGroups[typeName].push(item);
                 found = true;
@@ -242,21 +245,17 @@
             if (!found) typeGroups["其他"].push(item);
           });
 
-          // 每種種類呈現
           for (const [typeName, typeItems] of Object.entries(typeGroups)) {
             if (typeItems.length === 0) continue;
 
-            // 種類分隔線
             const divider = document.createElement("div");
             divider.className = "type-divider";
             divider.textContent = typeName;
             content.appendChild(divider);
 
-            // 商品卡容器
             const cardContainer = document.createElement("div");
             cardContainer.className = "card-container";
 
-            // 商品卡
             typeItems.forEach(item => {
               const card = document.createElement("div");
               card.className = "card";
@@ -264,6 +263,12 @@
                 <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
                 <div class="name">${item.name}</div>
                 <div class="price">${item.price}</div>
+                <div class="stock">${stockStatus({
+                  "庫存": item.stock,
+                  "非現": item.nonStock,
+                  "上架": item.onShelf,
+                  "受注": item.acceptOrder
+                })}</div>
               `;
               cardContainer.appendChild(card);
             });
