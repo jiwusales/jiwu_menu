@@ -109,6 +109,15 @@
       margin: 2px auto;
     }
 
+    .card {
+      text-decoration: none;
+      color: inherit;
+    }
+    .card * {
+      text-decoration: none;
+      color: inherit;
+    }
+    
     /* 貨況狀態標籤 */
     .status-badge {
       display: inline-block;
@@ -252,7 +261,7 @@ function renderCards(items, roleName) {
 
    grouped[category].forEach(item => {
   const status = getStatus(item);
-  // 角色欄單字判斷：只有1個字顯示原字，否則顯示綜
+  // 角色欄單字判斷：只有 1 個字顯示原字，否則顯示 綜
   const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
   const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
   const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
