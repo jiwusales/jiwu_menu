@@ -225,7 +225,12 @@ function loadSheetData() {
         preorder: row.c[7]?.v,  // I欄 受注
         up: row.c[9]?.v
       }))
-      .filter(item => item.role.includes(keyword) && item.up !== "x");
+        
+    .filter(item => 
+      item.role.includes(keyword) && 
+      item.up !== "x" && 
+      item.stock !== "x"
+    );
 
       renderCards(items, currentRole);
     })
