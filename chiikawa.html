@@ -55,9 +55,9 @@
     
     /* 商品卡片容器 */
     #card-container {
-      padding: 10px; 
-      display: flex; 
-      flex-direction: column; 
+      padding: 80px 10px 10px;
+      display: flex;
+      flex-direction: column;
       gap: 20px;
     }
     
@@ -83,17 +83,16 @@
       width: 82px;
       border: 2px solid #ccc;
       border-radius: 8px;
-      background-color: #ffffff !important;
-      opacity: 1 !important;
+      background-color: #ffffff;
       position: relative;
-      cursor: pointer;
-      transition: border-color 0.3s;
       text-align: center;
-      user-select: none;
       color: #333333;
-      box-shadow: none !important;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    }
     .card img {
       width: 80px;
       margin-top: 5px;
@@ -162,149 +161,133 @@
     <a href="https://portaly.cc/jiwusales" target="_blank">歡迎追蹤按讚 (ෆ꒳´ෆ) JIWU吉物販售</a>
   </div>
 
-<script>
-const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
-const sheetName = "ちいかわ";
-const roleMap = {
-  "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
-  "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
-};
-const colors = {
-  "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c",
-  "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973",
-  "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
-};
-const categoryMap = {
-  "吊娃": "吊娃、娃", "娃": "吊娃、娃",
-  "包包": "包包",
-  "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
-  "立牌": "立牌、徽章、磁鐵、玩具", "徽章": "立牌、徽章、磁鐵、玩具",
-  "磁鐵": "立牌、徽章、磁鐵、玩具", "玩具": "立牌、徽章、磁鐵、玩具",
-  "文具": "文具、貼紙", "貼紙": "文具、貼紙",
-  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
-  "飾品": "飾品、衣服", "衣服": "飾品、衣服",
-  "餐廚": "餐廚"
-};
+  <script>
+  const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+  const sheetName = "ちいかわ";
+  const roleMap = {
+    "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
+    "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
+  };
+  const colors = {
+    "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c",
+    "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973",
+    "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
+  };
+  const categoryMap = {
+    "吊娃": "吊娃、娃", "娃": "吊娃、娃",
+    "包包": "包包",
+    "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
+    "立牌": "立牌、徽章、磁鐵、玩具", "徽章": "立牌、徽章、磁鐵、玩具",
+    "磁鐵": "立牌、徽章、磁鐵、玩具", "玩具": "立牌、徽章、磁鐵、玩具",
+    "文具": "文具、貼紙", "貼紙": "文具、貼紙",
+    "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
+    "飾品": "飾品、衣服", "衣服": "飾品、衣服",
+    "餐廚": "餐廚"
+  };
 
-function getRoleFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get("tab");
-  return (tab && roleMap[tab]) ? tab : Object.keys(roleMap)[0];
-}
-
-function loadSheetData() {
-  const currentRole = getRoleFromURL();
-
-  // 設定頁面主要顏色
-  document.documentElement.style.setProperty('--tab-color', colors[currentRole] || "#999");
-
-  // 修改手機瀏覽器狀態列顏色
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) {
-    themeMeta.setAttribute("content", colors[currentRole] || "#999");
+  function getRoleFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    return roleMap[tab] ? tab : "吉伊";
   }
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+  function loadSheetData() {
+    const currentRole = getRoleFromURL();
+    document.documentElement.style.setProperty('--tab-color', colors[currentRole] || "#999");
+    const keyword = roleMap[currentRole];
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+    
+    fetch(url)
+      .then(res => res.text())
+      .then(text => JSON.parse(text.substr(47).slice(0, -2)))
+      .then(data => {
+        const rows = data.table.rows;
+        const items = rows.map(row => ({
+          role: row.c[0]?.v || "",
+          category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
+          name: row.c[2]?.v || "",
+          img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+          price: row.c[4]?.v,  // E欄 售價
+          stock: row.c[5]?.v,  // F欄 庫存
+          notStock: row.c[6]?.v,  // G欄 非現
+          preorder: row.c[7]?.v,  // I欄 受注
+          up: row.c[9]?.v
+        }))
+        .filter(item => item.role.includes(keyword) && item.up !== "x");
 
-  fetch(url)
-    .then(res => res.text())
-    .then(text => JSON.parse(text.substr(47).slice(0, -2)))
-    .then(data => {
-      const rows = data.table.rows;
-      const items = rows.map(row => ({
-        role: row.c[0]?.v || "",
-        category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
-        name: row.c[2]?.v || "",
-        img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-        price: row.c[4]?.v,
-        stock: row.c[5]?.v,
-        notStock: row.c[6]?.v,
-        preorder: row.c[7]?.v,
-        up: row.c[9]?.v
-      }))
-      .filter(item => item.role.includes(currentRole) && item.up !== "x");
+        renderCards(items, currentRole);
+      })
+      .catch(err => {
+        document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
+        console.error(err);
+      });
+  }
 
-      renderCards(items, currentRole);
-    })
-    .catch(err => {
-      document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
-      console.error(err);
-    });
-}
-
-function renderCards(items, roleName) {
-  const container = document.getElementById("card-container");
-  container.innerHTML = "";
-  const grouped = {};
-  items.forEach(item => {
-    if (!grouped[item.category]) grouped[item.category] = [];
-    grouped[item.category].push(item);
-  });
-
-  Object.keys(grouped).forEach(category => {
-    const divider = document.createElement("div");
-    divider.className = "type-divider";
-    divider.textContent = category;
-    container.appendChild(divider);
-
-    const groupDiv = document.createElement("div");
-groupDiv.style.display = "flex";
-groupDiv.style.flexWrap = "wrap";
-groupDiv.style.justifyContent = "flex-start";
-groupDiv.style.gap = "8px";
-groupDiv.style.maxWidth = "calc(4 * 82px + 3 * 8px)"; // 4張卡片+3個間距
-groupDiv.style.margin = "0 auto"; // 置中
-
-    grouped[category].forEach(item => {
-      const status = getStatus(item);
-
-      // 如果角色欄位超過 1 個，就顯示「綜」
-      const roles = item.role.split(/[、,]/).map(r => r.trim()).filter(r => r);
-      const roleText = roles.length > 1 ? "綜" : roles[0];
-
-      const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
-
-      const cardHTML = `
-        ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
-        <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
-      `;
-
-      const wrapper = document.createElement(linkNeeded ? "a" : "div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
-      if (linkNeeded) {
-        wrapper.href = "https://lin.ee/X6FUFI9";
-        wrapper.target = "_blank";
-        wrapper.style.textDecoration = "none";
-        wrapper.style.color = "inherit";
-      }
-      wrapper.innerHTML = cardHTML;
-
-      groupDiv.appendChild(wrapper);
+  function renderCards(items, roleName) {
+    const container = document.getElementById("card-container");
+    container.innerHTML = "";
+    const grouped = {};
+    items.forEach(item => {
+      if (!grouped[item.category]) grouped[item.category] = [];
+      grouped[item.category].push(item);
     });
 
-    container.appendChild(groupDiv);
-  });
-}
+    Object.keys(grouped).forEach(category => {
+      const divider = document.createElement("div");
+      divider.className = "type-divider";
+      divider.textContent = category;
+      container.appendChild(divider);
 
-function formatPrice(price) {
-  if (!price) return "私訊花花";
-  if (price === "-") return "組合出售";
-  return price;
-}
+      const groupDiv = document.createElement("div");
+      groupDiv.style.display = "flex";
+      groupDiv.style.flexWrap = "wrap";
+      groupDiv.style.justifyContent = "flex-start";
+      groupDiv.style.gap = "8px";
 
-function getStatus(item) {
-  if (item.preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-  if (item.stock > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
-  if (item.stock == 0 && !item.notStock) return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
-  if (item.stock == 0 && item.notStock) return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
-  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
-}
+      grouped[category].forEach(item => {
+        const status = getStatus(item);
+        const roleText = item.role.length > 2 ? "綜" : item.role;
+        const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
-loadSheetData();
+        // 吊娃、娃類不顯示右上角角色圓圈標籤
+        const showRoleBadge = !(category === "吊娃、娃");
+
+        const cardHTML = `
+          ${showRoleBadge ? `<div class="role-badge">${roleText}</div>` : ""}
+          <img src="${item.img}" alt="${item.name}">
+          <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+          <div class="name">${item.name}</div>
+          <div class="price">${formatPrice(item.price)}</div>
+        `;
+
+        const wrapper = document.createElement(link ? "a" : "div");
+        wrapper.className = "card";
+        if (link) wrapper.href = link;
+        if (link) wrapper.target = "_blank";
+        wrapper.innerHTML = cardHTML;
+
+        groupDiv.appendChild(wrapper);
+      });
+
+      container.appendChild(groupDiv);
+    });
+  }
+
+  function formatPrice(price) {
+    if (!price) return "私訊花花";
+    if (price === "-") return "組合出售";
+    return price;
+  }
+
+  function getStatus(item) {
+    if (item.preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+    if (item.stock > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
+    if (item.stock == 0 && !item.notStock) return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
+    if (item.stock == 0 && item.notStock) return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
+    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+  }
+
+  loadSheetData();
 </script>
 </body>
 </html>
