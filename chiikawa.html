@@ -15,35 +15,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   
   <style>
-    .control-btn {
-      position: fixed;
-      top: 60px;
-      left: 10px;
-      width: 35px;
-      height: 35px;
-      border: none;
-      border-radius: 50%;
-      background-color: #E7D4C0;
-      opacity: 0.5;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      transition: opacity 0.2s, transform 0.2s;
-      padding: 0;
-    }
-    .control-btn img {
-      width: 60%;
-      height: 60%;
-      pointer-events: none;
-      user-select: none;
-    }
-    .control-btn:hover {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
+    /* 頁面基礎樣式 */
     body {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
@@ -55,6 +27,7 @@
       color: #333333;
       text-align: center;
     }
+    /* 頂部通知條（色塊+文字跳動動畫） */
     .top-bar {
       background: var(--tab-color);
       color: #fff;
@@ -67,19 +40,28 @@
       user-select: none;
       text-align: center;
       font-size: 18px;
+      }
+
+    .top-bar .pulse-text {
+      display: inline-block;
       animation: pulse 1.5s infinite;
-    }
+      }
+
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
-    }
+      }
+    
+    /* 商品卡片容器 */
     #card-container {
       padding: 80px 10px 10px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
+    
+    /* 分類標題與橫線 */
     .type-divider {
       display: flex;
       align-items: center;
@@ -95,6 +77,8 @@
       border-top: 1px solid #333333;
       margin: 0 10px;
     }
+
+    /* 商品卡片基礎樣式 */
     .card {
       width: 82px;
       border: 2px solid #ccc;
@@ -123,6 +107,8 @@
       font-size: 10px;
       margin: 2px auto;
     }
+
+    /* 貨況狀態標籤 */
     .status-badge {
       display: inline-block;
       border-radius: 12px;
@@ -131,6 +117,8 @@
       font-weight: bold;
       margin: 2px auto;
     }
+
+    /* 角色圓形標籤 */
     .role-badge {
       position: absolute;
       top: 3px;
@@ -146,6 +134,8 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* 大螢幕版型調整 */
     @media (min-width: 768px) {
       .card {
         width: 120px;
