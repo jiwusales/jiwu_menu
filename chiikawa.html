@@ -161,7 +161,7 @@
     <a href="https://portaly.cc/jiwusales" target="_blank">歡迎追蹤按讚 (ෆ꒳´ෆ) JIWU吉物販售</a>
   </div>
 
-  <script>
+<script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
 const roleMap = {
@@ -248,11 +248,12 @@ function renderCards(items, roleName) {
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
-    groupDiv.style.display = "flex";
-    groupDiv.style.flexWrap = "wrap";
-    groupDiv.style.justifyContent = "flex-start";
-    groupDiv.style.gap = "8px";
-    groupDiv.style.marginLeft = "16px"; // 留更多左邊空白
+groupDiv.style.display = "flex";
+groupDiv.style.flexWrap = "wrap";
+groupDiv.style.justifyContent = "flex-start";
+groupDiv.style.gap = "8px";
+groupDiv.style.maxWidth = "calc(4 * 82px + 3 * 8px)"; // 4張卡片+3個間距
+groupDiv.style.margin = "0 auto"; // 置中
 
     grouped[category].forEach(item => {
       const status = getStatus(item);
@@ -261,21 +262,25 @@ function renderCards(items, roleName) {
       const roles = item.role.split(/[、,]/).map(r => r.trim()).filter(r => r);
       const roleText = roles.length > 1 ? "綜" : roles[0];
 
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+      const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
 
       const cardHTML = `
         ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${item.name}</div>
-        <div class="price">${formatPrice(item.price)}</div>
+        <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
+        <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
       `;
 
-      const wrapper = document.createElement(link ? "a" : "div");
+      const wrapper = document.createElement(linkNeeded ? "a" : "div");
       wrapper.className = "card";
-      wrapper.style.borderColor = colors[roleName] || "#ccc"; // 卡片邊框顏色跟角色色
-      if (link) wrapper.href = link;
-      if (link) wrapper.target = "_blank";
+      wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
+      if (linkNeeded) {
+        wrapper.href = "https://lin.ee/X6FUFI9";
+        wrapper.target = "_blank";
+        wrapper.style.textDecoration = "none";
+        wrapper.style.color = "inherit";
+      }
       wrapper.innerHTML = cardHTML;
 
       groupDiv.appendChild(wrapper);
