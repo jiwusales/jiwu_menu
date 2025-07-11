@@ -311,14 +311,15 @@ function getStatus(item) {
   const up = item.up?.toString().trim().toLowerCase();
 
   // ❌ 1. 不上架條件：上架欄或庫存欄為 "x" → 不該產出卡片，回傳 null
-  if (stock === "x" || up === "x") {
-    return null;
-  }
+ if (stock === "x" || (up && up.trim() !== "")) {
+  return null;
+}
 
   // ✅ 2. 受注品（最高優先）
-  if (preorder === "v") {
-    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-  }
+// 只要受注欄有任何字元（不空白）就視為受注品
+if (preorder && preorder !== "") {
+  return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+}
 
   // ✅ 3. 現貨：純數字且 > 0
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
