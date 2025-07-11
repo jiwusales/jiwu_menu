@@ -294,122 +294,126 @@
   const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
   const sheetURL = sheetURLs[roleParam] || sheetURLs["吉伊"];
 
+document.documentElement.style.setProperty('--role-color', config.color);
+
   document.documentElement.style.setProperty('--role-color', config.color);
 
   const container = document.getElementById("product-list");
-  container.innerHTML = "載入中...";
+container.innerHTML = "載入中...";
 
   /* 🌟 載入資料並分類渲染商品 */
   fetch(sheetURL)
-    .then(res => {
-      if (!res.ok) throw new Error("HTTP error " + res.status);
-      return res.json();
-    })
-    .then(data => {
-      const isChiiKawa = sheetURL.includes("/ちいかわ");
+  .then(res => {
+    if (!res.ok) throw new Error("HTTP error " + res.status);
+    return res.json();
+  })
+  .then(data => {
+    console.log("Raw data:", data);
 
+    const filtered = data.filter(row => {
       const filtered = data.filter(row => {
-        if (row["上架"] === "x") return false;
-        if (!config.field) return true;
-        return config.keywords.some(k => (row[config.field] || "").includes(k));
-      });
+  if (row["上架"] === "x") return false;
+  // 修改判斷：如果 config.field 不存在或關鍵字是空的，全部放行
+  if (!config.field || config.keywords.length === 0) return true;
+  // 有設定條件才比對
+  return config.keywords.some(k => (row[config.field] || "").includes(k));
+});
 
-      if (filtered.length === 0) {
-        container.innerHTML = "找不到符合條件的商品";
-        return;
+    console.log("Filtered data:", filtered);
+
+    if (filtered.length === 0) {
+      container.innerHTML = "找不到符合條件的商品";
+      return;
+    }
+
+    const categorizedProducts = {};
+    categoryOrder.forEach(cat => categorizedProducts[cat.label] = []);
+
+    filtered.forEach(p => {
+      for (let cat of categoryOrder) {
+        if (cat.keywords.some(k => (p["種類"] || "").includes(k))) {
+          categorizedProducts[cat.label].push(p);
+          break;
+        }
       }
+    });
 
-      const categorizedProducts = {};
-      categoryOrder.forEach(cat => categorizedProducts[cat.label] = []);
+    container.innerHTML = "";
 
-      filtered.forEach(p => {
-        let matched = false;
-        for (let cat of categoryOrder) {
-          if (cat.keywords.some(k => (p["種類"] || "").includes(k))) {
-            categorizedProducts[cat.label].push(p);
-            matched = true;
-            break;
+    categoryOrder.forEach(cat => {
+      const items = categorizedProducts[cat.label];
+      if (items.length === 0) return;
+
+      const categoryBlock = document.createElement("div");
+      categoryBlock.className = "category-block";
+
+      const divider = document.createElement("div");
+      divider.className = "type-divider";
+      divider.textContent = cat.label;
+      categoryBlock.appendChild(divider);
+
+      const productGrid = document.createElement("div");
+      productGrid.className = "product-grid";
+
+      items.forEach(p => {
+        let status = "";
+        let statusClass = "";
+
+        if (sheetURL.includes("/ちいかわ")) {
+          if ((p["受注"] || "").toLowerCase().includes("v")) {
+            status = "受注品"; statusClass = "made";
+          } else if (parseInt(p["庫存"]) > 0) {
+            status = "現貨"; statusClass = "instock";
+          } else if (p["庫存"] === "0" && !p["非現"]) {
+            status = "需預訂"; statusClass = "preorder";
+          } else if (p["庫存"] === "0" && p["非現"]) {
+            status = "搭飛機中"; statusClass = "flight";
+          } else {
+            status = "點貨中"; statusClass = "checking";
           }
         }
+
+        let price = "";
+        let linkUrl = "https://lin.ee/X6FUFI9";
+
+        if (p["售價"] === "-") {
+          price = "組合出售";
+          linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
+        } else if (!p["售價"]) {
+          price = "私訊花花";
+          linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
+        } else {
+          price = p["售價"];
+          linkUrl = null;
+        }
+
+        let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
+
+        const product = document.createElement(linkUrl ? "a" : "div");
+        product.className = "product";
+        if (linkUrl) {
+          product.href = linkUrl;
+          product.target = "_blank";
+          product.rel = "noopener";
+        }
+
+        product.innerHTML = `
+          <img src="${imageUrl}" alt="">
+          ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
+          <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
+          <div class="price">${price}</div>
+        `;
+        productGrid.appendChild(product);
       });
 
-      container.innerHTML = "";
-
-      categoryOrder.forEach(cat => {
-        const items = categorizedProducts[cat.label];
-        if (items.length === 0) return;
-
-        const categoryBlock = document.createElement("div");
-categoryBlock.className = "category-block";
-
-const divider = document.createElement("div");
-divider.className = "type-divider";
-divider.textContent = cat.label;
-categoryBlock.appendChild(divider);
-
-const productGrid = document.createElement("div");
-productGrid.className = "product-grid";
-
-items.forEach(p => {
-  let status = "";
-  let statusClass = "";
-
-  if (isChiiKawa) {
-    if ((p["受注"] || "").toLowerCase().includes("v")) {
-      status = "受注品"; statusClass = "made";
-    } else if (parseInt(p["庫存"]) > 0) {
-      status = "現貨"; statusClass = "instock";
-    } else if (p["庫存"] === "0" && !p["非現"]) {
-      status = "需預訂"; statusClass = "preorder";
-    } else if (p["庫存"] === "0" && p["非現"]) {
-      status = "搭飛機中"; statusClass = "flight";
-    } else {
-      status = "點貨中"; statusClass = "checking";
-    }
-  }
-
-  let price = "";
-  let linkUrl = "https://lin.ee/X6FUFI9";
-
-  if (p["售價"] === "-") {
-    price = "組合出售";
-    linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
-  } else if (!p["售價"]) {
-    price = "私訊花花";
-    linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
-  } else {
-    price = p["售價"];
-    linkUrl = null;
-  }
-
-  let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
-
-  const product = document.createElement(linkUrl ? "a" : "div");
-  product.className = "product";
-  if (linkUrl) {
-    product.href = linkUrl;
-    product.target = "_blank";
-    product.rel = "noopener";
-  }
-
-  product.innerHTML = `
-    <img src="${imageUrl}" alt="">
-    ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
-    <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
-    <div class="price">${price}</div>
-  `;
-  productGrid.appendChild(product);
-});
-
-categoryBlock.appendChild(productGrid);
-container.appendChild(categoryBlock);
-});
-      });
-    })
-    .catch(err => {
-      container.innerHTML = "載入資料失敗";
-      console.error(err);
+      categoryBlock.appendChild(productGrid);
+      container.appendChild(categoryBlock);
     });
+  })
+  .catch(err => {
+    container.innerHTML = "載入資料失敗";
+    console.error(err);
+  });
 </script>
 </body>
 </html>
