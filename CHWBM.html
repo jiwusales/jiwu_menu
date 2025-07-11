@@ -319,22 +319,27 @@ function getStatus(item) {
     return null;
   }
 
-  // 3. ✅ 現貨：庫存為數字且 > 0
+  // 3. ⚠️ 庫存 = 0 顯示「需預訂」
+  if (stock === "0") {
+    return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
+  }
+
+  // 4. ✅ 現貨：庫存為數字且 > 0
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // 4. ✅ 搭飛機中：非現欄為數字且 > 0
+  // 5. ✅ 搭飛機中：非現欄為數字且 > 0
   if (/^\d+$/.test(notStock) && Number(notStock) > 0) {
     return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
-  // 5. ✅ 全部空白：視為「點貨中」
+  // 6. ✅ 全部空白：視為「點貨中」
   if (stock === "" && notStock === "" && preorder === "" && up === "") {
     return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   }
 
-  // 6. ✅ 其他全部當「點貨中」
+  // 7. ✅ 其他全部當「點貨中」
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
