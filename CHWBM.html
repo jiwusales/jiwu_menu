@@ -309,38 +309,33 @@ function getStatus(item) {
   const preorder = (item.preorder ?? "").toString().trim().toLowerCase();
   const up = (item.up ?? "").toString().trim().toLowerCase();
 
-  // 庫存或上架欄有「x」都不上架
+  // ✅ 第一優先：受注品（不管其他欄位）
+  if (preorder === "v") {
+    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+  }
+
+  // ❌ 不上架條件（只要有 x 就不上架）
   if (stock === "x" || up === "x") {
     return null;
   }
 
-  // 受注欄有「v」即受注品
-  if (preorder === "v") {
-    return { text: "受注品", bg: "#74BDCB", color: "#fff" };
-  }
-
-  // 庫存數字大於 0 即現貨
+  // ✅ 現貨（純數字且 >0）
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
-    return { text: "現貨", bg: "#FFF4BD", color: "#333" };
+    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // 非現欄數字大於 0 即搭飛機中
+  // ✅ 搭飛機中（非現為純數字且 >0）
   if (/^\d+$/.test(notStock) && Number(notStock) > 0) {
-    return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
+    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
-  // 全空就點貨中
-  if (
-    stock === "" &&
-    notStock === "" &&
-    preorder === "" &&
-    up === ""
-  ) {
-    return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
+  // ✅ 全部欄位都空 → 點貨中
+  if (stock === "" && notStock === "" && preorder === "" && up === "") {
+    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   }
 
-  // 其他情況不顯示
-  return null;
+  // ✅ 其餘一律視為「點貨中」
+  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
 loadSheetData();
