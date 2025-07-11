@@ -164,7 +164,7 @@
 
   <div id="card-container"></div>
 
-   <script>
+<script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
 const roleMap = {
@@ -200,7 +200,6 @@ function loadSheetData() {
   // 設定頁面主要顏色
   document.documentElement.style.setProperty('--tab-color', colors[currentRole] || "#999");
 
-  // 修改手機瀏覽器狀態列顏色
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) {
     themeMeta.setAttribute("content", colors[currentRole] || "#999");
@@ -219,18 +218,17 @@ function loadSheetData() {
         category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
         name: row.c[2]?.v || "",
         img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-        price: row.c[4]?.v,  // E欄 售價
-        stock: row.c[5]?.v,  // F欄 庫存
-        notStock: row.c[6]?.v,  // G欄 非現
-        preorder: row.c[7]?.v,  // I欄 受注
+        price: row.c[4]?.v,
+        stock: row.c[5]?.v,
+        notStock: row.c[6]?.v,
+        preorder: row.c[7]?.v,
         up: row.c[9]?.v
       }))
-        
-    .filter(item => 
-      item.role.includes(keyword) && 
-      item.up !== "x" && 
-      item.stock !== "x"
-    );
+      .filter(item => 
+        item.role.includes(keyword) && 
+        item.up !== "x" && 
+        item.stock !== "x"
+      );
 
       renderCards(items, currentRole);
     })
@@ -261,42 +259,50 @@ function renderCards(items, roleName) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-   grouped[category].forEach(item => {
-  const status = getStatus(item);
-  // 角色欄單字判斷：只有 1 個字顯示原字，否則顯示 綜
-  const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+    // 🚨 排序邏輯
+    let sortedItems;
+    if (category === "吊娃、娃") {
+      // 吊娃、娃類 → 原順序
+      sortedItems = grouped[category];
+    } else {
+      // 其他類別 → 名稱開頭分群排序
+      sortedItems = grouped[category].slice().sort((a, b) => {
+        const aKey = a.name.substring(0, 2);
+        const bKey = b.name.substring(0, 2);
+        return aKey.localeCompare(bKey, 'zh-Hant');
+      });
+    }
 
-  const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+    sortedItems.forEach(item => {
+      const status = getStatus(item);
+      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
 
-  // 吊娃、娃類不顯示右上角角色圓圈標籤
-  const showRoleBadge = !(category === "吊娃、娃");
+      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+      const showRoleBadge = !(category === "吊娃、娃");
+      const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
-  const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
+      const cardHTML = `
+        ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${item.name}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
 
-const cardHTML = `
-  ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
-  <img src="${item.img}" alt="${item.name}">
-  <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-  <div class="name">${item.name}</div>
-  <div class="price">${formatPrice(item.price)}</div>
-`;
+      const wrapper = document.createElement(link ? "a" : "div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[roleName] || "#ccc";
 
-  const wrapper = document.createElement(link ? "a" : "div");
-  wrapper.className = "card";
+      if (link) {
+        wrapper.href = link;
+        wrapper.target = "_blank";
+      }
+      wrapper.innerHTML = cardHTML;
 
-// 設定卡片外框顏色為角色顏色
-wrapper.style.borderColor = colors[roleName] || "#ccc";
-
-if (link) {
-  wrapper.href = link;
-  wrapper.target = "_blank";
-}
-wrapper.innerHTML = cardHTML;
-
-  groupDiv.appendChild(wrapper);
-});
+      groupDiv.appendChild(wrapper);
+    });
 
     container.appendChild(groupDiv);
   });
