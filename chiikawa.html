@@ -242,11 +242,11 @@
       groupDiv.style.display = "flex";
       groupDiv.style.flexWrap = "wrap";
       groupDiv.style.justifyContent = "flex-start";
-      groupDiv.style.gap = "8px";
+      groupDiv.style.gap = "16px";
 
       grouped[category].forEach(item => {
         const status = getStatus(item);
-        const roleText = item.role.length > 2 ? "綜" : item.role;
+        const roleText = item.role.includes(",") ? "綜合" : item.role;
         const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
         // 吊娃、娃類不顯示右上角角色圓圈標籤
@@ -265,6 +265,9 @@
         if (link) wrapper.href = link;
         if (link) wrapper.target = "_blank";
         wrapper.innerHTML = cardHTML;
+        
+        // 卡片邊框顏色跟隨角色顏色
+        wrapper.style.borderColor = colors[roleName] || "#ccc";
 
         groupDiv.appendChild(wrapper);
       });
