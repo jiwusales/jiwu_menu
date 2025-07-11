@@ -55,9 +55,9 @@
     
     /* 商品卡片容器 */
     #card-container {
-      padding: 80px 10px 10px;
-      display: flex;
-      flex-direction: column;
+      padding: 10px; 
+      display: flex; 
+      flex-direction: column; 
       gap: 20px;
     }
     
@@ -83,16 +83,17 @@
       width: 82px;
       border: 2px solid #ccc;
       border-radius: 8px;
-      background-color: #ffffff;
+      background-color: #ffffff !important;
+      opacity: 1 !important;
       position: relative;
+      cursor: pointer;
+      transition: border-color 0.3s;
       text-align: center;
+      user-select: none;
       color: #333333;
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: none !important;
     }
-    .card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-    }
+    
     .card img {
       width: 80px;
       margin-top: 5px;
