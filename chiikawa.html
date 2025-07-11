@@ -39,7 +39,6 @@
       font-weight: 700;
     }
     .section-title {
-      background: var(--theme-color);
       color: #fff;
       font-weight: 700;
       padding: 6px 12px;
@@ -52,16 +51,17 @@
       display: flex;
       align-items: center;
       margin: 14px 0 8px;
-      color: #666;
       user-select: none;
       font-weight: 600;
       font-size: 0.95em;
+      color: #666;
+      border-top: 1px solid #ccc;
     }
     .type-divider::before,
     .type-divider::after {
       content: "";
       flex: 1;
-      border-top: 1px solid #ccc;
+      border-top: inherit;
       margin: 0 10px;
     }
     .card-container {
@@ -115,12 +115,11 @@
   <div class="top-bar">
     <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer">訂購這邊找花花 (৹˙꒳˙ฅ)</a>
   </div>
-  <h1>JIWU吉物販售．ちいかわ</h1>
-
+  
   <main id="content">資料載入中...</main>
 
   <script>
-  const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+  const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzw94VfqF8IsXRvpKMY";
   const SHEET_NAME = "ちいかわ";
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
@@ -137,16 +136,41 @@
     "其他角色": "其"
   };
 
-  // 依你指定的分隔群組及關鍵字
+  // 種類群組分隔設定
   const categoryGroups = {
-    "吊娃娃": ["吊娃", "娃"],
+    "吊娃、娃": ["吊娃", "娃"],
     "包包": ["包包"],
-    "鑰匙圈御守": ["鑰匙圈", "御守"],
-    "立牌徽章磁鐵玩具": ["立牌", "徽章", "磁鐵", "玩具"],
-    "文具貼紙": ["文具", "貼紙"],
-    "生活居家": ["3C", "居家", "毛巾"],
-    "飾品衣服": ["飾品", "衣服"],
-    "餐廚用品": ["餐廚"]
+    "鑰匙圈、御守": ["鑰匙圈", "御守"],
+    "立牌、徽章、磁鐵、玩具": ["立牌", "徽章", "磁鐵", "玩具"],
+    "文具、貼紙": ["文具", "貼紙"],
+    "3C、居家、毛巾": ["3C", "居家", "毛巾"],
+    "飾品、衣服": ["飾品", "衣服"],
+    "餐廚": ["餐廚"]
+  };
+
+  // 角色與種類對應顏色
+  const colorMap = {
+    // 角色顏色
+    "吉伊": "#d77485",
+    "小八": "#6293b8",
+    "兔兔": "#f9be3c",
+    "小桃": "#838BC2",
+    "師傅": "#CCAFA5",
+    "栗子": "#94C973",
+    "獅薩": "#FBAA60",
+    "古本": "#eb9e97",
+    "其他角色": "#45818e",
+
+    // 種類顏色
+    "貼紙膠帶": "#F8C0C8",
+    "文具磁鐵": "#BAD3E4",
+    "立牌、徽章、磁鐵、玩具": "#d5a6bd",
+    "鑰匙圈、御守": "#7E9DC2",
+    "玩具盲抽": "#90ADC6",
+    "服飾包袋": "#b4a7d6",
+    "生活居家": "#98D7C2",
+    "餐廚": "#F1A17E",
+    "仙境": "#985859"
   };
 
   fetch(url)
@@ -174,10 +198,10 @@
       // 依角色分類（只要角色欄有包含該字即歸類）
       const groupedByRole = {};
       Object.keys(roleMap).forEach(key => groupedByRole[key] = []);
-      
+
       items.forEach(item => {
         if (item.onShelf && item.onShelf.toLowerCase() === "x") return;  // 上架欄為"x"不顯示
-        
+
         // 判斷角色，若找不到符合，且角色欄有"其"就歸類「其他角色」
         let matched = false;
         for (const [roleName, keyword] of Object.entries(roleMap)) {
@@ -200,10 +224,11 @@
         const items = groupedByRole[roleName];
         if (!items || items.length === 0) continue;
 
-        // 角色區標題
+        // 角色區標題（加色）
         const sectionTitle = document.createElement("div");
         sectionTitle.className = "section-title";
         sectionTitle.textContent = roleName;
+        sectionTitle.style.backgroundColor = colorMap[roleName] || "#d77485";  // 固定角色顏色
         content.appendChild(sectionTitle);
 
         // 依分隔群組分類商品
@@ -228,10 +253,13 @@
           const groupItems = typeGroups[groupName];
           if (!groupItems || groupItems.length === 0) continue;
 
-          // 分隔標題
+          // 種類分隔標題（加色）
           const divider = document.createElement("div");
           divider.className = "type-divider";
           divider.textContent = groupName;
+          const c = colorMap[groupName] || "#666";
+          divider.style.color = c;
+          divider.style.borderTopColor = c;
           content.appendChild(divider);
 
           // 商品卡容器
@@ -272,6 +300,6 @@
       document.getElementById("content").innerHTML = "資料載入失敗，請稍後再試。";
       console.error(e);
     });
-</script>
+  </script>
 </body>
 </html>
