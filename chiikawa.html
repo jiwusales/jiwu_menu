@@ -246,9 +246,14 @@
     groupDiv.style.gap = "8px";
 
     grouped[category].forEach(item => {
-      const status = getStatus(item);
-      const roleText = item.role.length > 2 ? "綜" : item.role;
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+  const status = getStatus(item);
+  const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+  let roleText = "綜"; // 預設是綜
+  const firstChar = item.role.trim().charAt(0);
+  if (singleCharRoles.includes(firstChar)) {
+    roleText = firstChar;
+  }
+  const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
       // 吊娃、娃類不顯示右上角角色圓圈標籤
       const showRoleBadge = !(category === "吊娃、娃");
