@@ -1,419 +1,238 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JIWU寶寶目錄</title>
-
-<!-- 分頁小圖（favicon）-->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物寶寶目錄</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-  
-<style>
-  /* 🌟 全域變數：角色色 */
-  :root {
-    --role-color: #dac7b7;
-  }
-
-  /* 🌟 網頁基礎樣式 */
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
-    background-repeat: repeat;
-    background-size: 135px;
-    margin: 0;
-    padding: 0;
-    color: #333333;
-    text-align: center;
-  }
-
-  /* 🌟 頂部bar樣式 */
-  .top-bar {
-    background: var(--role-color);
-    color: #fff;
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    width: 100%;
-    z-index: 999;
-    font-weight: bold;
-    user-select: none;
-  }
-
-  .top-bar a {
-    color: #fff;
-    text-decoration: underline;
-    font-weight: bold;
-    font-size: 16px;
-    margin-left: 12px;
-  }
-
-  /* 🌟 商品列表樣式 */
-  #product-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 12px;
-    padding: 0 10px 20px;
-    box-sizing: border-box;
-    justify-items: center;
-  }
-
-  /* 🌟 分類分隔線樣式 */
-  .type-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0 6px;
-    color: #333;
-    font-weight: bold;
-    font-size: 14px;
-    gap: 12px;
-    user-select: none;
-  }
-
-  .type-divider::before,
-  .type-divider::after {
-    content: "";
-    flex-grow: 1;
-    border-top: 1px solid #333;
-    min-width: 30px;
-    max-width: 50%;
-  }
-
-  /* 🌟 單一商品卡樣式 */
-  .product {
-    width: 100%;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    padding: 6px 4px 8px;
-    box-sizing: border-box;
-    user-select: none;
-    cursor: pointer;
-    text-decoration: none !important;
-    color: #333 !important;
-    /* 🛠 移除 hover 邊框加粗 */
-    transition: none;
-  }
-
-  /* 🌟 商品圖片樣式 */
-  .product img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    margin-bottom: 4px;
-  }
-
-  /* 🌟 貨況標籤樣式 */
-  .status {
-    font-size: 10px;
-    padding: 2px 12px;
-    border-radius: 999px;
-    margin-bottom: 4px;
-    display: inline-block;
-    user-select: none;
-    white-space: nowrap;
-  }
-  .status.instock { background-color: #FFF4BD; color: #333333; }
-  .status.preorder { background-color: #D4BBDD; color: #333333; }
-  .status.made { background-color: #74BDCB; color: #ffffff; }
-  .status.flight { background-color: #5885AF; color: #ffffff; }
-  .status.checking { background-color: #E7F2F8; color: #333333; }
-
-  /* 🌟 商品名稱與售價 */
-  .name, .price {
-    font-size: 12px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    line-height: 1.2;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: #333;
-  }
-
-  .name {
-    font-weight: bold;
-  }
-
-  /* 🌟 底部固定 bar 樣式 */
-  .bottom-bar {
-    background-color: var(--role-color);
-    color: #fff;
-    text-align: center;
-    padding: 10px 0;
-    font-weight: bold;
-    font-size: 14px;
-    margin-top: 30px;
-    user-select: none;
-  }
-
-  .bottom-bar a {
-    color: #fff;
-    text-decoration: underline;
-  }
-
-  .center-divider {
-    width: 90vw;
-    max-width: 1200px;
-    border-top: 1px solid #333;
-    margin: 10px auto 0;
-    user-select: none;
-  }
-
-  /* 🌟 手機版樣式 */
-  @media (max-width: 767px) {
-    #product-list {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      padding: 12px 10px 20px;
+  <style>
+    :root {
+      --color-吉伊: #d77485;
+      --color-小八: #6293b8;
+      --color-兔兔: #f9be3c;
+      --color-小桃: #838BC2;
+      --color-師傅: #CCAFA5;
+      --color-栗子: #94C973;
+      --color-獅薩: #FBAA60;
+      --color-古本: #eb9e97;
+      --color-其他角色: #45818e;
+      --color-貼紙膠帶: #F8C0C8;
+      --color-文具磁鐵: #BAD3E4;
+      --color-立牌徽章: #d5a6bd;
+      --color-鑰匙圈御守: #7E9DC2;
+      --color-玩具盲抽: #90ADC6;
+      --color-服飾包袋: #b4a7d6;
+      --color-生活居家: #98D7C2;
+      --color-餐廚用品: #F1A17E;
+      --color-仙境: #985859;
+      --color-ナガノ: #68aad6;
+      --color-小白虎黑虎蝦: #4f5474;
     }
 
-    .product {
-      max-width: 82px;
-      padding: 4px 2px 6px;
-    }
-
-    .product img {
-      width: 80px;
-    }
-
-    .name, .price {
-      font-size: 10px;
-    }
-  }
-
-  /* 🌟 深色模式 */
-  @media (prefers-color-scheme: dark) {
     body {
-      background-color: #222;
-      color: #eee;
-    }
-
-    .product {
-      background-color: #fff;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       color: #333;
     }
 
-    .name, .price {
-      color: #333;
+    /* 🔥 頂部公告區 */
+    .top-bar {
+      width: 100%;
+      background-color: var(--role-color, #dac7b7);
+      color: #fff;
+      text-align: center;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      font-size: 18px;
+      font-weight: bold;
+      animation: bounce 1.5s infinite;
     }
-  }
-  .category-block {
-  width: 100%;
-  margin-bottom: 20px;
-}
+    .top-bar a {
+      color: #fff;
+      text-decoration: none;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
 
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 12px;
-  justify-items: center;
-  grid-auto-flow: row;
-}
-</style>
+    /* 🔥 分類分隔線 */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0 10px;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      border-top: 1px solid #999;
+    }
+    .divider span {
+      margin: 0 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    /* 🔥 商品卡容器 */
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 10px;
+    }
+
+    /* 🔥 單一商品卡 */
+    .card {
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      width: calc(25% - 10px);
+      min-width: 150px;
+      background: #fff;
+      box-sizing: border-box;
+      text-align: center;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      border-bottom: 1px solid #eee;
+    }
+    .card .name {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+    .card .price {
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .card .stock {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        width: calc(50% - 10px);
+      }
+    }
+    @media (max-width: 480px) {
+      .card {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  
-  <!-- 🌟 頂部連結欄 -->
-    <header class="top-bar" id="header-text">
-    <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener">訂購這邊找花花 (৹˙꒳˙ฅ) </a>
-    </header>
-  
-  <!-- 🌟 商品列表主容器 -->
-  <main id="product-list">載入中...</main>
+  <!-- 🔥 頂部公告 -->
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank">訂購這邊找花花 (৹˙꒳​˙ฅ)</a>
+  </div>
 
-<script>
-  /* 🌟 角色配置：定義角色色與關鍵字 */
-  const roleConfig = {
-    "吉伊": { field: "角色", keywords: ["吉"], color: "#d77485" },
-    "小八": { field: "角色", keywords: ["八"], color: "#6293b8" },
-    "兔兔": { field: "角色", keywords: ["兔"], color: "#f9be3c" },
-    "小桃": { field: "角色", keywords: ["桃"], color: "#838BC2" },
-    "師傅": { field: "角色", keywords: ["獺"], color: "#CCAFA5" },
-    "栗子": { field: "角色", keywords: ["栗"], color: "#94C973" },
-    "獅薩": { field: "角色", keywords: ["獅"], color: "#FBAA60" },
-    "古本": { field: "角色", keywords: ["古"], color: "#eb9e97" },
-    "其他角色": { field: "角色", keywords: ["其"], color: "#45818e" },
-    "仙境": { field: "名稱", keywords: ["仙境"], color: "#985859" },
-    "貼紙膠帶": { field: "種類", keywords: ["貼紙"], color: "#F8C0C8" },
-    "文具磁鐵": { field: "種類", keywords: ["文具", "磁鐵"], color: "#BAD3E4" },
-    "立牌徽章": { field: "種類", keywords: ["立牌", "徽章"], color: "#d5a6bd" },
-    "鑰匙圈御守": { field: "種類", keywords: ["鑰匙圈", "御守"], color: "#7E9DC2" },
-    "玩具盲抽": { field: "種類", keywords: ["玩具", "盲"], color: "#90ADC6" },
-    "服飾包袋": { field: "種類", keywords: ["包包", "衣服", "飾品"], color: "#b4a7d6" },
-    "生活居家": { field: "種類", keywords: ["3C", "居家", "毛巾"], color: "#98D7C2" },
-    "餐廚用品": { field: "種類", keywords: ["餐廚"], color: "#F1A17E" },
-    "小白虎黑虎蝦": { field: null, keywords: [], color: "#4f5474" },
-    "ナガノ": { field: null, keywords: [], color: "#68aad6" },
-    "カナヘラ": { field: null, keywords: [], color: "#a58b7e" }
-  };
+  <!-- 🔥 內容容器 -->
+  <div id="content"></div>
 
-  /* 🌟 分類順序配置 */
-  const categoryOrder = [
-    { label: "吊娃、娃", keywords: ["吊娃", "娃"] },
-    { label: "包包", keywords: ["包"] },
-    { label: "鑰匙圈、御守", keywords: ["鑰匙圈", "御守"] },
-    { label: "立牌、徽章、磁鐵、玩具", keywords: ["立牌", "徽章", "磁鐵", "玩具"] },
-    { label: "文具、貼紙", keywords: ["文具", "貼紙"] },
-    { label: "3C、居家、毛巾", keywords: ["3C", "居家", "毛巾"] },
-    { label: "飾品、衣服", keywords: ["飾品", "衣服"] },
-    { label: "餐廚", keywords: ["餐廚"] }
-  ];
+  <script>
+    const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-  /* 🌟 Google Sheets API 設定 */
-  const spreadsheetId = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+    const colors = {
+      "吉伊": "--color-吉伊",
+      "小八": "--color-小八",
+      "兔兔": "--color-兔兔",
+      "小桃": "--color-小桃",
+      "師傅": "--color-師傅",
+      "栗子": "--color-栗子",
+      "獅薩": "--color-獅薩",
+      "古本": "--color-古本",
+      "其他角色": "--color-其他角色",
+      "仙境": "--color-仙境",
+      "貼紙膠帶": "--color-貼紙膠帶",
+      "文具磁鐵": "--color-文具磁鐵",
+      "立牌徽章": "--color-立牌徽章",
+      "鑰匙圈御守": "--color-鑰匙圈御守",
+      "玩具盲抽": "--color-玩具盲抽",
+      "服飾包袋": "--color-服飾包袋",
+      "生活居家": "--color-生活居家",
+      "餐廚用品": "--color-餐廚用品"
+    };
 
-  const sheetURLs = {
-    "吉伊": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小八": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "兔兔": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小桃": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "師傅": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "栗子": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "獅薩": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "古本": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "其他角色": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "仙境": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "貼紙膠帶": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "文具磁鐵": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "立牌徽章": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "鑰匙圈御守": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "玩具盲抽": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "服飾包袋": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "生活居家": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "餐廚用品": `https://opensheet.elk.sh/${spreadsheetId}/ちいかわ`,
-    "小白虎黑虎蝦": `https://opensheet.elk.sh/${spreadsheetId}/小白虎黑虎蝦`,
-    "ナガノ": `https://opensheet.elk.sh/${spreadsheetId}/ナガノ`,
-    "カナヘラ": `https://opensheet.elk.sh/${spreadsheetId}/カナヘラ`
-  };
+    const categories = [
+      { name: "吉伊", match: row => row[1]?.v?.includes("吉") },
+      { name: "小八", match: row => row[1]?.v?.includes("八") },
+      { name: "兔兔", match: row => row[1]?.v?.includes("兔") },
+      { name: "小桃", match: row => row[1]?.v?.includes("桃") },
+      { name: "師傅", match: row => row[1]?.v?.includes("獺") },
+      { name: "栗子", match: row => row[1]?.v?.includes("栗") },
+      { name: "獅薩", match: row => row[1]?.v?.includes("獅") },
+      { name: "古本", match: row => row[1]?.v?.includes("古") },
+      { name: "其他角色", match: row => row[1]?.v?.includes("其") },
+      { name: "仙境", match: row => row[0]?.v?.includes("仙境") },
+      { name: "貼紙膠帶", match: row => row[2]?.v?.includes("貼紙") },
+      { name: "文具磁鐵", match: row => /(文具|磁鐵)/.test(row[2]?.v) },
+      { name: "立牌徽章", match: row => /(立牌|徽章)/.test(row[2]?.v) },
+      { name: "鑰匙圈御守", match: row => /(鑰匙圈|御守)/.test(row[2]?.v) },
+      { name: "玩具盲抽", match: row => /(玩具|盲)/.test(row[2]?.v) },
+      { name: "服飾包袋", match: row => /(包包|衣服|飾品)/.test(row[2]?.v) },
+      { name: "生活居家", match: row => /(3C|居家|毛巾)/.test(row[2]?.v) },
+      { name: "餐廚用品", match: row => row[2]?.v?.includes("餐廚") }
+    ];
 
-  /* 🌟 Google Sheets API 設定 */
-  const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
-  const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
-  const sheetURL = sheetURLs[roleParam] || sheetURLs["吉伊"];
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => JSON.parse(text.substr(47).slice(0, -2)))
+      .then(json => {
+        const rows = json.table.rows.slice(1); // 跳過第一列
+        const content = document.getElementById("content");
 
-document.documentElement.style.setProperty('--role-color', config.color);
+        categories.forEach(cat => {
+          const items = rows.filter(cat.match);
+          if (items.length > 0) {
+            document.documentElement.style.setProperty('--role-color', `var(${colors[cat.name]})`);
 
-  document.documentElement.style.setProperty('--role-color', config.color);
+            const divider = document.createElement("div");
+            divider.className = "divider";
+            divider.innerHTML = `<span>${cat.name}</span>`;
+            content.appendChild(divider);
 
-  const container = document.getElementById("product-list");
-container.innerHTML = "載入中...";
+            const cards = document.createElement("div");
+            cards.className = "cards";
 
-  /* 🌟 載入資料並分類渲染商品 */
-  fetch(sheetURL)
-  .then(res => {
-    if (!res.ok) throw new Error("HTTP error " + res.status);
-    return res.json();
-  })
-  .then(data => {
-  console.log("Raw data:", data);
+            items.forEach(row => {
+              const imgUrl = row[3]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+              const name = row[1]?.v || "";
+              const price = row[4]?.v || "";
+              const stock = row[5]?.v || "";
 
-  const filtered = data.filter(row => {
-    if (row["上架"] === "x") return false;
-    // 修改判斷：如果 config.field 不存在或關鍵字是空的，全部放行
-    if (!config.field || config.keywords.length === 0) return true;
-    // 有設定條件才比對
-    return config.keywords.some(k => (row[config.field] || "").includes(k));
-  });
+              const card = document.createElement("div");
+              card.className = "card";
+              card.style.borderColor = `var(${colors[cat.name]})`;
+              card.innerHTML = `
+                <img src="${imgUrl}" alt="${name}">
+                <div class="name">${name}</div>
+                <div class="price">${price}</div>
+              `;
+              cards.appendChild(card);
+            });
 
-  console.log("Filtered data:", filtered);
-
-  if (filtered.length === 0) {
-    container.innerHTML = "找不到符合條件的商品";
-    return;
-  }
-
-    const categorizedProducts = {};
-    categoryOrder.forEach(cat => categorizedProducts[cat.label] = []);
-
-    filtered.forEach(p => {
-      for (let cat of categoryOrder) {
-        if (cat.keywords.some(k => (p["種類"] || "").includes(k))) {
-          categorizedProducts[cat.label].push(p);
-          break;
-        }
-      }
-    });
-
-    container.innerHTML = "";
-
-    categoryOrder.forEach(cat => {
-      const items = categorizedProducts[cat.label];
-      if (items.length === 0) return;
-
-      const categoryBlock = document.createElement("div");
-      categoryBlock.className = "category-block";
-
-      const divider = document.createElement("div");
-      divider.className = "type-divider";
-      divider.textContent = cat.label;
-      categoryBlock.appendChild(divider);
-
-      const productGrid = document.createElement("div");
-      productGrid.className = "product-grid";
-
-      items.forEach(p => {
-        let status = "";
-        let statusClass = "";
-
-        if (sheetURL.includes("/ちいかわ")) {
-          if ((p["受注"] || "").toLowerCase().includes("v")) {
-            status = "受注品"; statusClass = "made";
-          } else if (parseInt(p["庫存"]) > 0) {
-            status = "現貨"; statusClass = "instock";
-          } else if (p["庫存"] === "0" && !p["非現"]) {
-            status = "需預訂"; statusClass = "preorder";
-          } else if (p["庫存"] === "0" && p["非現"]) {
-            status = "搭飛機中"; statusClass = "flight";
-          } else {
-            status = "點貨中"; statusClass = "checking";
+            content.appendChild(cards);
           }
-        }
-
-        let price = "";
-        let linkUrl = "https://lin.ee/X6FUFI9";
-
-        if (p["售價"] === "-") {
-          price = "組合出售";
-          linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
-        } else if (!p["售價"]) {
-          price = "私訊花花";
-          linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
-        } else {
-          price = p["售價"];
-          linkUrl = null;
-        }
-
-        let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
-
-        const product = document.createElement(linkUrl ? "a" : "div");
-        product.className = "product";
-        if (linkUrl) {
-          product.href = linkUrl;
-          product.target = "_blank";
-          product.rel = "noopener";
-        }
-
-        product.innerHTML = `
-          <img src="${imageUrl}" alt="">
-          ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
-          <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
-          <div class="price">${price}</div>
-        `;
-        productGrid.appendChild(product);
+        });
+      })
+      .catch(err => {
+        console.error("載入試算表資料失敗", err);
+        document.getElementById("content").innerHTML = "<p>資料載入失敗，請稍後再試。</p>";
       });
-
-      categoryBlock.appendChild(productGrid);
-      container.appendChild(categoryBlock);
-    });
-  })
-  .catch(err => {
-    container.innerHTML = "載入資料失敗";
-    console.error(err);
-  });
-</script>
+  </script>
 </body>
 </html>
