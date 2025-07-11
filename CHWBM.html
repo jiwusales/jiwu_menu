@@ -219,11 +219,9 @@ function loadSheetData() {
         up: row.c[8]?.v
       }))
       .filter(item => 
-  item.role.includes(keyword) && 
-  item.up !== "x" && 
-  item.stock !== "x" && 
-  item.up != null && 
-  item.stock != null
+  item.role.includes(keyword) &&
+  item.up !== "x" &&
+  item.stock !== "x"
 );
       renderCards(items, currentRole);
     })
