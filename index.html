@@ -3,410 +3,291 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物販售</title>
-
-  <!-- 分頁小圖（favicon）-->
+  <title>JIWU吉物販售．寶寶目錄</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-
-  <!-- 桌面/手機主畫面捷徑圖示 -->
-  <link rel="apple-touch-icon" href="https://i.postimg.cc/Hs75qNjR/icon026.png" />
-  <meta name="theme-color" content="#dac7b7" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  
   <style>
-    /* 按鈕樣式 */
-    .control-btn {
-      position: fixed;
-      top: 20px;
-      left: 10px;
-      width: 45px;
-      height: 45px;
-      border: none;
-      border-radius: 50%;
-      background-color: #E7D4C0;
-      opacity: 0.5;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      transition: opacity 0.2s, transform 0.2s;
-      padding: 0;
-    }
-    .control-btn img {
-      width: 60%;
-      height: 60%;
-      pointer-events: none;
-      user-select: none;
-    }
-    .control-btn:hover {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
-
-    /* 頁面基礎樣式 */
+    :root { --theme-color: #d77485; }
     body {
+      font-family: "Noto Sans TC", Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      color: #333333;
-      background: #fff;
+      background: #f9f9f9;
+      color: #333;
     }
-
-    .logo-container {
+    .top-bar {
+      background: var(--theme-color);
+      color: #fff;
       text-align: center;
-      margin: 20px 0;
-    }
-
-    .logo-container img {
-      width: 160px; 
-      height: auto;
-    }
-
-    /* 輪播容器，正方形 */
-    .carousel {
-      position: relative;
-      width: 90%;
-      max-width: 600px;
-      aspect-ratio: 1 / 1; /* 正方形 */
-      margin: 0 auto 15px auto;
-      overflow: hidden;
-      border-radius: 8px;
-      background: #eee;
-    }
-
-    /* 輪播圖片，絕對定位，隱藏非當前 */
-    .carousel img {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      padding: 12px 10px;
+      font-weight: 700;
+      user-select: none;
+      animation: bounce 1.2s ease-in-out infinite alternate;
+      position: sticky;
       top: 0;
-      left: 0;
-      display: none;
-      user-select: none;
+      z-index: 9999;
     }
-    .carousel img.active {
-      display: block;
-    }
-
-    /* 輪播按鈕 */
-    .carousel-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: rgba(0,0,0,0.3);
-      border: none;
-      color: white;
-      font-size: 24px;
-      padding: 10px 14px;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 4px;
-      z-index: 10;
-    }
-    .carousel-button.prev {
-      left: 10px;
-    }
-    .carousel-button.next {
-      right: 10px;
-    }
-
-    /* 輪播下方文字區 */
-    #carousel-caption {
-      max-width: 600px;
-      margin: 0 auto 30px auto;
-      text-align: center;
-      color: #333333;
-      font-size: 1em;
-      user-select: none;
-    }
-
-    /* 分隔塊 */
-    .section-divider {
-      width: 100%;
-      padding: 12px 0;
-      font-weight: bold;
-      font-size: 1.2em;
-      text-align: center;
-    }
-
-    .divider-1, .divider-2 {
-      background-color: #dac7b7;
-      color: #ffffff;
-    }
-
-    .divider-3 {
-      background-color: #F9F6F0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      padding: 15px 0;
-    }
-
-    /* 角色目錄按鈕區 */
-    .role-buttons {
-      max-width: 960px;
-      margin: 20px auto 40px auto;
-      padding: 0 10px;
-    }
-
-    .role-buttons .row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px; /* 間距改成 8px */
-      margin-bottom: 10px;
-    }
-
-    .role-buttons .item {
-      width: 80px;
-      text-align: center;
-    }
-
-    /* 日本IP角色放大1.5倍 */
-    .role-buttons.japan-ip .item {
-      width: 120px; /* 80*1.5 */
-    }
-    .role-buttons.japan-ip .item img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      transition: transform 0.3s ease;
-    }
-    .role-buttons.japan-ip .item span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
-      margin-top: 4px;
-      font-size: 0.85em;
-    }
-
-    .role-buttons .item img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      transition: transform 0.3s ease;
-    }
-
-    .role-buttons .item:hover img {
-      transform: scale(1.1);
-    }
-
-    .role-buttons .item span {
-      display: block;
-      margin-top: 4px;
-      font-size: 0.85em;
-    }
-
-    /* 連結樣式調整，避免看起來像超連結 */
-    .role-buttons a {
-      color: #333333;
+    .top-bar a {
+      color: #fff;
       text-decoration: none;
-      cursor: pointer;
     }
-    .role-buttons a:hover {
-      color: #555555;
-      text-decoration: underline;
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
     }
-
-    .separator {
-      border-top: 1px solid #ccc;
-      margin: 20px 0;
-    }
-
-    /* 社群平台小圖示 */
-    .social-links a img {
-      width: 40px;
-      height: auto;
-      user-select: none;
-    }
-
-    footer {
+    h1 {
       text-align: center;
-      padding: 20px 10px;
-      font-size: 1em;
-      color: #333333;
+      margin: 20px 0 10px;
+      font-weight: 700;
+    }
+    .section-title {
+      background: var(--theme-color);
+      color: #fff;
+      font-weight: 700;
+      padding: 6px 12px;
+      margin: 20px 10px 8px;
+      border-radius: 6px;
       user-select: none;
+      font-size: 1.1em;
+    }
+    .type-divider {
+      display: flex;
+      align-items: center;
+      margin: 14px 0 8px;
+      color: #666;
+      user-select: none;
+      font-weight: 600;
+      font-size: 0.95em;
+    }
+    .type-divider::before,
+    .type-divider::after {
+      content: "";
+      flex: 1;
+      border-top: 1px solid #ccc;
+      margin: 0 10px;
+    }
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 0 10px 20px;
+      justify-items: center;
+    }
+    .card {
+      border: 2px solid var(--theme-color);
+      border-radius: 8px;
+      background: #fff;
+      width: 150px;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 8px 6px;
+      user-select: none;
+      cursor: default;
+      transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 4px 10px rgba(215, 116, 133, 0.6);
+    }
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 6px;
+      user-select: none;
+    }
+    .card .name {
+      font-weight: 700;
+      margin: 8px 0 4px;
+      font-size: 1em;
+      color: #333;
+    }
+    .card .price {
+      color: var(--theme-color);
+      font-weight: 600;
+      font-size: 0.9em;
+      margin-bottom: 4px;
+    }
+    .card .stock {
+      font-size: 0.85em;
+      margin-bottom: 4px;
     }
   </style>
 </head>
 <body>
-
-<!-- LOGO -->
-<div class="logo-container">
-  <img src="https://i.postimg.cc/CLBFxHs3/logo-banner.png" alt="LOGO" />
-</div>
-
-<!-- 輪播 -->
-<div class="carousel" aria-label="輪播圖片">
-  <button class="carousel-button prev" aria-label="上一張">&#10094;</button>
-  <button class="carousel-button next" aria-label="下一張">&#10095;</button>
-  <!-- 圖片會由 JS 動態產生 -->
-</div>
-<div id="carousel-caption" aria-live="polite"></div>
-
-<!-- 分隔塊 1 -->
-<div class="section-divider divider-1">JIWU寶寶目錄 ᯓ★ 吉伊卡哇</div>
-
-<!-- 角色目錄 1 -->
-<div class="role-buttons">
-  <div class="row">
-    <div class="item"><a href="chiikawa.html?role=吉伊"><img src="https://i.postimg.cc/ncqjRJ9S/icon001.png" alt="吉伊" /><span>吉伊</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=小八"><img src="https://i.postimg.cc/Ss5kqJ3L/icon002.png" alt="小八" /><span>小八</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=兔兔"><img src="https://i.postimg.cc/QdbBDJbp/icon003.png" alt="兔兔" /><span>兔兔</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=小桃"><img src="https://i.postimg.cc/3NmRcXN0/icon004.png" alt="小桃" /><span>小桃</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=師傅"><img src="https://i.postimg.cc/y8vNtY1j/icon005.png" alt="師傅" /><span>師傅</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=栗子"><img src="https://i.postimg.cc/mD0kjXLG/icon006.png" alt="栗子" /><span>栗子</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=獅薩"><img src="https://i.postimg.cc/Ghn9s5gF/icon007.png" alt="獅薩" /><span>獅薩</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=古本"><img src="https://i.postimg.cc/2jsL76yB/icon008.png" alt="古本" /><span>古本</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=其他角色"><img src="https://i.postimg.cc/PqVPpf0J/icon009.png" alt="其他角色" /><span>其他角色</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=仙境"><img src="https://i.postimg.cc/KjMFYmh6/icon010.png" alt="仙境" /><span>仙境</span></a></div>
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer">訂購這邊找花花 (৹˙꒳˙ฅ)</a>
   </div>
-  <div class="separator"></div>
-  <div class="row">
-    <div class="item"><a href="chiikawa.html?role=貼紙膠帶"><img src="https://i.postimg.cc/bYtsrhgY/icon011.png" alt="貼紙膠帶" /><span>貼紙膠帶</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=文具磁鐵"><img src="https://i.postimg.cc/NLvt9Zg5/icon012.png" alt="文具磁鐵" /><span>文具磁鐵</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=立牌徽章"><img src="https://i.postimg.cc/c1g83YxS/icon013.png" alt="立牌徽章" /><span>立牌徽章</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=鑰匙圈御守"><img src="https://i.postimg.cc/GptpCw9C/icon014.png" alt="鑰匙圈御守" /><span>鑰匙圈御守</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=玩具盲抽"><img src="https://i.postimg.cc/ydWswFQY/icon015.png" alt="玩具盲抽" /><span>玩具盲抽</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=服裝包袋"><img src="https://i.postimg.cc/rwcd7PSV/icon016.png" alt="服裝包袋" /><span>服裝包袋</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=生活居家"><img src="https://i.postimg.cc/1z383VCb/icon017.png" alt="生活居家" /><span>生活居家</span></a></div>
-    <div class="item"><a href="chiikawa.html?role=餐廚用品"><img src="https://i.postimg.cc/g2YJg6Wr/icon018.png" alt="餐廚用品" /><span>餐廚用品</span></a></div>
-  </div>
-</div>
+  <h1>JIWU吉物販售．ちいかわ</h1>
 
-<!-- 分隔塊 2 -->
-<div class="section-divider divider-2">JIWU寶寶目錄 ᯓ★ 日本IP角色</div>
+  <main id="content">資料載入中...</main>
 
-<!-- 角色目錄 2 (加 class "japan-ip" 讓圖片放大 1.5 倍) -->
-<div class="role-buttons japan-ip">
-  <div class="row">
-    <div class="item"><a href="nagano.html?role=自嘲熊"><img src="https://i.postimg.cc/hP8v81NH/icon019.png" /><span>自嘲熊</span></a></div>
-    <div class="item"><a href="wbtiger.html?role=小白虎"><img src="https://i.postimg.cc/sXB1pdRc/icon020.png" /><span>小白虎與黑虎蝦</span></a></div>
-  </div>
-</div>
+  <script>
+  const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzw94VfqF8IsXRvpKMY";
+  const SHEET_NAME = "ちいかわ";
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-<!-- 分隔塊 3：社群平台 -->
-<div class="section-divider divider-3 social-links">
-  <a href="https://www.facebook.com/jiwusales" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" alt="Facebook" /></a>
-  <a href="https://www.instagram.com/jiwu_sales/" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" alt="Instagram" /></a>
-  <a href="https://www.threads.com/@jiwu_sales" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/brcYkZgy/icon023.png" alt="Threads" /></a>
-  <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" alt="LINE" /></a>
-</div>
+  // 角色關鍵字對應表
+  const roleMap = {
+    "吉伊": "吉",
+    "小八": "八",
+    "兔兔": "兔",
+    "小桃": "桃",
+    "師傅": "獺",
+    "栗子": "栗",
+    "獅薩": "獅",
+    "古本": "古",
+    "其他角色": "其"
+  };
 
-<!-- Footer -->
-<footer>
-  台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
-</footer>
+  // 分隔群組設定
+  const categoryGroups = {
+    "吊娃娃": ["吊娃", "娃"],
+    "包包": ["包包"],
+    "鑰匙圈御守": ["鑰匙圈", "御守"],
+    "立牌徽章磁鐵玩具": ["立牌", "徽章", "磁鐵", "玩具"],
+    "文具貼紙": ["文具", "貼紙"],
+    "生活居家": ["3C", "居家", "毛巾"],
+    "飾品衣服": ["飾品", "衣服"],
+    "餐廚用品": ["餐廚"]
+  };
 
-<!--  重新整理 按鈕 -->
-<button id="refreshBtn" class="control-btn" onclick="location.reload()" aria-label="重新整理" title="重新整理">
-  <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
-</button>
+  // 角色與種類顏色
+  const colorMap = {
+    "吉伊": "#d77485",
+    "小八": "#6293b8",
+    "兔兔": "#f9be3c",
+    "小桃": "#838BC2",
+    "師傅": "#CCAFA5",
+    "栗子": "#94C973",
+    "獅薩": "#FBAA60",
+    "古本": "#eb9e97",
+    "其他角色": "#45818e",
+    "貼紙膠帶": "#F8C0C8",
+    "文具磁鐵": "#BAD3E4",
+    "立牌徽章磁鐵玩具": "#d5a6bd",
+    "鑰匙圈御守": "#7E9DC2",
+    "玩具盲抽": "#90ADC6",
+    "服飾包袋": "#b4a7d6",
+    "生活居家": "#98D7C2",
+    "餐廚用品": "#F1A17E",
+    "仙境": "#985859"
+  };
 
-<script>
-(async function() {
-  const carousel = document.querySelector('.carousel');
-  const prev = carousel.querySelector('.prev');
-  const next = carousel.querySelector('.next');
-  const caption = document.getElementById('carousel-caption');
+  fetch(url)
+    .then(res => res.text())
+    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
+    .then(data => {
+      const rows = data.table.rows.slice(1);
 
-  const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
-  const SHEET_NAME = '輪播'; //
-  const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+      const items = rows.map(row => {
+        const c = row.c;
+        return {
+          type: c[1]?.v || "",
+          name: c[2]?.v || "",
+          role: c[0]?.v || "",
+          price: c[4]?.v || "",
+          stock: c[5]?.v || "",
+          nonStock: c[6]?.v || "",
+          onShelf: c[7]?.v || "",
+          acceptOrder: c[8]?.v || "",
+          img: c[10]?.v || "",
+        };
+      });
 
-  async function fetchSheetData() {
-    const res = await fetch(API_URL);
-    const text = await res.text();
-    const json = JSON.parse(text.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
-    return json.table.rows;
-  }
+      const groupedByRole = {};
+      Object.keys(roleMap).forEach(key => groupedByRole[key] = []);
 
-  function buildCarouselItems(rows) {
-    const images = [];
-    const captions = [];
+      items.forEach(item => {
+        if (item.onShelf && item.onShelf.toLowerCase() === "x") return;
 
-    rows.forEach(row => {
-      const onShelf = row.c[0]?.v?.toString().trim();
-      if (onShelf?.toLowerCase() === 'x') return;
+        let matched = false;
+        for (const [roleName, keyword] of Object.entries(roleMap)) {
+          if (item.role.includes(keyword)) {
+            groupedByRole[roleName].push(item);
+            matched = true;
+            break;
+          }
+        }
+        if (!matched && item.role.includes("其")) {
+          groupedByRole["其他角色"].push(item);
+        }
+      });
 
-      const imgUrl = row.c[1]?.v;
-      const text = row.c[2]?.v || '';
+      const content = document.getElementById("content");
+      content.innerHTML = "";
 
-      if (imgUrl) {
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = text || '輪播圖片';
-        img.classList.add('carousel-dynamic');
-        img.style.display = 'none';
-        carousel.appendChild(img);
-        images.push(img);
-        captions.push(text);
+      for (const roleName of Object.keys(roleMap)) {
+        const items = groupedByRole[roleName];
+        if (!items || items.length === 0) continue;
+
+        const sectionTitle = document.createElement("div");
+        sectionTitle.className = "section-title";
+        sectionTitle.textContent = roleName;
+        sectionTitle.style.backgroundColor = colorMap[roleName] || "#d77485";
+        content.appendChild(sectionTitle);
+
+        const typeGroups = {};
+        Object.keys(categoryGroups).forEach(key => typeGroups[key] = []);
+        typeGroups["其他"] = [];
+
+        items.forEach(item => {
+          let found = false;
+          for (const [groupName, keywords] of Object.entries(categoryGroups)) {
+            if (keywords.some(kw => item.type.includes(kw) || item.name.includes(kw))) {
+              typeGroups[groupName].push(item);
+              found = true;
+              break;
+            }
+          }
+          if (!found) typeGroups["其他"].push(item);
+        });
+
+        for (const groupName of Object.keys(categoryGroups)) {
+          const groupItems = typeGroups[groupName];
+          if (!groupItems || groupItems.length === 0) continue;
+
+          const divider = document.createElement("div");
+          divider.className = "type-divider";
+          divider.textContent = groupName;
+          const c = colorMap[groupName] || "#666";
+          divider.style.color = c;
+          divider.style.borderTopColor = c;
+          content.appendChild(divider);
+
+          const cardContainer = document.createElement("div");
+          cardContainer.className = "card-container";
+
+          groupItems.forEach(item => {
+            let stockHtml = "";
+            if (item.acceptOrder && item.acceptOrder.toLowerCase() === "v") {
+              stockHtml = `<span style="background:#74BDCB;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">受注品</span>`;
+            } else if (item.stock && parseInt(item.stock) > 0) {
+              stockHtml = `<span style="background:#FFF4BD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">現貨</span>`;
+            } else if ((!item.stock || parseInt(item.stock) === 0) && (!item.nonStock || item.nonStock.trim() === "")) {
+              stockHtml = `<span style="background:#D4BBDD;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">需預訂</span>`;
+            } else if ((!item.stock || parseInt(item.stock) === 0) && item.nonStock && item.nonStock.trim() !== "") {
+              stockHtml = `<span style="background:#5885AF;color:#ffffff;padding:2px 8px;border-radius:12px;display:inline-block;">搭飛機中</span>`;
+            } else if (!item.stock || item.stock.trim() === "") {
+              stockHtml = `<span style="background:#E7F2F8;color:#333333;padding:2px 8px;border-radius:12px;display:inline-block;">點貨中</span>`;
+            }
+
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <img src="${item.img || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${item.name}">
+              <div class="stock">${stockHtml}</div>
+              <div class="name">${item.name}</div>
+              <div class="price">${item.price}</div>
+            `;
+            cardContainer.appendChild(card);
+          });
+
+          content.appendChild(cardContainer);
+        }
       }
+    })
+    .catch(e => {
+      document.getElementById("content").innerHTML = "資料載入失敗，請稍後再試。";
+      console.error(e);
     });
-
-    return { images, captions };
-  }
-
-  let currentIndex = 0;
-  let intervalId;
-  let images = [];
-  let captions = [];
-
-  function show(index) {
-    images.forEach((img, i) => {
-      img.style.display = i === index ? 'block' : 'none';
-      img.classList.toggle('active', i === index);
-    });
-    caption.textContent = captions[index] || '';
-    currentIndex = index;
-  }
-
-  function startAutoPlay() {
-    intervalId = setInterval(() => {
-      show((currentIndex + 1) % images.length);
-    }, 4500);
-  }
-
-  function stopAutoPlay() {
-    clearInterval(intervalId);
-  }
-
-  prev.addEventListener('click', () => {
-    stopAutoPlay();
-    show((currentIndex - 1 + images.length) % images.length);
-    startAutoPlay();
-  });
-
-  next.addEventListener('click', () => {
-    stopAutoPlay();
-    show((currentIndex + 1) % images.length);
-    startAutoPlay();
-  });
-
-  try {
-    const rows = await fetchSheetData();
-    const result = buildCarouselItems(rows.slice(1));
-    images = result.images;
-    captions = result.captions;
-    if (images.length > 0) {
-      show(0);
-      startAutoPlay();
-    } else {
-      caption.textContent = '沒有可顯示的輪播圖片';
-    }
-  } catch (e) {
-    console.error('輪播載入失敗', e);
-    caption.textContent = '輪播載入失敗';
-  }
-})();
-</script>
-
+  </script>
 </body>
 </html>
