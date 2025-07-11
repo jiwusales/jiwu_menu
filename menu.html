@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>JIWU寶寶目錄</title>
+
+<!-- 分頁小圖（favicon）-->
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+  
 <style>
   /* 🌟 全域變數：角色色 */
   :root {
@@ -19,7 +23,7 @@
     background-size: 135px;
     margin: 0;
     padding: 0;
-    color: #333;
+    color: #333333;
     text-align: center;
   }
 
@@ -197,6 +201,17 @@
       color: #333;
     }
   }
+  .category-block {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  justify-items: center;
+}
 </style>
 </head>
 <body>
@@ -324,61 +339,71 @@
         const items = categorizedProducts[cat.label];
         if (items.length === 0) return;
 
-        const divider = document.createElement("div");
-        divider.className = "type-divider";
-        divider.textContent = cat.label;
-        container.appendChild(divider);
+        const categoryBlock = document.createElement("div");
+categoryBlock.className = "category-block";
 
-        items.forEach(p => {
-          let status = "";
-          let statusClass = "";
+const divider = document.createElement("div");
+divider.className = "type-divider";
+divider.textContent = cat.label;
+categoryBlock.appendChild(divider);
 
-          if (isChiiKawa) {
-            if ((p["受注"] || "").toLowerCase().includes("v")) {
-              status = "受注品"; statusClass = "made";
-            } else if (parseInt(p["庫存"]) > 0) {
-              status = "現貨"; statusClass = "instock";
-            } else if (p["庫存"] === "0" && !p["非現"]) {
-              status = "需預訂"; statusClass = "preorder";
-            } else if (p["庫存"] === "0" && p["非現"]) {
-              status = "搭飛機中"; statusClass = "flight";
-            } else {
-              status = "點貨中"; statusClass = "checking";
-            }
-          }
+const productGrid = document.createElement("div");
+productGrid.className = "product-grid";
 
-          let price = "";
-          let linkUrl = "https://lin.ee/X6FUFI9";
+items.forEach(p => {
+  let status = "";
+  let statusClass = "";
 
-          if (p["售價"] === "-") {
-            price = "組合出售";
-            linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
-          } else if (!p["售價"]) {
-            price = "私訊花花";
-            linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
-          } else {
-            price = p["售價"];
-            linkUrl = null;
-          }
+  if (isChiiKawa) {
+    if ((p["受注"] || "").toLowerCase().includes("v")) {
+      status = "受注品"; statusClass = "made";
+    } else if (parseInt(p["庫存"]) > 0) {
+      status = "現貨"; statusClass = "instock";
+    } else if (p["庫存"] === "0" && !p["非現"]) {
+      status = "需預訂"; statusClass = "preorder";
+    } else if (p["庫存"] === "0" && p["非現"]) {
+      status = "搭飛機中"; statusClass = "flight";
+    } else {
+      status = "點貨中"; statusClass = "checking";
+    }
+  }
 
-          let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
+  let price = "";
+  let linkUrl = "https://lin.ee/X6FUFI9";
 
-          const product = document.createElement(linkUrl ? "a" : "div");
-          product.className = "product";
-          if (linkUrl) {
-            product.href = linkUrl;
-            product.target = "_blank";
-            product.rel = "noopener";
-          }
+  if (p["售價"] === "-") {
+    price = "組合出售";
+    linkUrl += `?text=組合出售%20${encodeURIComponent(p["名稱"])}`;
+  } else if (!p["售價"]) {
+    price = "私訊花花";
+    linkUrl += `?text=私訊花花%20${encodeURIComponent(p["名稱"])}`;
+  } else {
+    price = p["售價"];
+    linkUrl = null;
+  }
 
-          product.innerHTML = `
-            <img src="${imageUrl}" alt="">
-            ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
-            <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
-            <div class="price">${price}</div>
-          `;
-          container.appendChild(product);
-        });
+  let imageUrl = p["圖片"]?.trim() || "https://i.postimg.cc/XJSn6Jx1/image.png";
+
+  const product = document.createElement(linkUrl ? "a" : "div");
+  product.className = "product";
+  if (linkUrl) {
+    product.href = linkUrl;
+    product.target = "_blank";
+    product.rel = "noopener";
+  }
+
+  product.innerHTML = `
+    <img src="${imageUrl}" alt="">
+    ${status ? `<div class="status ${statusClass}">${status}</div>` : ""}
+    <div class="name" title="${p["名稱"]}">${p["名稱"]}</div>
+    <div class="price">${price}</div>
+  `;
+  productGrid.appendChild(product);
+});
+
+categoryBlock.appendChild(productGrid);
+container.appendChild(categoryBlock);
+});
       });
     })
     .catch(err => {
