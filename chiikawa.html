@@ -184,15 +184,15 @@
 
     // 從網址參數取得角色，預設吉伊
     function getCurrentRole() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const role = urlParams.get("role");
-  if (role && ROLE_MAP[role]) return role;
-  return "吉伊";
-}
+      const urlParams = new URLSearchParams(window.location.search);
+      for (const role in ROLE_MAP) {
+        if (urlParams.has(role)) return role;
+      }
+      return "吉伊";
+    }
+    const CURRENT_ROLE = getCurrentRole();
+    document.documentElement.style.setProperty('--tab-color', COLORS[CURRENT_ROLE]);
 
-const CURRENT_ROLE = getCurrentRole();
-document.documentElement.style.setProperty('--tab-color', COLORS[CURRENT_ROLE]);
-    
     // 判斷貨況狀態
     function getStatus(item) {
       if (item.preorder && item.preorder.toLowerCase() === "v")
