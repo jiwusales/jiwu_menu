@@ -250,36 +250,36 @@ function renderCards(items, roleName) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-    grouped[category].forEach(item => {
-      const status = getStatus(item);
-      // 角色欄單字判斷：只有1個字顯示原字，否則顯示綜
-      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+   grouped[category].forEach(item => {
+  const status = getStatus(item);
+  // 角色欄單字判斷：只有1個字顯示原字，否則顯示綜
+  const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
 
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+  const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
-      // 吊娃、娃類不顯示右上角角色圓圈標籤
-      const showRoleBadge = !(category === "吊娃、娃");
+  // 吊娃、娃類不顯示右上角角色圓圈標籤
+  const showRoleBadge = !(category === "吊娃、娃");
 
-      const cardHTML = `
-        ${showRoleBadge ? `<div class="role-badge">${roleText}</div>` : ""}
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${item.name}</div>
-        <div class="price">${formatPrice(item.price)}</div>
-      `;
+  const cardHTML = `
+    ${showRoleBadge ? `<div class="role-badge">${roleText}</div>` : ""}
+    <img src="${item.img}" alt="${item.name}">
+    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+    <div class="name">${item.name}</div>
+    <div class="price">${formatPrice(item.price)}</div>
+  `;
 
-      const wrapper = document.createElement(link ? "a" : "div");
-      wrapper.className = "card";
-      if (link) {
-        wrapper.href = link;
-        wrapper.target = "_blank";
-      }
-      wrapper.innerHTML = cardHTML;
+  const wrapper = document.createElement(link ? "a" : "div");
+  wrapper.className = "card";
+  if (link) {
+    wrapper.href = link;
+    wrapper.target = "_blank";
+  }
+  wrapper.innerHTML = cardHTML;
 
-      groupDiv.appendChild(wrapper);
-    });
+  groupDiv.appendChild(wrapper);
+});
 
     container.appendChild(groupDiv);
   });
