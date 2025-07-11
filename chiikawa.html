@@ -266,7 +266,7 @@ function renderCards(items, roleName) {
       sortedItems = grouped[category];
     } else {
       // 其他類別 → 名稱開頭分群排序
-      sortedItems = grouped[category].slice().sort((a, b) => {
+        grouped[category].sort((a, b) => a.name.substring(0, 2).localeCompare(b.name.substring(0, 2)));
         const aKey = a.name.substring(0, 2);
         const bKey = b.name.substring(0, 2);
         return aKey.localeCompare(bKey, 'zh-Hant');
