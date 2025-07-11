@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物販售．寶寶目錄</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-    <style>
+  <style>
     :root { --theme-color: #d77485; }
     body {
       font-family: "Noto Sans TC", Arial, sans-serif;
@@ -132,6 +132,14 @@
   <main id="content">資料載入中...</main>
 
   <script>
+    // 讀取 URL 中 ?role=xxx
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    const selectedRole = getQueryParam('role');
+
     const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
     const SHEET_NAME = "ちいかわ";
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
@@ -193,12 +201,25 @@
           };
         });
 
+        // 根據 selectedRole 篩選商品
+        let filteredItems;
+        if (selectedRole && roleMap[selectedRole]) {
+          const key = roleMap[selectedRole];
+          filteredItems = items.filter(item => item.role.includes(key));
+        } else if (selectedRole === "仙境") {
+          filteredItems = items.filter(item => item.name.includes("仙境"));
+        } else if (selectedRole) {
+          filteredItems = items.filter(item => item.type.includes(selectedRole) || item.name.includes(selectedRole));
+        } else {
+          filteredItems = items;
+        }
+
         // 分類結果初始化
         const grouped = { "仙境": [] };
         Object.keys(roleMap).forEach(r => grouped[r] = []);
         grouped["其他角色"] = [];
 
-        items.forEach(item => {
+        filteredItems.forEach(item => {
           if (item.name.includes("仙境")) {
             grouped["仙境"].push(item);
             return;
@@ -209,7 +230,6 @@
               return;
             }
           }
-          // 角色判斷不到放「其他角色」
           grouped["其他角色"].push(item);
         });
 
