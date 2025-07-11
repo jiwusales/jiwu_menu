@@ -261,17 +261,17 @@ function renderCards(items, roleName) {
 
     // 🚨 排序邏輯
     let sortedItems;
-    if (category === "吊娃、娃") {
-      // 吊娃、娃類 → 原順序
-      sortedItems = grouped[category];
-    } else {
-      // 其他類別 → 名稱開頭分群排序
-        grouped[category].sort((a, b) => a.name.substring(0, 2).localeCompare(b.name.substring(0, 2)));
-        const aKey = a.name.substring(0, 2);
-        const bKey = b.name.substring(0, 2);
-        return aKey.localeCompare(bKey, 'zh-Hant');
-      });
-    }
+if (category === "吊娃、娃") {
+  // 吊娃、娃類 → 原順序
+  sortedItems = grouped[category];
+} else {
+  // 其他類別 → 名稱開頭分群排序（正確語法）
+  sortedItems = grouped[category].sort((a, b) => {
+    const aKey = a.name.substring(0, 2);
+    const bKey = b.name.substring(0, 2);
+    return aKey.localeCompare(bKey, 'zh-Hant');
+  });
+}
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
