@@ -90,10 +90,7 @@
       color: #333333;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-    }
+
     .card img {
       width: 80px;
       margin-top: 5px;
@@ -281,11 +278,15 @@ function renderCards(items, roleName) {
 
   const wrapper = document.createElement(link ? "a" : "div");
   wrapper.className = "card";
-  if (link) {
-    wrapper.href = link;
-    wrapper.target = "_blank";
-  }
-  wrapper.innerHTML = cardHTML;
+
+// 設定卡片外框顏色為角色顏色
+wrapper.style.borderColor = colors[roleName] || "#ccc";
+
+if (link) {
+  wrapper.href = link;
+  wrapper.target = "_blank";
+}
+wrapper.innerHTML = cardHTML;
 
   groupDiv.appendChild(wrapper);
 });
