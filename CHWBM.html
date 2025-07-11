@@ -305,49 +305,49 @@ function formatPrice(price) {
 }
 
 function getStatus(item) {
-  const stock = item.stock?.toString().trim().toLowerCase();
-  const notStock = item.notStock?.toString().trim();
-  const preorder = item.preorder?.toString().trim().toLowerCase();
-  const up = item.up?.toString().trim().toLowerCase();
+  const stock = (item.stock ?? "").toString().trim().toLowerCase();
+  const notStock = (item.notStock ?? "").toString().trim();
+  const preorder = (item.preorder ?? "").toString().trim().toLowerCase();
+  const up = (item.up ?? "").toString().trim();
 
-  // 1. 不上架條件：上架欄有任何字元 → 不顯示
-  if (up && up !== "") {
+  // 1. 不上架：只要「上架」欄有任何字元
+  if (up !== "") {
     return null;
   }
 
-  // 2. 受注品（受注欄有任何字元）
-  if (preorder && preorder !== "") {
+  // 2. 受注品：只要「受注」欄有任何字元
+  if (preorder !== "") {
     return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
   }
 
-  // 3. 庫存是 "x" 也算不上架，所以不顯示
+  // 3. 庫存為 x（或其他非數字字元）視為不上架
   if (stock === "x") {
     return null;
   }
 
-  // 4. 現貨：純數字且 > 0
+  // 4. 現貨：庫存是純數字且大於 0
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // 5. 需預訂：庫存=0且非現貨標示
-  if (stock === "0" && (!notStock || notStock === "")) {
+  // 5. 需預訂：庫存為 0 且非現貨備註為空
+  if (stock === "0" && notStock === "") {
     return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
   }
 
-  // 6. 搭飛機中：庫存=0且有非現貨備註
-  if (stock === "0" && notStock && notStock !== "") {
+  // 6. 搭飛機中：庫存為 0 且有非現貨備註
+  if (stock === "0" && notStock !== "") {
     return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
-  // 7. 點貨中：庫存為空且非現貨非受注
-  if ((!stock || stock === "") && (!notStock || notStock === "") && (!preorder || preorder === "")) {
+  // 7. 點貨中：庫存空白，且非現貨備註和受注欄也空白
+  if (stock === "" && notStock === "" && preorder === "") {
     return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   }
 
+  // 8. 其餘狀況預設為點貨中
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
-
 
 loadSheetData();
 
