@@ -76,7 +76,7 @@
     max-width: 50%;
   }
 
-  /* 🌟 商品卡樣式 */
+  /* 🌟 單一商品卡樣式 */
   .product {
     width: 100%;
     border: 2px solid #ccc;
@@ -92,6 +92,7 @@
     transition: none;
   }
 
+  /* 🌟 商品圖片樣式 */
   .product img {
     width: 100%;
     height: auto;
@@ -99,7 +100,7 @@
     margin-bottom: 4px;
   }
 
-  /* 🌟 貨況樣式：橢圓底色＋左右12px間距 */
+  /* 🌟 貨況標籤樣式 */
   .status {
     font-size: 10px;
     padding: 2px 12px;
@@ -113,9 +114,9 @@
   .status.preorder { background-color: #D4BBDD; color: #333333; }
   .status.made { background-color: #74BDCB; color: #ffffff; }
   .status.flight { background-color: #5885AF; color: #ffffff; }
-  .status.checking { background-color: #E7F2F8; color: #ffffff; }
+  .status.checking { background-color: #E7F2F8; color: #333333; }
 
-  /* 🌟 名稱與價格 */
+  /* 🌟 商品名稱與售價 */
   .name, .price {
     font-size: 12px;
     height: 24px;
@@ -133,7 +134,7 @@
     font-weight: bold;
   }
 
-  /* 🌟 底部bar樣式 */
+  /* 🌟 底部固定 bar 樣式 */
   .bottom-bar {
     background-color: var(--role-color);
     color: #fff;
@@ -199,14 +200,17 @@
 </style>
 </head>
 <body>
-<header class="top-bar" id="header-text">
+  
+  <!-- 🌟 頂部連結欄 -->
+    <header class="top-bar" id="header-text">
     <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener">訂購這邊找花花 (৹˙꒳˙ฅ) </a>
-</header>
-
-<main id="product-list">載入中...</main>
+    </header>
+  
+  <!-- 🌟 商品列表主容器 -->
+  <main id="product-list">載入中...</main>
 
 <script>
-  /* 🌟 角色配置 */
+  /* 🌟 角色配置：定義角色色與關鍵字 */
   const roleConfig = {
     "吉伊": { field: "角色", keywords: ["吉"], color: "#d77485" },
     "小八": { field: "角色", keywords: ["八"], color: "#6293b8" },
@@ -231,7 +235,7 @@
     "カナヘラ": { field: null, keywords: [], color: "#a58b7e" }
   };
 
-  /* 🌟 分類順序 */
+  /* 🌟 分類順序配置 */
   const categoryOrder = [
     { label: "吊娃、娃", keywords: ["吊娃", "娃"] },
     { label: "包包", keywords: ["包"] },
@@ -243,7 +247,7 @@
     { label: "餐廚", keywords: ["餐廚"] }
   ];
 
-  /* 🌟 資料來源 Google Sheets */
+  /* 🌟 Google Sheets API 設定 */
   const spreadsheetId = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 
   const sheetURLs = {
@@ -270,18 +274,17 @@
     "カナヘラ": `https://opensheet.elk.sh/${spreadsheetId}/カナヘラ`
   };
 
-  /* 🌟 取得當前角色配置 */
+  /* 🌟 Google Sheets API 設定 */
   const roleParam = new URLSearchParams(location.search).get("role") || "吉伊";
   const config = roleConfig[roleParam] || { field: null, keywords: [], color: "#ccc" };
   const sheetURL = sheetURLs[roleParam] || sheetURLs["吉伊"];
 
-  /* 🌟 套用角色顏色 */
   document.documentElement.style.setProperty('--role-color', config.color);
 
   const container = document.getElementById("product-list");
   container.innerHTML = "載入中...";
 
-  /* 🌟 載入資料並分類 */
+  /* 🌟 載入資料並分類渲染商品 */
   fetch(sheetURL)
     .then(res => {
       if (!res.ok) throw new Error("HTTP error " + res.status);
