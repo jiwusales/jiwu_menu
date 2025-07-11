@@ -308,23 +308,22 @@ container.innerHTML = "載入中...";
     return res.json();
   })
   .then(data => {
-    console.log("Raw data:", data);
+  console.log("Raw data:", data);
 
-    const filtered = data.filter(row => {
-      const filtered = data.filter(row => {
-  if (row["上架"] === "x") return false;
-  // 修改判斷：如果 config.field 不存在或關鍵字是空的，全部放行
-  if (!config.field || config.keywords.length === 0) return true;
-  // 有設定條件才比對
-  return config.keywords.some(k => (row[config.field] || "").includes(k));
-});
+  const filtered = data.filter(row => {
+    if (row["上架"] === "x") return false;
+    // 修改判斷：如果 config.field 不存在或關鍵字是空的，全部放行
+    if (!config.field || config.keywords.length === 0) return true;
+    // 有設定條件才比對
+    return config.keywords.some(k => (row[config.field] || "").includes(k));
+  });
 
-    console.log("Filtered data:", filtered);
+  console.log("Filtered data:", filtered);
 
-    if (filtered.length === 0) {
-      container.innerHTML = "找不到符合條件的商品";
-      return;
-    }
+  if (filtered.length === 0) {
+    container.innerHTML = "找不到符合條件的商品";
+    return;
+  }
 
     const categorizedProducts = {};
     categoryOrder.forEach(cat => categorizedProducts[cat.label] = []);
