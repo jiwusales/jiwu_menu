@@ -268,6 +268,7 @@ if (category === "吊娃、娃") {
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
+  if (!status) return; // ❌ 不顯示卡片（如 x 狀況）
       const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
       const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
@@ -308,31 +309,37 @@ function formatPrice(price) {
 }
 
 function getStatus(item) {
-  const stock = item.stock?.toString().trim();
+  const stock = item.stock?.toString().trim().toLowerCase();
   const notStock = item.notStock?.toString().trim();
   const preorder = item.preorder?.toString().trim().toLowerCase();
+  const up = item.up?.toString().trim().toLowerCase();
 
-  // 1. 受注品
+  // ❌ 1. 不上架條件：上架欄或庫存欄為 "x" → 不該產出卡片，回傳 null
+  if (stock === "x" || up === "x") {
+    return null;
+  }
+
+  // ✅ 2. 受注品（最高優先）
   if (preorder === "v") {
     return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
   }
 
-  // 2. 現貨（純數字且 > 0）
+  // ✅ 3. 現貨：純數字且 > 0
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // 3. 需預訂：庫存 = 0 且 非現為空
+  // ✅ 4. 需預訂：庫存 = 0 且 非現為空
   if (stock === "0" && (!notStock || notStock === "")) {
     return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
   }
 
-  // 4. 搭飛機中：庫存 = 0 且 非現有值
+  // ✅ 5. 搭飛機中：庫存 = 0 且 非現有內容
   if (stock === "0" && notStock && notStock !== "") {
     return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
-  // 5. 點貨中：庫存為空，且 非現 和 受注 也都是空
+  // ✅ 6. 點貨中：庫存為空，且 非現 與 受注 也都為空
   if ((!stock || stock === "") && (!notStock || notStock === "") && (!preorder || preorder === "")) {
     return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   }
