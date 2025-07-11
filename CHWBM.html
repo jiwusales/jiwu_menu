@@ -329,9 +329,9 @@ function getStatus(item) {
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
   }
 
-  // 5. ✅ 搭飛機中：非現欄為數字且 > 0
-  if (/^\d+$/.test(notStock) && Number(notStock) > 0) {
-    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
+  // 5. ✅ 搭飛機中：庫存 = 0 且 非現欄為數字且 > 0
+  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0) {
+  return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
   }
 
   // 6. ✅ 全部空白：視為「點貨中」
