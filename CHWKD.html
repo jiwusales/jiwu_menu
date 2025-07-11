@@ -219,43 +219,71 @@ function loadSheetData() {
 }
 
 function renderCards(items, typeName) {
+  // 排除吊娃跟娃
+  items = items.filter(item => item.type !== "吊娃" && item.type !== "娃");
+
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  const groupDiv = document.createElement("div");
-  groupDiv.style.display = "flex";
-  groupDiv.style.flexWrap = "wrap";
-  groupDiv.style.justifyContent = "flex-start";
-  groupDiv.style.gap = "8px";
+  const categoriesOrder = [
+    "包包", "鑰匙圈", "御守", "立牌", "徽章", "磁鐵", "玩具",
+    "文具", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
+  ];
+
+  const grouped = {};
+  categoriesOrder.forEach(cat => grouped[cat] = []);
+  grouped["其他"] = [];
+
+  items.forEach(item => {
+    if (categoriesOrder.includes(item.type)) {
+      grouped[item.type].push(item);
+    } else {
+      grouped["其他"].push(item);
+    }
+  });
 
   const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
-  items.forEach(item => {
-    const status = getStatus(item);
+  categoriesOrder.forEach(category => {
+    if (grouped[category].length === 0) return;
 
-    // 取得角色標籤文字
-    const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-    const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+    const divider = document.createElement("div");
+    divider.className = "type-divider";
+    divider.textContent = category;
+    container.appendChild(divider);
 
-    const badgeColor = roleColors[roleText] || "#ccc";
+    const groupDiv = document.createElement("div");
+    groupDiv.style.display = "flex";
+    groupDiv.style.flexWrap = "wrap";
+    groupDiv.style.justifyContent = "flex-start";
+    groupDiv.style.gap = "8px";
 
-    const cardHTML = `
-      <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
-      <img src="${item.img}" alt="${item.name}">
-      <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-      <div class="name">${item.name}</div>
-      <div class="price">${formatPrice(item.price)}</div>
-    `;
+    grouped[category].sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "card";
-    wrapper.style.borderColor = colors[typeName] || "#ccc";
-    wrapper.innerHTML = cardHTML;
+    grouped[category].forEach(item => {
+      const status = getStatus(item);
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+      const badgeColor = roleColors[roleText] || "#ccc";
 
-    groupDiv.appendChild(wrapper);
+      const cardHTML = `
+        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${item.name}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[typeName] || "#ccc";
+      wrapper.innerHTML = cardHTML;
+
+      groupDiv.appendChild(wrapper);
+    });
+
+    container.appendChild(groupDiv);
   });
-
-  container.appendChild(groupDiv);
 }
 
 function formatPrice(price) {
