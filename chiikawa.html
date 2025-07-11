@@ -256,38 +256,38 @@ function renderCards(items, roleName) {
     groupContainer.style.margin = "0 auto"; // 置中
 
     grouped[category].forEach(item => {
-      const status = getStatus(item);
+  const status = getStatus(item);
 
-      function countChineseChars(str) {
-  const match = str.match(/[\u4e00-\u9fff]/g);
-  return match ? match.length : 0;
-}
+  function countChineseChars(str) {
+    const match = str.match(/[\u4e00-\u9fff]/g);
+    return match ? match.length : 0;
+  }
 
-const roleText = countChineseChars(item.role) > 1 ? "綜" : item.role;
+  const roleText = countChineseChars(item.role) > 1 ? "綜" : item.role;
 
-      const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
+  const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
 
-      const cardHTML = `
-        ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
-        <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
-      `;
+  const cardHTML = `
+    ${!(category === "吊娃、娃") ? `<div class="role-badge">${roleText}</div>` : ""}
+    <img src="${item.img}" alt="${item.name}">
+    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+    <div class="name" style="text-decoration:none;color:inherit">${item.name}</div>
+    <div class="price" style="text-decoration:none;color:inherit">${formatPrice(item.price)}</div>
+  `;
 
-      const wrapper = document.createElement(linkNeeded ? "a" : "div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
-      if (linkNeeded) {
-        wrapper.href = "https://lin.ee/X6FUFI9";
-        wrapper.target = "_blank";
-        wrapper.style.textDecoration = "none";
-        wrapper.style.color = "inherit";
-      }
-      wrapper.innerHTML = cardHTML;
+  const wrapper = document.createElement(linkNeeded ? "a" : "div");
+  wrapper.className = "card";
+  wrapper.style.borderColor = colors[roleName] || "#ccc"; // 邊框顏色
+  if (linkNeeded) {
+    wrapper.href = "https://lin.ee/X6FUFI9";
+    wrapper.target = "_blank";
+    wrapper.style.textDecoration = "none";
+    wrapper.style.color = "inherit";
+  }
+  wrapper.innerHTML = cardHTML;
 
-      groupDiv.appendChild(wrapper);
-    });
+  groupContainer.appendChild(wrapper);  // 這裡要用 groupContainer
+});
 
     container.appendChild(groupDiv);
   });
