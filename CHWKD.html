@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物寶寶目錄</title>
+  
+  <!-- 分頁小圖（favicon）-->
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+
+  <!-- 桌面/手機主畫面捷徑圖示 -->
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/2ytNWwWL/image.png" />
+  <meta name="theme-color" content="#dac7b7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  
+  <style>
+    /* 頁面基礎樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+      background-repeat: repeat;
+      background-size: 135px;
+      margin: 0;
+      padding: 0;
+      color: #333333;
+      text-align: center;
+    }
+    /* 頂部通知條（色塊+文字跳動動畫） */
+    .top-bar {
+      background: var(--tab-color);
+      color: #fff;
+      padding: 10px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 999;
+      user-select: none;
+      text-align: center;
+      font-size: 18px;
+      }
+
+    .top-bar .pulse-text {
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+      }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+      }
+    
+    /* 商品卡片容器 */
+    #card-container {
+      padding: 80px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-left: 7px;
+    }
+    
+    /* 分類標題與橫線 */
+    .type-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0;
+      color: #333333;
+      font-weight: bold;
+    }
+    .type-divider::before,
+    .type-divider::after {
+      content: "";
+      flex: 1;
+      border-top: 1px solid #333333;
+      margin: 0 10px;
+    }
+
+    /* 商品卡片基礎樣式 */
+    .card {
+      width: 82px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #ffffff;
+      position: relative;
+      text-align: center;
+      color: #333333;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card img {
+      width: 80px;
+      margin-top: 5px;
+      object-fit: contain;
+    }
+    .card .name {
+      margin: 2px auto;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .card .price {
+      font-size: 10px;
+      margin: 2px auto;
+    }
+
+    .card {
+      text-decoration: none;
+      color: inherit;
+    }
+    .card * {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    /* 貨況狀態標籤 */
+    .status-badge {
+      display: inline-block;
+      border-radius: 12px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      margin: 2px auto;
+    }
+
+    /* 角色圓形標籤 */
+    .role-badge {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: var(--tab-color);
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 大螢幕版型調整 */
+    @media (min-width: 768px) {
+      .card {
+        width: 120px;
+      }
+      .card img {
+        width: 116px;
+      }
+      .card .name,
+      .card .price {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+  <span class="pulse-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</span>
+</div>
+
+  <div id="card-container"></div>
+
+<script>
+const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
+const sheetName = "ちいかわ";
+
+// 分類關鍵字對應表
+const typeKeywordMap = {
+  "貼紙膠帶": ["貼紙"],
+  "文具磁鐵": ["文具", "磁鐵"],
+  "立牌徽章": ["立牌", "徽章"],
+  "鑰匙圈御守": ["鑰匙圈", "御守"],
+  "玩具盲抽": ["玩具", "盲"],
+  "服飾包袋": ["包包", "衣服", "飾品"],
+  "生活居家": ["3C", "居家", "毛巾"],
+  "餐廚用品": ["餐廚"]
+};
+
+// 對應顏色
+const colors = {
+  "貼紙膠帶": "#F8C0C8",
+  "文具磁鐵": "#BAD3E4",
+  "立牌徽章": "#d5a6bd",
+  "鑰匙圈御守": "#7E9DC2",
+  "玩具盲抽": "#90ADC6",
+  "服飾包袋": "#b4a7d6",
+  "生活居家": "#98D7C2",
+  "餐廚用品": "#F1A17E"
+};
+
+function getTypeFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const typeParam = params.get("type");
+  return colors[typeParam] ? typeParam : "貼紙膠帶";
+}
+
+function loadSheetData() {
+  const currentType = getTypeFromURL();
+
+  // 設定主題色
+  document.documentElement.style.setProperty('--tab-color', colors[currentType] || "#999");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) {
+    themeMeta.setAttribute("content", colors[currentType] || "#999");
+  }
+
+  const keywords = typeKeywordMap[currentType] || [];
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(text => JSON.parse(text.substr(47).slice(0, -2)))
+    .then(data => {
+      const rows = data.table.rows;
+      const items = rows.map(row => ({
+        type: row.c[1]?.v || "",
+        name: row.c[2]?.v || "",
+        img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+        price: row.c[4]?.v,
+        stock: row.c[5]?.v,
+        notStock: row.c[6]?.v,
+        preorder: row.c[7]?.v,
+        up: row.c[9]?.v
+      }))
+      .filter(item =>
+        keywords.some(keyword => item.type.includes(keyword)) &&
+        item.up !== "x" &&
+        item.stock !== "x"
+      );
+
+      renderCards(items, currentType);
+    })
+    .catch(err => {
+      document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
+      console.error(err);
+    });
+}
+
+function renderCards(items, typeName) {
+  const container = document.getElementById("card-container");
+  container.innerHTML = "";
+
+  const divider = document.createElement("div");
+  divider.className = "type-divider";
+  divider.textContent = typeName;
+  container.appendChild(divider);
+
+  const groupDiv = document.createElement("div");
+  groupDiv.style.display = "flex";
+  groupDiv.style.flexWrap = "wrap";
+  groupDiv.style.justifyContent = "flex-start";
+  groupDiv.style.gap = "8px";
+
+  items.forEach(item => {
+    const status = getStatus(item);
+
+    const cardHTML = `
+      <img src="${item.img}" alt="${item.name}">
+      <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+      <div class="name">${item.name}</div>
+      <div class="price">${formatPrice(item.price)}</div>
+    `;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "card";
+    wrapper.style.borderColor = colors[typeName] || "#ccc";
+    wrapper.innerHTML = cardHTML;
+
+    groupDiv.appendChild(wrapper);
+  });
+
+  container.appendChild(groupDiv);
+}
+
+function formatPrice(price) {
+  if (!price) return "私訊花花";
+  if (price === "-") return "組合出售";
+  return price;
+}
+
+function getStatus(item) {
+  if (item.preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+  if (item.stock > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
+  if (item.stock == 0 && !item.notStock) return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
+  if (item.stock == 0 && item.notStock) return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
+  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+}
+
+loadSheetData();
+</script>
+</body>
+</html>
