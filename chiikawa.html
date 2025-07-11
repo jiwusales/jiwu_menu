@@ -272,60 +272,65 @@ function loadSheetData() {
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
-  const grouped = {};
+
+  // 按種類分組
+  const groupedByKind = {};
   items.forEach(item => {
-    if (!grouped[item.category]) grouped[item.category] = [];
-    grouped[item.category].push(item);
+    if (!groupedByKind[item.category]) groupedByKind[item.category] = [];
+    groupedByKind[item.category].push(item);
   });
 
-  Object.keys(grouped).forEach(category => {
-    const divider = document.createElement("div");
-    divider.className = "type-divider";
-    divider.textContent = category;
-    container.appendChild(divider);
+  Object.keys(groupedByKind).forEach(kind => {
+    // 新增種類分隔線
+    const kindDivider = document.createElement("div");
+    kindDivider.className = "type-divider";
+    kindDivider.textContent = kind;
+    container.appendChild(kindDivider);
 
+    // 取得此種類下的所有商品
+    const kindItems = groupedByKind[kind];
+
+    // 按名稱排序（相同名稱排在一起）
+    kindItems.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+
+    // 建立種類下的商品容器
     const groupDiv = document.createElement("div");
     groupDiv.style.display = "flex";
     groupDiv.style.flexWrap = "wrap";
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-   grouped[category].forEach(item => {
-  const status = getStatus(item);
-  // 角色欄單字判斷：只有 1 個字顯示原字，否則顯示 綜
-  const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+    kindItems.forEach(item => {
+      const status = getStatus(item);
 
-  const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
 
-  // 吊娃、娃類不顯示右上角角色圓圈標籤
-  const showRoleBadge = !(category === "吊娃、娃");
+      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
-  const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
+      const showRoleBadge = !(kind === "吊娃、娃");
+      const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
-const cardHTML = `
-  ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
-  <img src="${item.img}" alt="${item.name}">
-  <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-  <div class="name">${item.name}</div>
-  <div class="price">${formatPrice(item.price)}</div>
-`;
+      const cardHTML = `
+        ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${item.name}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
 
-  const wrapper = document.createElement(link ? "a" : "div");
-  wrapper.className = "card";
+      const wrapper = document.createElement(link ? "a" : "div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[roleName] || "#ccc";
+      if (link) {
+        wrapper.href = link;
+        wrapper.target = "_blank";
+      }
+      wrapper.innerHTML = cardHTML;
 
-// 設定卡片外框顏色為角色顏色
-wrapper.style.borderColor = colors[roleName] || "#ccc";
-
-if (link) {
-  wrapper.href = link;
-  wrapper.target = "_blank";
-}
-wrapper.innerHTML = cardHTML;
-
-  groupDiv.appendChild(wrapper);
-});
+      groupDiv.appendChild(wrapper);
+    });
 
     container.appendChild(groupDiv);
   });
