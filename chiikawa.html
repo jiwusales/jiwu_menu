@@ -273,13 +273,15 @@ function renderCards(items, roleName) {
   // 吊娃、娃類不顯示右上角角色圓圈標籤
   const showRoleBadge = !(category === "吊娃、娃");
 
-  const cardHTML = `
-    ${showRoleBadge ? `<div class="role-badge">${roleText}</div>` : ""}
-    <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-    <div class="name">${item.name}</div>
-    <div class="price">${formatPrice(item.price)}</div>
-  `;
+  const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
+
+const cardHTML = `
+  ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+  <img src="${item.img}" alt="${item.name}">
+  <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+  <div class="name">${item.name}</div>
+  <div class="price">${formatPrice(item.price)}</div>
+`;
 
   const wrapper = document.createElement(link ? "a" : "div");
   wrapper.className = "card";
