@@ -258,9 +258,12 @@ function renderCards(items, roleName) {
     grouped[category].forEach(item => {
       const status = getStatus(item);
 
-      // 如果角色欄位超過 1 個，就顯示「綜」
-      const roles = item.role.split(/[、,]/).map(r => r.trim()).filter(r => r);
-      const roleText = roles.length > 1 ? "綜" : roles[0];
+      function countChineseChars(str) {
+  const match = str.match(/[\u4e00-\u9fff]/g);
+  return match ? match.length : 0;
+}
+
+const roleText = countChineseChars(item.role) > 1 ? "綜" : item.role;
 
       const linkNeeded = (item.price === "-" || !item.price); // 售價是組合/私訊要連結
 
