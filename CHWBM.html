@@ -206,21 +206,21 @@ function loadSheetData() {
     .then(res => res.text())
     .then(text => JSON.parse(text.substr(47).slice(0, -2)))
     .then(data => {
-  const rows = data.table.rows;
-  const items = rows.map(row => ({
-    role: row.c[0]?.v || "",
-    category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
-    name: row.c[2]?.v || "",
-    img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-    price: row.c[4]?.v,
-    stock: row.c[5]?.v,
-    notStock: row.c[6]?.v,
-    preorder: row.c[7]?.v,
-    up: row.c[8]?.v
-  })).filter(item => item.role.includes(keyword)); // ✅ filter 放在 map 結尾
+      const rows = data.table.rows;
+      const items = rows.map(row => ({
+        role: row.c[0]?.v || "",
+        category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
+        name: row.c[2]?.v || "",
+        img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+        price: row.c[4]?.v,
+        stock: row.c[5]?.v,
+        notStock: row.c[6]?.v,
+        preorder: row.c[7]?.v,
+        up: row.c[8]?.v
+      })).filter(item => item.role.includes(keyword));
 
-  renderCards(items, currentRole); // ✅ 要放在 then 裡面
-})
+      renderCards(items, currentRole);
+    })
     .catch(err => {
       document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
       console.error(err);
@@ -248,23 +248,22 @@ function renderCards(items, roleName) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-    // 🚨 排序邏輯
+    // 排序邏輯
     let sortedItems;
-if (category === "吊娃、娃") {
-  // 吊娃、娃類 → 原順序
-  sortedItems = grouped[category];
-} else {
-  // 其他類別 → 名稱開頭分群排序（正確語法）
-  sortedItems = grouped[category].sort((a, b) => {
-    const aKey = a.name.substring(0, 2);
-    const bKey = b.name.substring(0, 2);
-    return aKey.localeCompare(bKey, 'zh-Hant');
-  });
-}
+    if (category === "吊娃、娃") {
+      sortedItems = grouped[category];
+    } else {
+      sortedItems = grouped[category].sort((a, b) => {
+        const aKey = a.name.substring(0, 2);
+        const bKey = b.name.substring(0, 2);
+        return aKey.localeCompare(bKey, 'zh-Hant');
+      });
+    }
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
-  if (!status) return; // ❌ 不顯示卡片（如 x 狀況）
+      if (!status) return; // 不顯示卡片（如不上架狀況）
+
       const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
       const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
@@ -306,51 +305,45 @@ function formatPrice(price) {
 
 function getStatus(item) {
   const stock = (item.stock ?? "").toString().trim().toLowerCase();
-  const notStock = (item.notStock ?? "").toString().trim();
+  const notStock = (item.notStock ?? "").toString().trim().toLowerCase();
   const preorder = (item.preorder ?? "").toString().trim().toLowerCase();
-  const up = (item.up ?? "").toString().trim();
+  const up = (item.up ?? "").toString().trim().toLowerCase();
 
-  // 1. 不上架：只要「上架」欄有任何字元
-  if (up !== "") {
+  // 庫存或上架欄有「x」都不上架
+  if (stock === "x" || up === "x") {
     return null;
   }
 
-  // 2. 受注品：只要「受注」欄有任何字元
-  if (preorder !== "") {
-    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+  // 受注欄有「v」即受注品
+  if (preorder === "v") {
+    return { text: "受注品", bg: "#74BDCB", color: "#fff" };
   }
 
-  // 3. 庫存為 x（或其他非數字字元）視為不上架
-  if (stock === "x") {
-    return null;
-  }
-
-  // 4. 現貨：庫存是純數字且大於 0
+  // 庫存數字大於 0 即現貨
   if (/^\d+$/.test(stock) && Number(stock) > 0) {
-    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
+    return { text: "現貨", bg: "#FFF4BD", color: "#333" };
   }
 
-  // 5. 需預訂：庫存為 0 且非現貨備註為空
-  if (stock === "0" && notStock === "") {
-    return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
+  // 非現欄數字大於 0 即搭飛機中
+  if (/^\d+$/.test(notStock) && Number(notStock) > 0) {
+    return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
   }
 
-  // 6. 搭飛機中：庫存為 0 且有非現貨備註
-  if (stock === "0" && notStock !== "") {
-    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
+  // 全空就點貨中
+  if (
+    stock === "" &&
+    notStock === "" &&
+    preorder === "" &&
+    up === ""
+  ) {
+    return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
   }
 
-  // 7. 點貨中：庫存空白，且非現貨備註和受注欄也空白
-  if (stock === "" && notStock === "" && preorder === "") {
-    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
-  }
-
-  // 8. 其餘狀況預設為點貨中
-  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+  // 其他情況不顯示
+  return null;
 }
 
 loadSheetData();
-
 </script>
 </body>
 </html>
