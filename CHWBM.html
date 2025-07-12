@@ -300,16 +300,15 @@ function renderCards(items, roleName) {
 function formatName(name) {
   if (!name) return "";
 
-  // 去除多餘空格，並計算總字數（含空白）
   const cleanName = name.trim();
   const totalLength = cleanName.length;
 
-  // 若總字數 <= 9，不換行，直接回傳
+  // 若總字數 <= 9，不換行
   if (totalLength <= 9) return cleanName;
 
-  // 若總字數 > 9，自動在最靠近中間的空白處插入 <br>
-  const middle = Math.floor(totalLength / 2);
-  const spaceIndex = cleanName.lastIndexOf(" ", middle);
+  // 找 9 字內最後一個空白鍵
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
 
   if (spaceIndex > 0) {
     return (
@@ -319,8 +318,8 @@ function formatName(name) {
     );
   }
 
-  // 若沒有空白，就直接從第9個字後換行
-  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
+  // 若 9 字內找不到空白，直接硬切第 9 字
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
 function formatPrice(price) {
