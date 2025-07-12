@@ -276,7 +276,7 @@ function renderCards(items, roleName) {
         ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${item.name.replace(/ /g, "<br>")}</div>
+        <div class="name">${formatName(item.name)}</div>
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
@@ -295,6 +295,32 @@ function renderCards(items, roleName) {
 
     container.appendChild(groupDiv);
   });
+}
+  
+function formatName(name) {
+  if (!name) return "";
+
+  // 去除多餘空格，並計算總字數（含空白）
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+
+  // 若總字數 <= 9，不換行，直接回傳
+  if (totalLength <= 9) return cleanName;
+
+  // 若總字數 > 9，自動在最靠近中間的空白處插入 <br>
+  const middle = Math.floor(totalLength / 2);
+  const spaceIndex = cleanName.lastIndexOf(" ", middle);
+
+  if (spaceIndex > 0) {
+    return (
+      cleanName.slice(0, spaceIndex) +
+      "<br>" +
+      cleanName.slice(spaceIndex + 1)
+    );
+  }
+
+  // 若沒有空白，就直接從第9個字後換行
+  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
 }
 
 function formatPrice(price) {
