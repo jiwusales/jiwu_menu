@@ -172,27 +172,21 @@ function renderCards(items) {
     groupDiv.style.gap = "8px";
 
     let sortedItems;
-if (category === "吊娃、娃") {
-  sortedItems = grouped[category]; // 不排序，保持原始順序
-} else {
-  sortedItems = grouped[category].sort((a, b) => {
-    const aKey = a.name.substring(0, 2);
-    const bKey = b.name.substring(0, 2);
-    return aKey.localeCompare(bKey, 'zh-Hant');
-  });
-}
+    if (category === "吊娃、娃") {
+      sortedItems = grouped[category]; // 不排序，保持原始順序
+    } else {
+      sortedItems = grouped[category].sort((a, b) => {
+        const aKey = a.name.substring(0, 2);
+        const bKey = b.name.substring(0, 2);
+        return aKey.localeCompare(bKey, 'zh-Hant');
+      });
+    }
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
       if (!status) return;
 
       const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
-      const cardHTML = `
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${item.name}</div>
-        <div class="price">${formatPrice(item.price)}</div>
-      `;
 
       const wrapper = document.createElement(link ? "a" : "div");
       wrapper.className = "card";
@@ -202,7 +196,32 @@ if (category === "吊娃、娃") {
         wrapper.target = "_blank";
       }
 
-      wrapper.innerHTML = cardHTML;
+      // 建立圖片
+      const img = document.createElement("img");
+      img.src = item.img;
+      img.alt = item.name;
+      wrapper.appendChild(img);
+
+      // 建立狀態標籤
+      const badge = document.createElement("div");
+      badge.className = "status-badge";
+      badge.style.background = status.bg;
+      badge.style.color = status.color;
+      badge.textContent = status.text;
+      wrapper.appendChild(badge);
+
+      // 名稱
+      const nameDiv = document.createElement("div");
+      nameDiv.className = "name";
+      nameDiv.textContent = item.name;
+      wrapper.appendChild(nameDiv);
+
+      // 價格
+      const priceDiv = document.createElement("div");
+      priceDiv.className = "price";
+      priceDiv.textContent = formatPrice(item.price);
+      wrapper.appendChild(priceDiv);
+
       groupDiv.appendChild(wrapper);
     });
 
