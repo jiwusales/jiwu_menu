@@ -456,7 +456,7 @@ function createNavButtons() {
       const target = document.getElementById(`cat-${safeId}`);
       if (target) {
         const navHeight = document.querySelector(".nav-buttons")?.offsetHeight || 60;
-        const extraOffset = 10;
+        const extraOffset = 30;
         const topPos = target.getBoundingClientRect().top + window.pageYOffset - navHeight - extraOffset;
         window.scrollTo({ top: topPos, behavior: "smooth" });
       }
