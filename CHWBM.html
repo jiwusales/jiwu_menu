@@ -8,153 +8,183 @@
   <!-- 分頁小圖（favicon）-->
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
  
-  <style>
-    /* 頁面基礎樣式 */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
-      background-repeat: repeat;
-      background-size: 135px;
-      margin: 0;
-      padding: 0;
-      color: #333333;
-      text-align: center;
-    }
-    /* 頂部通知條（色塊+文字跳動動畫） */
-    .top-bar {
-      background: var(--tab-color);
-      color: #fff;
-      padding: 10px 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 999;
-      user-select: none;
-      text-align: center;
-      font-size: 18px;
-      }
+<style>
+  /* 頁面基礎樣式 */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+    background-repeat: repeat;
+    background-size: 135px;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+    text-align: center;
+  }
 
-    .top-bar .pulse-text {
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-      }
+  /* 頂部通知條（色塊+文字跳動動畫） */
+  .top-bar {
+    background: var(--tab-color);
+    color: #fff;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    user-select: none;
+    text-align: center;
+    font-size: 18px;
+  }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-      }
-    
-    /* 商品卡片容器 */
-    #card-container {
-      padding: 80px 10px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-left: 7px;
-    }
-    
-    /* 分類標題與橫線 */
-    .type-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 8px 0;
-      color: #333333;
-      font-weight: bold;
-    }
-    .type-divider::before,
-    .type-divider::after {
-      content: "";
-      flex: 1;
-      border-top: 1px solid #333333;
-      margin: 0 10px;
-    }
+  .top-bar .pulse-text {
+    display: inline-block;
+    animation: pulse 1.5s infinite;
+  }
 
-    /* 商品卡片基礎樣式 */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  /* 分類跳轉按鈕 */
+  .nav-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 50px 10px 0;
+    gap: 8px;
+    position: sticky;
+    top: 40px;
+    background: #f9f9f9;
+    z-index: 998;
+  }
+
+  .nav-buttons a {
+    padding: 5px 10px;
+    background-color: var(--tab-color);
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    border-radius: 16px;
+    transition: background 0.2s;
+  }
+
+  .nav-buttons a:hover {
+    background-color: #555;
+  }
+
+  /* 商品卡片容器 */
+  #card-container {
+    padding: 80px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-left: 7px;
+  }
+
+  /* 分類標題與橫線 */
+  .type-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    color: #333333;
+    font-weight: bold;
+  }
+
+  .type-divider::before,
+  .type-divider::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid #333333;
+    margin: 0 10px;
+  }
+
+  /* 商品卡片基礎樣式 */
+  .card {
+    width: 82px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    position: relative;
+    text-align: center;
+    color: #333333;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+  }
+
+  .card img {
+    width: 80px;
+    margin-top: 5px;
+    object-fit: contain;
+  }
+
+  .card .name {
+    margin: 2px auto;
+    font-size: 10px;
+    font-weight: bold;
+  }
+
+  .card .price {
+    font-size: 10px;
+    margin: 2px auto;
+  }
+
+  .card * {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* 貨況狀態標籤 */
+  .status-badge {
+    display: inline-block;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    margin: 2px auto;
+  }
+
+  /* 角色圓形標籤 */
+  .role-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: var(--tab-color);
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 大螢幕版型調整 */
+  @media (min-width: 768px) {
     .card {
-      width: 82px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      background-color: #ffffff;
-      position: relative;
-      text-align: center;
-      color: #333333;
-      transition: transform 0.2s, box-shadow 0.2s;
+      width: 120px;
     }
-
     .card img {
-      width: 80px;
-      margin-top: 5px;
-      object-fit: contain;
+      width: 116px;
     }
-    .card .name {
-      margin: 2px auto;
-      font-size: 10px;
-      font-weight: bold;
-    }
+    .card .name,
     .card .price {
-      font-size: 10px;
-      margin: 2px auto;
+      font-size: 12px;
     }
-
-    .card {
-      text-decoration: none;
-      color: inherit;
-    }
-    .card * {
-      text-decoration: none;
-      color: inherit;
-    }
-    
-    /* 貨況狀態標籤 */
-    .status-badge {
-      display: inline-block;
-      border-radius: 12px;
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
-      margin: 2px auto;
-    }
-
-    /* 角色圓形標籤 */
-    .role-badge {
-      position: absolute;
-      top: 3px;
-      right: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background-color: var(--tab-color);
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* 大螢幕版型調整 */
-    @media (min-width: 768px) {
-      .card {
-        width: 120px;
-      }
-      .card img {
-        width: 116px;
-      }
-      .card .name,
-      .card .price {
-        font-size: 12px;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <div class="top-bar">
   <span class="pulse-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</span>
 </div>
+  
+<div class="nav-buttons" id="nav-buttons"></div>
 
   <div id="card-container"></div>
 
@@ -220,6 +250,7 @@ function loadSheetData() {
       })).filter(item => item.role.includes(keyword));
 
       renderCards(items, currentRole);
+      createNavButtons();
     })
     .catch(err => {
       document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
@@ -240,6 +271,7 @@ function renderCards(items, roleName) {
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
+    divider.id = `cat-${category}`; // ⬅️ 加上這行，讓跳轉可以定位到這區
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
@@ -341,6 +373,21 @@ function getStatus(item) {
 
   // 7. ✅ 其他全部當「點貨中」
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+}
+
+function createNavButtons() {
+  const navDiv = document.getElementById("nav-buttons");
+  const categories = [
+    "包袋", "鑰匙圈、御守", "立牌、徽章、磁鐵、玩具",
+    "文具、貼紙", "3C、居家、毛巾", "飾品、衣服", "餐廚"
+  ];
+
+  categories.forEach(cat => {
+    const anchor = document.createElement("a");
+    anchor.href = `#cat-${cat}`;
+    anchor.textContent = cat;
+    navDiv.appendChild(anchor);
+  });
 }
 
 loadSheetData();
