@@ -94,7 +94,9 @@
       margin: 1px auto;
       font-size: 9px;
       font-weight: bold;
-      white-space: normal;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     .card .price {
       font-size: 10px;
@@ -277,7 +279,7 @@ function renderCards(items, roleName) {
         ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${(item.name || "").replace(/\n/g, "<br>")}</div>
+        <div class="name">${item.name || ""}</div>
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
