@@ -171,11 +171,16 @@ function renderCards(items) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-    const sortedItems = grouped[category].sort((a, b) => {
-      const aKey = a.name.substring(0, 2);
-      const bKey = b.name.substring(0, 2);
-      return aKey.localeCompare(bKey, 'zh-Hant');
-    });
+    let sortedItems;
+if (category === "吊娃、娃") {
+  sortedItems = grouped[category]; // 不排序，保持原始順序
+} else {
+  sortedItems = grouped[category].sort((a, b) => {
+    const aKey = a.name.substring(0, 2);
+    const bKey = b.name.substring(0, 2);
+    return aKey.localeCompare(bKey, 'zh-Hant');
+  });
+}
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
