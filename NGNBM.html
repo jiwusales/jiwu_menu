@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ナガノ目錄</title>
+  <title>JIWU吉物寶寶目錄</title></title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   <meta name="theme-color" content="#68aad6" />
   <style>
@@ -173,7 +173,7 @@ function renderCards(items) {
 
     let sortedItems;
     if (category === "吊娃、娃") {
-      sortedItems = grouped[category]; // 不排序，保持原始順序
+      sortedItems = grouped[category];
     } else {
       sortedItems = grouped[category].sort((a, b) => {
         const aKey = a.name.substring(0, 2);
@@ -186,6 +186,7 @@ function renderCards(items) {
       const status = getStatus(item);
       if (!status) return;
 
+      // 🔥 加入連結判斷
       const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
       const wrapper = document.createElement(link ? "a" : "div");
@@ -196,13 +197,13 @@ function renderCards(items) {
         wrapper.target = "_blank";
       }
 
-      // 建立圖片
+      // 圖片
       const img = document.createElement("img");
       img.src = item.img;
       img.alt = item.name;
       wrapper.appendChild(img);
 
-      // 建立狀態標籤
+      // 狀態標籤
       const badge = document.createElement("div");
       badge.className = "status-badge";
       badge.style.background = status.bg;
