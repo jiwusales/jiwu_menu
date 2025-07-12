@@ -65,7 +65,7 @@
       margin: 0 10px;
     }
     .card {
-      width: 82px;
+      width: 83px;
       border: 2px solid var(--tab-color);
       border-radius: 8px;
       background-color: #ffffff;
@@ -83,13 +83,13 @@
       object-fit: contain;
     }
     .card .name {
-      margin: 2px auto;
-      font-size: 10px;
+      margin: 1px auto;
+      font-size: 9px;
       font-weight: bold;
     }
     .card .price {
       font-size: 10px;
-      margin: 2px auto;
+      margin: 1px auto 5px;
     }
     .status-badge {
       display: inline-block;
@@ -252,6 +252,31 @@ function getStatus(item) {
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
+function formatName(name) {
+  if (!name) return "";
+
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+
+  // 若總字數 <= 9，不換行
+  if (totalLength <= 9) return cleanName;
+
+  // 找 9 字內最後一個空白鍵
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+
+  if (spaceIndex > 0) {
+    return (
+      cleanName.slice(0, spaceIndex) +
+      "<br>" +
+      cleanName.slice(spaceIndex + 1)
+    );
+  }
+
+  // 若 9 字內找不到空白，直接硬切第 9 字
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
+}
+  
 loadSheetData();
 </script>
 </body>
