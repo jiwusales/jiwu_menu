@@ -96,6 +96,10 @@
       font-weight: bold;
       margin: 2px auto;
     }
+    .card a {
+      text-decoration: none;
+      color: inherit;
+    }
     @media (min-width: 768px) {
       .card { width: 120px; }
       .card img { width: 116px; }
@@ -186,7 +190,6 @@ function renderCards(items) {
       const status = getStatus(item);
       if (!status) return;
 
-      // 🔥 加入連結判斷
       const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
 
       const wrapper = document.createElement(link ? "a" : "div");
@@ -197,13 +200,11 @@ function renderCards(items) {
         wrapper.target = "_blank";
       }
 
-      // 圖片
       const img = document.createElement("img");
       img.src = item.img;
       img.alt = item.name;
       wrapper.appendChild(img);
 
-      // 狀態標籤
       const badge = document.createElement("div");
       badge.className = "status-badge";
       badge.style.background = status.bg;
@@ -211,13 +212,11 @@ function renderCards(items) {
       badge.textContent = status.text;
       wrapper.appendChild(badge);
 
-      // 名稱
       const nameDiv = document.createElement("div");
       nameDiv.className = "name";
       nameDiv.textContent = item.name;
       wrapper.appendChild(nameDiv);
 
-      // 價格
       const priceDiv = document.createElement("div");
       priceDiv.className = "price";
       priceDiv.textContent = formatPrice(item.price);
