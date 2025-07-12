@@ -171,35 +171,37 @@ function loadSheetData() {
   if (themeMeta) themeMeta.setAttribute("content", colors[currentType]);
 
   const keywords = typeKeywordMap[currentType];
-const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
-fetch(url)
-  .then(res => res.text())
-  .then(text => JSON.parse(text.substr(47).slice(0, -2)))
-  .then(data => {
-    const rows = data.table.rows;
-    const items = rows.map(row => ({
-      role: row.c[0]?.v || "",
-      type: row.c[1]?.v || "",
-      name: row.c[2]?.v || "",
-      img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-      price: row.c[4]?.v,
-      stock: row.c[5]?.v,
-      notStock: row.c[6]?.v,
-      preorder: row.c[8]?.v,
-      up: row.c[7]?.v
-    }))
-    .filter(item =>
-      keywords.some(keyword => item.type.includes(keyword))
-    )
-    .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+  fetch(url)
+    .then(res => res.text())
+    .then(text => JSON.parse(text.substr(47).slice(0, -2)))
+    .then(data => {
+      const rows = data.table.rows;
+      const items = rows.map(row => ({
+        role: row.c[0]?.v || "",
+        type: row.c[1]?.v || "",
+        name: row.c[2]?.v || "",
+        img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+        price: row.c[4]?.v,
+        stock: row.c[5]?.v,
+        notStock: row.c[6]?.v,
+        preorder: row.c[8]?.v,
+        up: row.c[7]?.v
+      }))
+      .filter(item =>
+        keywords.some(keyword => item.type.includes(keyword)) &&
+        item.up !== "x" &&
+        item.stock !== "x"
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 
-    renderCards(items, currentType);
-  })
-  .catch(err => {
-    document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
-    console.error(err);
-  });
+      renderCards(items, currentType);
+    })
+    .catch(err => {
+      document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
+      console.error(err);
+    });
 }
 
 function renderCards(items, typeName) {
@@ -276,43 +278,11 @@ function formatPrice(price) {
 }
 
 function getStatus(item) {
-  const stock = (item.stock ?? "").toString().trim();
-  const notStock = (item.notStock ?? "").toString().trim();
-  const preorder = (item.preorder ?? "").toString().trim();
-  const up = (item.up ?? "").toString().trim();
-
-  // 1. ✅ 受注品（最優先，只要是 v 就是）
-  if (preorder === "v") {
-    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-  }
-
-  // 2. ❌ 不上架（庫存或上架欄含 x）
-  if (stock === "x" || up === "x") {
-    return null;
-  }
-
-  // 3. ✅ 搭飛機中：庫存=0且非現欄為數字且 > 0
-  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0) {
-    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
-  }
-
-  // 4. ⚠️ 庫存 = 0 顯示「需預訂」
-  if (stock === "0") {
-    return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
-  }
-
-  // 5. ✅ 現貨：庫存為數字且 > 0
-  if (/^\d+$/.test(stock) && Number(stock) > 0) {
-    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
-  }
-
-  // 6. ✅ 全部空白：視為「點貨中」
-  if (stock === "" && notStock === "" && preorder === "" && up === "") {
-    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
-  }
-
-  // 7. ✅ 其他全部當「點貨中」
-  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+  if (item.preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#fff" };
+  if (item.stock > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333" };
+  if (item.stock == 0 && !item.notStock) return { text: "需預訂", bg: "#D4BBDD", color: "#333" };
+  if (item.stock == 0 && item.notStock) return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
+  return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
 }
 
 function formatName(name) {
