@@ -94,8 +94,6 @@
       margin: 1px auto;
       font-size: 9px;
       font-weight: bold;
-      white-space: normal;        /* 允許自動換行 */
-      word-break: break-word;     /* 中文也能正常換行 */
     }
     .card .price {
       font-size: 10px;
@@ -274,13 +272,11 @@ function renderCards(items, roleName) {
       const showRoleBadge = !(category === "吊娃、娃");
       const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
-      const nameWithBreaks = item.name?.toString().replace(/\r?\n/g, "<br>");
-
       const cardHTML = `
         ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${nameWithBreaks}</div>
+        <div class="name">${item.name}</div>
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
