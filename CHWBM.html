@@ -48,32 +48,52 @@
     100% { transform: scale(1); }
   }
 
-  /* 分類跳轉按鈕 */
-  .nav-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 50px 10px 0;
-    gap: 8px;
-    position: sticky;
-    top: 40px;
-    background: #f9f9f9;
-    z-index: 998;
-  }
+  /* 分類跳轉按鈕區塊：垂直+水平置中，高度固定 */
+.nav-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  height: 60px; /* 你可以調整 */
+  gap: 8px;
+  padding: 0 10px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1000; /* 蓋過分隔線 */
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
 
-  .nav-buttons a {
-    padding: 5px 10px;
-    background-color: var(--tab-color);
-    color: #fff;
-    text-decoration: none;
-    font-size: 12px;
-    border-radius: 16px;
-    transition: background 0.2s;
-  }
+/* 按鈕預設粉膚色，且是獨立元素 */
+.nav-buttons a {
+  padding: 5px 10px;
+  background-color: #FBEDE0;
+  color: #333;
+  text-decoration: none;
+  font-size: 12px;
+  border-radius: 16px;
+  transition: background 0.3s, color 0.3s;
+  user-select: none;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
 
-  .nav-buttons a:hover {
-    background-color: #555;
-  }
+/* 選中按鈕變角色色 */
+.nav-buttons a.active {
+  background-color: var(--tab-color);
+  color: #fff;
+}
+
+/* hover 狀態輕微變色 */
+.nav-buttons a:hover:not(.active) {
+  background-color: #f5d9cd;
+}
+
+/* 分隔線加上 scroll-margin-top 避免被 sticky 按鈕遮住 */
+.type-divider {
+  scroll-margin-top: 70px; /* 大約比 sticky 高度多一點 */
+}
 
   /* 商品卡片容器 */
   #card-container {
@@ -204,8 +224,11 @@ const categoryMap = {
   "吊娃": "吊娃、娃", "娃": "吊娃、娃",
   "包包": "包袋",
   "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
-  "立牌": "立牌、徽章、磁鐵、玩具", "徽章": "立牌、徽章、磁鐵、玩具",
-  "磁鐵": "立牌、徽章、磁鐵、玩具", "玩具": "立牌、徽章、磁鐵、玩具",
+  "立牌": "立牌、徽章、磁鐵、玩具", 
+  "徽章": "立牌、徽章、磁鐵、玩具",
+  "磁鐵": "立牌、徽章、磁鐵、玩具",
+  "玩具": "立牌、徽章、磁鐵、玩具",
+  "盲": "立牌、徽章、磁鐵、玩具",
   "文具": "文具、貼紙", "貼紙": "文具、貼紙",
   "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
   "飾品": "飾品、衣服", "衣服": "飾品、衣服",
@@ -377,15 +400,43 @@ function getStatus(item) {
 
 function createNavButtons() {
   const navDiv = document.getElementById("nav-buttons");
+  navDiv.innerHTML = ""; // 清空按鈕
+
+  // 改成全部分開，原本分組用你的分類清單（全部拆開）
   const categories = [
-    "包袋", "鑰匙圈、御守", "立牌、徽章、磁鐵、玩具",
-    "文具、貼紙", "3C、居家、毛巾", "飾品、衣服", "餐廚"
+    "吊娃", "娃",
+    "包包",
+    "鑰匙圈", "御守",
+    "立牌", "徽章", "磁鐵", "玩具",
+    "文具", "貼紙",
+    "3C", "居家", "毛巾",
+    "飾品", "衣服",
+    "餐廚"
   ];
 
   categories.forEach(cat => {
     const anchor = document.createElement("a");
-    anchor.href = `#cat-${cat}`;
+    anchor.href = `#cat-${categoryMap[cat] || cat}`; // 連結到原本分組的分類id
     anchor.textContent = cat;
+    anchor.setAttribute("role", "button");
+
+    // 點擊後切換 active 狀態並取消其他按鈕 active
+    anchor.addEventListener("click", e => {
+      e.preventDefault();
+
+      // 取消其他 active
+      document.querySelectorAll("#nav-buttons a.active").forEach(btn => btn.classList.remove("active"));
+
+      // 自己加 active
+      anchor.classList.add("active");
+
+      // 平滑滾動到對應分隔線
+      const target = document.getElementById(`cat-${categoryMap[cat] || cat}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
     navDiv.appendChild(anchor);
   });
 }
