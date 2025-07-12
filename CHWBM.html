@@ -211,18 +211,14 @@ const colors = {
   "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
 };
 const categoryMap = {
-  "吊娃": "吊娃、娃", "娃": "吊娃、娃",
-  "包包": "包袋",
-  "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
-  "立牌": "立牌、徽章、磁鐵、玩具", 
-  "徽章": "立牌、徽章、磁鐵、玩具",
-  "磁鐵": "立牌、徽章、磁鐵、玩具",
-  "玩具": "玩具、盲抽",
-  "盲": "玩具、盲抽",
-  "文具": "文具、貼紙", "貼紙": "文具、貼紙",
-  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
-  "飾品": "飾品、衣服", "衣服": "飾品、衣服",
-  "餐廚": "餐廚"
+  "包袋": "包袋",
+  "鑰匙圈御守": "鑰匙圈、御守",
+  "立牌｜徽章｜磁鐵": "立牌、徽章、磁鐵、玩具",
+  "玩具盲抽": "立牌、徽章、磁鐵、玩具",
+  "文具貼紙": "文具、貼紙",
+  "3C｜居家｜毛巾": "3C、居家、毛巾",
+  "衣服｜飾品": "飾品、衣服",
+  "餐廚用品": "餐廚"
 };
 
 function getRoleFromURL() {
@@ -390,9 +386,8 @@ function getStatus(item) {
 
 function createNavButtons() {
   const navDiv = document.getElementById("nav-buttons");
-  navDiv.innerHTML = ""; // 清空按鈕
+  navDiv.innerHTML = "";
 
-  // 改成全部分開，原本分組用你的分類清單（全部拆開）
   const categories = [
     "包袋",
     "鑰匙圈御守",
@@ -405,24 +400,20 @@ function createNavButtons() {
 
   categories.forEach(cat => {
     const anchor = document.createElement("a");
-    anchor.href = `#cat-${categoryMap[cat] || cat}`; // 連結到原本分組的分類id
+    anchor.href = `#cat-${categoryMap[cat] || cat}`;
     anchor.textContent = cat;
     anchor.setAttribute("role", "button");
 
-    // 點擊後切換 active 狀態並取消其他按鈕 active
     anchor.addEventListener("click", e => {
       e.preventDefault();
-
-      // 取消其他 active
       document.querySelectorAll("#nav-buttons a.active").forEach(btn => btn.classList.remove("active"));
-
-      // 自己加 active
       anchor.classList.add("active");
 
-      // 平滑滾動到對應分隔線
       const target = document.getElementById(`cat-${categoryMap[cat] || cat}`);
       if (target) {
-        target.scrollIntoView({ behavior: "smooth" });
+        const navOffset = document.querySelector(".nav-buttons")?.offsetHeight || 60;
+        const topOffset = target.getBoundingClientRect().top + window.pageYOffset - navOffset - 10;
+        window.scrollTo({ top: topOffset, behavior: "smooth" });
       }
     });
 
