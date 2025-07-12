@@ -64,7 +64,7 @@
       margin: 0 10px;
     }
     .card {
-      width: 82px;
+      width: 83px;
       border: 2px solid #ccc;
       border-radius: 8px;
       background-color: #fff;
@@ -79,15 +79,13 @@
       object-fit: contain;
     }
     .card .name {
-      margin: 2px auto;
-      font-size: 10px;
+      margin: 1px auto;
+      font-size: 9px;
       font-weight: bold;
-      line-height: 1.2;
-      white-space: normal;
     }
     .card .price {
       font-size: 10px;
-      margin: 2px auto;
+      margin: 1px auto 5px;
     }
     .card * {
       text-decoration: none;
@@ -289,14 +287,27 @@ function getStatus(item) {
 
 function formatName(name) {
   if (!name) return "";
-  const clean = name.trim();
-  if (clean.length <= 9) return clean;
-  const maxLen = 9;
-  const spaceIdx = clean.lastIndexOf(" ", maxLen);
-  if (spaceIdx > 0) {
-    return clean.slice(0, spaceIdx) + "<br>" + clean.slice(spaceIdx + 1);
+
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+
+  // 若總字數 <= 9，不換行
+  if (totalLength <= 9) return cleanName;
+
+  // 找 9 字內最後一個空白鍵
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+
+  if (spaceIndex > 0) {
+    return (
+      cleanName.slice(0, spaceIndex) +
+      "<br>" +
+      cleanName.slice(spaceIndex + 1)
+    );
   }
-  return clean.slice(0, maxLen) + "<br>" + clean.slice(maxLen);
+
+  // 若 9 字內找不到空白，直接硬切第 9 字
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
 loadSheetData();
