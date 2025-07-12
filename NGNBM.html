@@ -73,6 +73,9 @@
       text-align: center;
       color: #333333;
       transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+      cursor: default; /* 👈 保持箭頭 */
     }
     .card img {
       width: 80px;
@@ -95,10 +98,6 @@
       font-size: 10px;
       font-weight: bold;
       margin: 2px auto;
-    }
-    .card a {
-      text-decoration: none;
-      color: inherit;
     }
     @media (min-width: 768px) {
       .card { width: 120px; }
