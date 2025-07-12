@@ -24,50 +24,41 @@
 
   /* 頂部通知條（色塊+文字跳動動畫） */
   .top-bar {
-    background: var(--tab-color);
-    color: #fff;
-    padding: 10px 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 999;
-    user-select: none;
-    text-align: center;
-    font-size: 18px;
-  }
+  background: var(--tab-color);
+  color: #fff;
+  padding: 10px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 44px; /* 明確給個高度 */
+  line-height: 24px; /* 讓文字垂直置中 */
+  z-index: 1001; /* 確保比 nav-buttons 高 */
+  user-select: none;
+  text-align: center;
+  font-size: 18px;
+}
 
-  .top-bar .pulse-text {
-    display: inline-block;
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-  }
-
-  /* 分類跳轉按鈕區塊：垂直+水平置中，高度固定 */
+/* 分類跳轉按鈕區塊 */
 .nav-buttons {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  height: 60px; /* 你可以調整 */
+  justify-content: center;   /* 水平置中 */
+  align-content: center;     /* 垂直置中多行 */
   gap: 8px;
-  padding: 0 10px;
+  padding: 10px 10px 10px;  /* 上下左右都有點空隙 */
   position: sticky;
-  top: 0;
+  top: 44px;                /* 頂部置底於 top-bar */
   background: #fff;
-  z-index: 1000; /* 蓋過分隔線 */
+  z-index: 1000;
+  min-height: 60px;          /* 最小高度 */
   box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
 /* 按鈕預設粉膚色，且是獨立元素 */
 .nav-buttons a {
   padding: 5px 10px;
-  background-color: #FBEDE0;
+  background-color: #eee;
   color: #333;
   text-decoration: none;
   font-size: 12px;
