@@ -213,7 +213,7 @@ function renderCards(items) {
 
       const nameDiv = document.createElement("div");
       nameDiv.className = "name";
-      nameDiv.textContent = item.name;
+      <div class="name">${formatName(item.name)}</div>
       wrapper.appendChild(nameDiv);
 
       const priceDiv = document.createElement("div");
