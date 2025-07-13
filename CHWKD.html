@@ -159,6 +159,12 @@ const typeKeywordMap = {
   "餐廚用品": ["餐廚"]
 };
 
+const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+
+function getRoleChar(role) {
+  return (role || "").charAt(0); // 直接取第一個字，不再判斷中文字
+}
+  
 function getTypeFromURL() {
   const params = new URLSearchParams(window.location.search);
   const typeParam = params.get("type");
@@ -244,7 +250,25 @@ function renderCards(items, typeName) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-    grouped[category].sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
+    grouped[category].sort((a, b) => {
+  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
+
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+
+  if (idxA !== -1 && idxB !== -1) {
+    return idxA - idxB; // 都在指定順序內
+  } else if (idxA !== -1) {
+    return -1; // A 有指定順序，排前面
+  } else if (idxB !== -1) {
+    return 1; // B 有指定順序，排前面
+  } else {
+    return roleA.localeCompare(roleB, "zh-Hant"); // 其他照字典排
+  }
+});
 
     grouped[category].forEach(item => {
       const status = getStatus(item);
