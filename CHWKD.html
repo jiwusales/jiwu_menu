@@ -201,7 +201,7 @@ function loadSheetData() {
         item.up !== "x" &&
         item.stock !== "x"
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant')); // 先預排序
 
       renderCards(items, currentType);
     })
@@ -211,7 +211,6 @@ function loadSheetData() {
     });
 }
 
-// ----------- 自動判斷名稱共用字串，分組功能 ------------
 // 輔助函數：取得一個字串中所有連續子串(長度minLen~maxLen)
 function getSubstrings(str, minLen = 3, maxLen = 6) {
   const subs = [];
@@ -223,7 +222,7 @@ function getSubstrings(str, minLen = 3, maxLen = 6) {
   return subs;
 }
 
-// 取得高頻關鍵字列表 (出現>=2次，長度3~6)
+// 抓取所有商品名稱中「頻率>=2」的子串
 function extractFrequentSubstrings(items) {
   const freqMap = {};
   items.forEach(item => {
@@ -233,44 +232,22 @@ function extractFrequentSubstrings(items) {
       freqMap[s] = (freqMap[s] || 0) + 1;
     });
   });
-  // 篩選出現 >= 2 次以上的
   const candidates = Object.entries(freqMap)
     .filter(([str, count]) => count >= 2)
     .map(([str]) => str)
-    // 長度由大到小排序，方便分組時先配長字串
     .sort((a, b) => b.length - a.length);
   return candidates;
 }
 
-function groupByNameAuto(items) {
-  const groups = {};
-  const noGroupKey = "__其他__";
-
-  const keywords = extractFrequentSubstrings(items);
-
-  keywords.forEach(kw => groups[kw] = []);
-  groups[noGroupKey] = [];
-
-  items.forEach(item => {
-    let matchedKey = null;
-    // 優先匹配字串長度較長的keyword
-    for (const kw of keywords) {
-      if (item.name.includes(kw)) {
-        matchedKey = kw;
-        break;
-      }
+// 判斷兩個名稱是否有共用高頻字串，並回傳最長共用字串長度
+function longestCommonFrequentSubstring(nameA, nameB, freqSubstrings) {
+  for (const sub of freqSubstrings) {
+    if (nameA.includes(sub) && nameB.includes(sub)) {
+      return sub.length; // 找到第一個（最長）共用字串就回傳長度
     }
-    if (matchedKey) {
-      groups[matchedKey].push(item);
-    } else {
-      groups[noGroupKey].push(item);
-    }
-  });
-
-  return groups;
+  }
+  return 0;
 }
-
-// ----------------------------------------------
 
 function renderCards(items, typeName) {
   items = items.filter(item => item.type !== "吊娃" && item.type !== "娃");
@@ -301,81 +278,76 @@ function renderCards(items, typeName) {
     const catItems = groupedByCategory[category];
     if (catItems.length === 0) return;
 
-    // 依名稱自動共用字串分組
-    const nameGroups = groupByNameAuto(catItems);
+    // 先抓高頻字串列表（該分類內）
+    const freqSubstrings = extractFrequentSubstrings(catItems);
 
-    // 依字串長度由大到小排序 group key，先渲染長的關鍵字群組，避免「帆布包」跟「包」之類重疊問題
-    const sortedGroupKeys = Object.keys(nameGroups).sort((a,b) => {
-      if (a === "__其他__") return 1;
-      if (b === "__其他__") return -1;
-      return b.length - a.length;
-    });
-
-    sortedGroupKeys.forEach(groupKey => {
-      const groupItems = nameGroups[groupKey];
-      if (groupItems.length === 0) return;
-
-      // 分組標題，排除其他組不顯示
-      if (groupKey !== "__其他__") {
-        const groupDivider = document.createElement("div");
-        groupDivider.className = "type-divider";
-        groupDivider.style.fontSize = "0.9em";
-        groupDivider.style.margin = "4px 0 2px";
-        groupDivider.textContent = groupKey;
-        container.appendChild(groupDivider);
+    // 排序改成：
+    // 先判斷是否有共用高頻字串，越長的共用字串排越靠近
+    // 若無共用字串，再用名稱字典序排序，再依角色優先排序
+    catItems.sort((a, b) => {
+      const commonLen = longestCommonFrequentSubstring(a.name, b.name, freqSubstrings);
+      if (commonLen > 0) {
+        // 共有共用字串，優先靠近（差別在讓相似的往前排）
+        // 用負數讓長共用字串排前面
+        return -commonLen;
       }
+      // 無共用字串，用名稱排序
+      const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
+      if (nameCompare !== 0) return nameCompare;
 
-      const groupDiv = document.createElement("div");
-      groupDiv.style.display = "flex";
-      groupDiv.style.flexWrap = "wrap";
-      groupDiv.style.justifyContent = "flex-start";
-      groupDiv.style.gap = "8px";
+      // 名稱相同時，用角色優先順序
+      const roleA = getRoleChar(a.role);
+      const roleB = getRoleChar(b.role);
+      const idxA = rolePriority.indexOf(roleA);
+      const idxB = rolePriority.indexOf(roleB);
 
-      // 商品依名稱＋角色排序
-      groupItems.sort((a, b) => {
-        const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-        if (nameCompare !== 0) return nameCompare;
-
-        const roleA = getRoleChar(a.role);
-        const roleB = getRoleChar(b.role);
-        const idxA = rolePriority.indexOf(roleA);
-        const idxB = rolePriority.indexOf(roleB);
-
-        if (idxA !== -1 && idxB !== -1) {
-          return idxA - idxB;
-        } else if (idxA !== -1) {
-          return -1;
-        } else if (idxB !== -1) {
-          return 1;
-        } else {
-          return roleA.localeCompare(roleB, "zh-Hant");
-        }
-      });
-
-      groupItems.forEach(item => {
-        const status = getStatus(item);
-        const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-        const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-        const badgeColor = roleColors[roleText] || "#ccc";
-
-        const cardHTML = `
-          <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
-          <img src="${item.img}" alt="${item.name}">
-          <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-          <div class="name">${formatName(item.name)}</div>
-          <div class="price">${formatPrice(item.price)}</div>
-        `;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "card";
-        wrapper.style.borderColor = colors[typeName] || "#ccc";
-        wrapper.innerHTML = cardHTML;
-
-        groupDiv.appendChild(wrapper);
-      });
-
-      container.appendChild(groupDiv);
+      if (idxA !== -1 && idxB !== -1) {
+        return idxA - idxB;
+      } else if (idxA !== -1) {
+        return -1;
+      } else if (idxB !== -1) {
+        return 1;
+      } else {
+        return roleA.localeCompare(roleB, "zh-Hant");
+      }
     });
+
+    // 顯示這分類商品
+    // 分類標題
+    const divider = document.createElement("div");
+    divider.className = "type-divider";
+    divider.textContent = category;
+    container.appendChild(divider);
+
+    const groupDiv = document.createElement("div");
+    groupDiv.style.display = "flex";
+    groupDiv.style.flexWrap = "wrap";
+    groupDiv.style.justifyContent = "flex-start";
+    groupDiv.style.gap = "8px";
+
+    catItems.forEach(item => {
+      const status = getStatus(item);
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+      const badgeColor = roleColors[roleText] || "#ccc";
+
+      const cardHTML = `
+        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${formatName(item.name)}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[typeName] || "#ccc";
+      wrapper.innerHTML = cardHTML;
+
+      groupDiv.appendChild(wrapper);
+    });
+
+    container.appendChild(groupDiv);
   });
 }
 
