@@ -63,16 +63,30 @@
       border-top: 1px solid #333;
       margin: 0 10px;
     }
+    .group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .group-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
     .card {
-      width: 83px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      background-color: #fff;
-      position: relative;
-      text-align: center;
-      color: #333;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+  width: 100%;
+  max-width: 120px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  position: relative;
+  text-align: center;
+  color: #333;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
     .card img {
       width: 80px;
       margin-top: 5px;
@@ -278,10 +292,7 @@ function renderCards(items, typeName) {
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
-    groupDiv.style.display = "flex";
-    groupDiv.style.flexWrap = "wrap";
-    groupDiv.style.justifyContent = "flex-start";
-    groupDiv.style.gap = "8px";
+groupDiv.className = "group-grid";
 
     grouped[category].sort((a, b) => {
       const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
