@@ -101,12 +101,10 @@
       font-size: 10px;
       margin: 1px auto 5px;
     }
-    .card,
-.card * {
-  text-decoration: none;
-  color: inherit;
-}
-
+    .card * {
+      text-decoration: none;
+      color: inherit;
+    }
     .role-badge {
       position: absolute;
       top: 3px;
@@ -348,24 +346,19 @@ function renderCards(items, typeName) {
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
-const link = (item.price === "-" || !item.price || item.price === "私訊花花") ? "https://lin.ee/X6FUFI9" : null;
-
-const wrapper = document.createElement(link ? "a" : "div");
+     const isLink = item.price === "-" || !item.price;
+const wrapper = document.createElement(isLink ? "a" : "div");
 wrapper.className = "card";
 wrapper.style.borderColor = colors[typeName] || "#ccc";
 wrapper.innerHTML = cardHTML;
-if (link) {
-  wrapper.href = link;
+if (isLink) {
+  wrapper.href = "https://lin.ee/X6FUFI9";
   wrapper.target = "_blank";
 }
-
 groupDiv.appendChild(wrapper);
   });
 }
 
-container.appendChild(groupDiv); //
-});
-                          
 function formatPrice(price) {
   if (!price) return "私訊花花";
   if (price === "-") return "組合出售";
