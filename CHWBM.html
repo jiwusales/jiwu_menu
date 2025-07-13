@@ -49,11 +49,11 @@
     
     /* 商品卡片容器 */
     #card-container {
-      padding: 60px 10px 10px;
+      padding: 60px 10px 6px 7px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-    }
+      margin: 0; /* 確保沒有 margin */
    
     /* 分類標題與橫線 */
     .type-divider {
@@ -76,7 +76,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, 120px);
       justify-content: start;
-      gap: 8px; /* 可依你喜好調整 */
+      gap: 6px; /* 可依你喜好調整 */
    }
 
     @media (max-width: 480px) {
