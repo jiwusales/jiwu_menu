@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
@@ -42,7 +42,7 @@
       100% { transform: scale(1); }
     }
     #card-container {
-      padding: 60px 10px 10px;
+      padding: 60px 7px 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -101,6 +101,7 @@
       font-size: 10px;
       margin: 1px auto 5px;
     }
+    .card,
     .card * {
       text-decoration: none;
       color: inherit;
@@ -333,26 +334,37 @@ function renderCards(items, typeName) {
     });
 
     grouped[category].forEach(item => {
-      const status = getStatus(item);
-      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-      const badgeColor = roleColors[roleText] || "#ccc";
+  const status = getStatus(item);
+  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+  const badgeColor = roleColors[roleText] || "#ccc";
 
-      const cardHTML = `
-        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${formatName(item.name)}</div>
-        <div class="price">${formatPrice(item.price)}</div>
-      `;
+  // 判斷售價是否為組合出售或私訊花花
+  const needLink = (item.price === "-" || !item.price);
+  const linkUrl = "https://lin.ee/X6FUFI9";  // 你想導向的連結網址，可以改成你自己的
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[typeName] || "#ccc";
-      wrapper.innerHTML = cardHTML;
+  const cardHTML = `
+    <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
+    <img src="${item.img}" alt="${item.name}">
+    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+    <div class="name">${formatName(item.name)}</div>
+    <div class="price">${formatPrice(item.price)}</div>
+  `;
 
-      groupDiv.appendChild(wrapper);
-    });
+  // 若需要超連結，建立 <a>，否則用 <div>
+  const wrapper = document.createElement(needLink ? "a" : "div");
+  wrapper.className = "card";
+  wrapper.style.borderColor = colors[typeName] || "#ccc";
+  wrapper.innerHTML = cardHTML;
+
+  if (needLink) {
+    wrapper.href = linkUrl;
+    wrapper.target = "_blank";
+    wrapper.rel = "noopener noreferrer";
+  }
+
+  groupDiv.appendChild(wrapper);
+});
 
     container.appendChild(groupDiv);
   });
