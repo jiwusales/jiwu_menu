@@ -285,32 +285,30 @@ function renderCards(items, typeName) {
     // 先判斷是否有共用高頻字串，越長的共用字串排越靠近
     // 若無共用字串，再用名稱字典序排序，再依角色優先排序
     catItems.sort((a, b) => {
-      const commonLen = longestCommonFrequentSubstring(a.name, b.name, freqSubstrings);
-      if (commonLen > 0) {
-        // 共有共用字串，優先靠近（差別在讓相似的往前排）
-        // 用負數讓長共用字串排前面
-        return -commonLen;
-      }
-      // 無共用字串，用名稱排序
-      const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-      if (nameCompare !== 0) return nameCompare;
+  // 優先條件 1：共用高頻字串長度（越長越相近）
+  const commonLen = longestCommonFrequentSubstring(a.name, b.name, freqSubstrings);
+  if (commonLen > 0) return -commonLen;
 
-      // 名稱相同時，用角色優先順序
-      const roleA = getRoleChar(a.role);
-      const roleB = getRoleChar(b.role);
-      const idxA = rolePriority.indexOf(roleA);
-      const idxB = rolePriority.indexOf(roleB);
+  // 優先條件 2：名稱字典序（當不相似）
+  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
 
-      if (idxA !== -1 && idxB !== -1) {
-        return idxA - idxB;
-      } else if (idxA !== -1) {
-        return -1;
-      } else if (idxB !== -1) {
-        return 1;
-      } else {
-        return roleA.localeCompare(roleB, "zh-Hant");
-      }
-    });
+  // 優先條件 3：角色優先順序
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+
+  if (idxA !== -1 && idxB !== -1) {
+    return idxA - idxB;
+  } else if (idxA !== -1) {
+    return -1;
+  } else if (idxB !== -1) {
+    return 1;
+  } else {
+    return roleA.localeCompare(roleB, "zh-Hant");
+  }
+});
 
     // 顯示這分類商品
     // 分類標題
