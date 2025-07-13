@@ -244,7 +244,6 @@ function renderCards(items, typeName) {
   container.innerHTML = "";
 
   const categoriesOrder = [
-  "娃包", "娃夾子",
   "包包", "鑰匙圈", "御守", "立牌", "徽章", "磁鐵", "玩具",
   "文具", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
 ];
@@ -255,7 +254,11 @@ grouped["其他"] = [];
 
 items.forEach(item => {
   if (item.style === "娃徽章") {
-    grouped["徽章"].push(item);  // 「娃徽章」直接放到「徽章」裡
+    grouped["徽章"].push(item);  // 娃徽章放徽章
+  } else if (item.style === "娃夾子") {
+    grouped["文具"].push(item);   // 娃夾子放文具
+  } else if (item.style === "娃包") {
+    grouped["包包"].push(item);   // 娃包放包包
   } else if (categoriesOrder.includes(item.style)) {
     grouped[item.style].push(item);
   } else if (categoriesOrder.includes(item.type)) {
