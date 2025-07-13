@@ -73,18 +73,30 @@
       margin: 0 10px;
     }
 
-    /* 商品卡片基礎樣式 */
+    .group-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 120px);
+      justify-content: start;
+      gap: 8px; /* 可依你喜好調整 */
+   }
+
+    @media (max-width: 480px) {
+      .group-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+        /* 商品卡片基礎樣式 */
     .card {
-      width: 83px;
+      width: 100%;
+      max-width: 120px;
       border: 2px solid #ccc;
       border-radius: 8px;
-      background-color: #ffffff;
+      background-color: #fff;
       position: relative;
       text-align: center;
-      color: #333333;
+      color: #333;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-
     .card img {
       width: 80px;
       margin-top: 5px;
