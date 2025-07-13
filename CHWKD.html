@@ -319,11 +319,7 @@ items.forEach(item => {
     return roleA.localeCompare(roleB, "zh-Hant");
   }
 });
-
-  // 4. 名稱排序
-  return a.name.localeCompare(b.name, "zh-Hant");
-});
-
+    
     grouped[category].forEach(item => {
       const status = getStatus(item);
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
