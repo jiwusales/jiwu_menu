@@ -346,15 +346,16 @@ function renderCards(items, typeName) {
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[typeName] || "#ccc";
-      wrapper.innerHTML = cardHTML;
-
-      groupDiv.appendChild(wrapper);
-    });
-
-    container.appendChild(groupDiv);
+     const isLink = item.price === "-" || !item.price;
+const wrapper = document.createElement(isLink ? "a" : "div");
+wrapper.className = "card";
+wrapper.style.borderColor = colors[typeName] || "#ccc";
+wrapper.innerHTML = cardHTML;
+if (isLink) {
+  wrapper.href = "https://lin.ee/X6FUFI9";
+  wrapper.target = "_blank";
+}
+groupDiv.appendChild(wrapper);
   });
 }
 
