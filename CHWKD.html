@@ -256,15 +256,24 @@ items.forEach(item => {
   const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
   const isBlind = /盲/.test(combinedText);
 
+items.forEach(item => {
+  const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
+  const isBlind = /盲/.test(combinedText);
+
   if (isBlind) {
     grouped["玩具"].push(item);
   } else if (item.style === "娃徽章") {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
-  } else if (item.style === "斜背包") {
+  } else if (item.style === "斜背包" || item.style === "鑰匙包") {
+    // 斜背包跟鑰匙包都歸「包包」
+    grouped["包包"].push(item);
+  } else if (item.type === "吊娃" && item.style === "鑰匙包") {
+    // 吊娃 + 鑰匙包款式，也歸「包包」
     grouped["包包"].push(item);
   } else if (item.type === "吊娃" && item.style === "鑰匙套") {
+    // 原本的判斷保留
     grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);
