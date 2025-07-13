@@ -263,9 +263,7 @@ items.forEach(item => {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
-  } else if (item.style === "斜背包" || item.style === "鑰匙包") {
-    grouped["包包"].push(item);
-    } else if (item.type === "吊娃" && (item.style === "鑰匙包" || item.style === "鑰匙套")) {
+  } else if (["斜背包", "鑰匙包"].includes(item.style)) {
     grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);
