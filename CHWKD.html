@@ -244,36 +244,28 @@ function renderCards(items, typeName) {
   container.innerHTML = "";
 
   const categoriesOrder = [
-  "包包", "鑰匙圈", "御守", "立牌", "徽章", "玩具",
+  "包包", "鑰匙圈", "御守", "立牌", "徽章", "盲抽", "玩具",
   "證件套", "文具", "磁鐵", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
 ];
 
 const grouped = {};
 categoriesOrder.forEach(cat => grouped[cat] = []);
 grouped["其他"] = [];
-
-items.forEach(item => {
-  const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
-  const isBlind = /盲/.test(combinedText);
+grouped["盲抽"] = [];
 
 items.forEach(item => {
   const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
   const isBlind = /盲/.test(combinedText);
 
   if (isBlind) {
-    grouped["玩具"].push(item);
+    grouped["盲抽"].push(item);
   } else if (item.style === "娃徽章") {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
   } else if (item.style === "斜背包" || item.style === "鑰匙包") {
-    // 斜背包跟鑰匙包都歸「包包」
     grouped["包包"].push(item);
-  } else if (item.type === "吊娃" && item.style === "鑰匙包") {
-    // 吊娃 + 鑰匙包款式，也歸「包包」
-    grouped["包包"].push(item);
-  } else if (item.type === "吊娃" && item.style === "鑰匙套") {
-    // 原本的判斷保留
+  } else if (item.type === "吊娃" && (item.style === "鑰匙包" || item.style === "鑰匙套")) {
     grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);
