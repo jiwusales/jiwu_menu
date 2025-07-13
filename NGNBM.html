@@ -193,7 +193,7 @@ const categoryOrder = [
 
   const roleColors = {
   "熊": "#E9EAEC",
-  "狗": "#E2DED0",
+  "狗": "#F8EFE4",
   "餅": "#F3BC50",
   "馬來": "#25C0C0",
   "水族": "#88B2CC",
@@ -294,8 +294,13 @@ const roleBadge = document.createElement("div");
 roleBadge.className = "role-badge";
 roleBadge.style.backgroundColor = badgeColor;
 roleBadge.textContent = badgeText;
-wrapper.appendChild(roleBadge);
 
+// 特別指定「狗」和「熊」的字顏色為 #333
+if (["狗", "熊"].includes(badgeText)) {
+  roleBadge.style.color = "#333333";
+}
+
+wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
     img.src = item.img;
