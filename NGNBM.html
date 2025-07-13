@@ -124,6 +124,23 @@
       .card img { width: 116px; }
       .card .name, .card .price { font-size: 12px; }
     }
+
+    .role-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 16px;
+  color: #fff;
+  user-select: none;
+  white-space: nowrap;
+  background-color: #FDD1D2; /* 預設為綜 */
+}
+
   </style>
 </head>
 <body>
@@ -173,6 +190,17 @@ const categoryOrder = [
   "飾品、衣服",
   "餐廚"
 ];
+
+  const roleColors = {
+  "熊": "#E9EAEC",
+  "狗": "#E2DED0",
+  "餅": "#F3BC50",
+  "馬來": "#25C0C0",
+  "水族": "#88B2CC",
+  "其": "#D4BBDD",
+  "綜": "#FDD1D2"
+};
+
 
 function loadSheetData() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -255,6 +283,19 @@ function renderCards(items) {
       wrapper.href = link;
       wrapper.target = "_blank";
     }
+
+    // 產生角色標籤（右上）
+const roleChars = (item.role.match(/[\u4e00-\u9fff]/g) || []);
+const roleKey = roleChars.slice(0, 2).join(''); // 最多兩字
+const badgeColor = roleColors[roleKey] || roleColors["綜"];
+const badgeText = roleKey || "綜";
+
+const roleBadge = document.createElement("div");
+roleBadge.className = "role-badge";
+roleBadge.style.backgroundColor = badgeColor;
+roleBadge.textContent = badgeText;
+wrapper.appendChild(roleBadge);
+
 
     const img = document.createElement("img");
     img.src = item.img;
