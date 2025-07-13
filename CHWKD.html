@@ -299,26 +299,23 @@ items.forEach(item => {
   const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
   if (styleCompare !== 0) return styleCompare;
 
-  // 3. 名稱 name
-  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-  if (nameCompare !== 0) return nameCompare;
-
-  // 4. 角色排序（僅單字角色才比對）
+  // 3. 角色排序（先比角色）
   const roleA = getRoleChar(a.role);
   const roleB = getRoleChar(b.role);
-
   const isSingleA = rolePriority.includes(roleA);
   const isSingleB = rolePriority.includes(roleB);
 
   if (isSingleA && isSingleB) {
-    return rolePriority.indexOf(roleA) - rolePriority.indexOf(roleB);
+    const roleDiff = rolePriority.indexOf(roleA) - rolePriority.indexOf(roleB);
+    if (roleDiff !== 0) return roleDiff;
   } else if (isSingleA) {
-    return -1; // 單字排前面
+    return -1;
   } else if (isSingleB) {
-    return 1; // 單字排前面
-  } else {
-    return 0; // 都是複合 → 保持原順序
+    return 1;
   }
+
+  // 4. 名稱排序
+  return a.name.localeCompare(b.name, "zh-Hant");
 });
 
     grouped[category].forEach(item => {
