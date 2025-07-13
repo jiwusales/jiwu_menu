@@ -291,28 +291,28 @@ items.forEach(item => {
     groupDiv.style.gap = "8px";
 
     grouped[category].sort((a, b) => {
-  // 1. 種類 type
-  const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
-  if (typeCompare !== 0) return typeCompare;
+    // 1. 先比種類 type
+    const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
+    if (typeCompare !== 0) return typeCompare;
 
-  // 2. 款式 style
-  const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
-  if (styleCompare !== 0) return styleCompare;
+    // 2. 再比款式 style
+    const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
+    if (styleCompare !== 0) return styleCompare;
 
-  // 3. 名稱 name（先比名稱）
-  const nameA = a.name.trim();
-  const nameB = b.name.trim();
-  const nameCompare = nameA.localeCompare(nameB, "zh-Hant");
-  if (nameCompare !== 0) return nameCompare;
+    // 3. 再比名稱 name
+    const nameA = a.name.trim();
+    const nameB = b.name.trim();
+    const nameCompare = nameA.localeCompare(nameB, "zh-Hant");
+    if (nameCompare !== 0) return nameCompare;
 
-  // 4. 角色排序（名稱相同時，依 rolePriority 排序）
-  const roleA = getRoleChar(a.role);
-  const roleB = getRoleChar(b.role);
+    // 4. **名稱相同時才比角色優先順序**
+    const roleA = getRoleChar(a.role);
+    const roleB = getRoleChar(b.role);
 
-  const idxA = rolePriority.indexOf(roleA);
-  const idxB = rolePriority.indexOf(roleB);
+    const idxA = rolePriority.indexOf(roleA);
+    const idxB = rolePriority.indexOf(roleB);
 
-  if (idxA !== -1 && idxB !== -1) {
+    if (idxA !== -1 && idxB !== -1) {
     return idxA - idxB;
   } else if (idxA !== -1) {
     return -1;
