@@ -290,7 +290,7 @@ const roleKey = roleChars.slice(0, 2).join(''); // 最多兩字
 const badgeColor = roleColors[roleKey] || roleColors["綜"];
 const badgeText = roleKey || "綜";
 
-onst roleBadge = document.createElement("div");
+const roleBadge = document.createElement("div");
 roleBadge.className = "role-badge";
 roleBadge.style.backgroundColor = badgeColor;
 roleBadge.textContent = badgeText;
