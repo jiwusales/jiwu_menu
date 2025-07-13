@@ -291,27 +291,35 @@ items.forEach(item => {
     groupDiv.style.gap = "8px";
 
     grouped[category].sort((a, b) => {
-      const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
-      if (styleCompare !== 0) return styleCompare;
+  // 1. 種類 type
+  const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
+  if (typeCompare !== 0) return typeCompare;
 
-      const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-      if (nameCompare !== 0) return nameCompare;
+  // 2. 款式 style
+  const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
+  if (styleCompare !== 0) return styleCompare;
 
-      const roleA = getRoleChar(a.role);
-      const roleB = getRoleChar(b.role);
-      const idxA = rolePriority.indexOf(roleA);
-      const idxB = rolePriority.indexOf(roleB);
+  // 3. 名稱 name
+  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
 
-      if (idxA !== -1 && idxB !== -1) {
-        return idxA - idxB;
-      } else if (idxA !== -1) {
-        return -1;
-      } else if (idxB !== -1) {
-        return 1;
-      } else {
-        return roleA.localeCompare(roleB, "zh-Hant");
-      }
-    });
+  // 4. 角色排序（僅單字角色才比對）
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+
+  const isSingleA = rolePriority.includes(roleA);
+  const isSingleB = rolePriority.includes(roleB);
+
+  if (isSingleA && isSingleB) {
+    return rolePriority.indexOf(roleA) - rolePriority.indexOf(roleB);
+  } else if (isSingleA) {
+    return -1; // 單字排前面
+  } else if (isSingleB) {
+    return 1; // 單字排前面
+  } else {
+    return 0; // 都是複合 → 保持原順序
+  }
+});
 
     grouped[category].forEach(item => {
       const status = getStatus(item);
