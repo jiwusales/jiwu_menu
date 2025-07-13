@@ -162,9 +162,9 @@ const typeKeywordMap = {
 const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
 function getRoleChar(role) {
-  return (role || "").charAt(0);
+  return (role || "").charAt(0); // 直接取第一個字，不再判斷中文字
 }
-
+  
 function getTypeFromURL() {
   const params = new URLSearchParams(window.location.search);
   const typeParam = params.get("type");
@@ -201,7 +201,7 @@ function loadSheetData() {
         item.up !== "x" &&
         item.stock !== "x"
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant')); // 先預排序
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
 
       renderCards(items, currentType);
     })
@@ -209,44 +209,6 @@ function loadSheetData() {
       document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
       console.error(err);
     });
-}
-
-// 輔助函數：取得一個字串中所有連續子串(長度minLen~maxLen)
-function getSubstrings(str, minLen = 3, maxLen = 6) {
-  const subs = [];
-  for (let len = maxLen; len >= minLen; len--) {
-    for (let i = 0; i <= str.length - len; i++) {
-      subs.push(str.substring(i, i + len));
-    }
-  }
-  return subs;
-}
-
-// 抓取所有商品名稱中「頻率>=2」的子串
-function extractFrequentSubstrings(items) {
-  const freqMap = {};
-  items.forEach(item => {
-    const name = item.name || "";
-    const subs = getSubstrings(name, 3, 6);
-    subs.forEach(s => {
-      freqMap[s] = (freqMap[s] || 0) + 1;
-    });
-  });
-  const candidates = Object.entries(freqMap)
-    .filter(([str, count]) => count >= 2)
-    .map(([str]) => str)
-    .sort((a, b) => b.length - a.length);
-  return candidates;
-}
-
-// 判斷兩個名稱是否有共用高頻字串，並回傳最長共用字串長度
-function longestCommonFrequentSubstring(nameA, nameB, freqSubstrings) {
-  for (const sub of freqSubstrings) {
-    if (nameA.includes(sub) && nameB.includes(sub)) {
-      return sub.length; // 找到第一個（最長）共用字串就回傳長度
-    }
-  }
-  return 0;
 }
 
 function renderCards(items, typeName) {
@@ -260,58 +222,23 @@ function renderCards(items, typeName) {
     "文具", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
   ];
 
-  const groupedByCategory = {};
-  categoriesOrder.forEach(cat => groupedByCategory[cat] = []);
-  groupedByCategory["其他"] = [];
+  const grouped = {};
+  categoriesOrder.forEach(cat => grouped[cat] = []);
+  grouped["其他"] = [];
 
   items.forEach(item => {
     if (categoriesOrder.includes(item.type)) {
-      groupedByCategory[item.type].push(item);
+      grouped[item.type].push(item);
     } else {
-      groupedByCategory["其他"].push(item);
+      grouped["其他"].push(item);
     }
   });
 
   const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
   categoriesOrder.forEach(category => {
-    const catItems = groupedByCategory[category];
-    if (catItems.length === 0) return;
+    if (grouped[category].length === 0) return;
 
-    // 先抓高頻字串列表（該分類內）
-    const freqSubstrings = extractFrequentSubstrings(catItems);
-
-    // 排序改成：
-    // 先判斷是否有共用高頻字串，越長的共用字串排越靠近
-    // 若無共用字串，再用名稱字典序排序，再依角色優先排序
-    catItems.sort((a, b) => {
-  // 優先條件 1：共用高頻字串長度（越長越相近）
-  const commonLen = longestCommonFrequentSubstring(a.name, b.name, freqSubstrings);
-  if (commonLen > 0) return -commonLen;
-
-  // 優先條件 2：名稱字典序（當不相似）
-  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-  if (nameCompare !== 0) return nameCompare;
-
-  // 優先條件 3：角色優先順序
-  const roleA = getRoleChar(a.role);
-  const roleB = getRoleChar(b.role);
-  const idxA = rolePriority.indexOf(roleA);
-  const idxB = rolePriority.indexOf(roleB);
-
-  if (idxA !== -1 && idxB !== -1) {
-    return idxA - idxB;
-  } else if (idxA !== -1) {
-    return -1;
-  } else if (idxB !== -1) {
-    return 1;
-  } else {
-    return roleA.localeCompare(roleB, "zh-Hant");
-  }
-});
-
-    // 顯示這分類商品
-    // 分類標題
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -323,7 +250,27 @@ function renderCards(items, typeName) {
     groupDiv.style.justifyContent = "flex-start";
     groupDiv.style.gap = "8px";
 
-    catItems.forEach(item => {
+    grouped[category].sort((a, b) => {
+  const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
+
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+
+  if (idxA !== -1 && idxB !== -1) {
+    return idxA - idxB; // 都在指定順序內
+  } else if (idxA !== -1) {
+    return -1; // A 有指定順序，排前面
+  } else if (idxB !== -1) {
+    return 1; // B 有指定順序，排前面
+  } else {
+    return roleA.localeCompare(roleB, "zh-Hant"); // 其他照字典排
+  }
+});
+
+    grouped[category].forEach(item => {
       const status = getStatus(item);
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
       const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
@@ -369,15 +316,22 @@ function formatName(name) {
   const cleanName = name.trim();
   const totalLength = cleanName.length;
 
+  // 若總字數 <= 9，不換行
   if (totalLength <= 9) return cleanName;
 
+  // 找 9 字內最後一個空白鍵
   const maxLengthBeforeWrap = 9;
   const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
 
   if (spaceIndex > 0) {
-    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
+    return (
+      cleanName.slice(0, spaceIndex) +
+      "<br>" +
+      cleanName.slice(spaceIndex + 1)
+    );
   }
 
+  // 若 9 字內找不到空白，直接硬切第 9 字
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
