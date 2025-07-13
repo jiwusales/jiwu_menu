@@ -348,20 +348,22 @@ function renderCards(items, typeName) {
         <div class="price">${formatPrice(item.price)}</div>
       `;
 
-     const isLink = item.price === "-" || !item.price;
-const wrapper = document.createElement(isLink ? "a" : "div");
+const link = (item.price === "-" || !item.price || item.price === "私訊花花") ? "https://lin.ee/X6FUFI9" : null;
+
+const wrapper = document.createElement(link ? "a" : "div");
 wrapper.className = "card";
 wrapper.style.borderColor = colors[typeName] || "#ccc";
 wrapper.innerHTML = cardHTML;
-if (isLink) {
-  wrapper.href = "https://lin.ee/X6FUFI9";
+if (link) {
+  wrapper.href = link;
   wrapper.target = "_blank";
 }
+
 groupDiv.appendChild(wrapper);
   });
 }
 
-container.appendChild(groupDiv); // ✅ 貼在這裡
+container.appendChild(groupDiv); //
 });
                           
 function formatPrice(price) {
