@@ -206,16 +206,24 @@ function renderCards(items) {
   container.innerHTML = "";
 
   // 先依「種類 ➜ 款式 ➜ 名稱」排序
-  items.sort((a, b) => {
-    const catA = categoryOrder.indexOf(a.category);
-    const catB = categoryOrder.indexOf(b.category);
-    if (catA !== catB) return catA - catB;
+ items.sort((a, b) => {
+  const catA = categoryOrder.indexOf(a.category);
+  const catB = categoryOrder.indexOf(b.category);
+  if (catA !== catB) return catA - catB;
 
-    const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
-    if (styleCompare !== 0) return styleCompare;
+  // 如果是吊娃、娃分類，款式排序改成不變動順序（視為相同）
+  if (a.category === "吊娃、娃") {
+    // 款式不排序，保持原本順序
+    return 0;
+  }
 
-    return (a.name || "").localeCompare(b.name || "", 'zh-Hant');
-  });
+  // 其他分類依款式字串排序
+  const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
+  if (styleCompare !== 0) return styleCompare;
+
+  // 最後依名稱排序
+  return (a.name || "").localeCompare(b.name || "", 'zh-Hant');
+});
 
   let currentCategory = "";
   let groupDiv;
