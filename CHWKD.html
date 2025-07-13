@@ -253,7 +253,12 @@ categoriesOrder.forEach(cat => grouped[cat] = []);
 grouped["其他"] = [];
 
 items.forEach(item => {
-  if (item.style === "娃徽章") {
+  const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
+  const isBlind = /盲/.test(combinedText);
+
+  if (isBlind) {
+    grouped["玩具"].push(item);
+  } else if (item.style === "娃徽章") {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
