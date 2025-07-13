@@ -192,13 +192,13 @@ const categoryOrder = [
 ];
 
   const roleColors = {
-  "熊": "#E9EAEC",
+  "熊": "#FDD1D2",
   "狗": "#F8EFE4",
   "餅": "#F3BC50",
   "馬來": "#25C0C0",
   "水族": "#88B2CC",
   "其": "#D4BBDD",
-  "綜": "#FDD1D2"
+  "綜": "#dac7b7"
 };
 
 
@@ -290,16 +290,24 @@ const roleKey = roleChars.slice(0, 2).join(''); // 最多兩字
 const badgeColor = roleColors[roleKey] || roleColors["綜"];
 const badgeText = roleKey || "綜";
 
-const roleBadge = document.createElement("div");
+onst roleBadge = document.createElement("div");
 roleBadge.className = "role-badge";
 roleBadge.style.backgroundColor = badgeColor;
 roleBadge.textContent = badgeText;
 
-// 特別指定「狗」和「熊」的字顏色為 #333
-if (["狗", "熊"].includes(badgeText)) {
-  roleBadge.style.color = "#333333";
+// 單字：正圓 + 中央置中
+if (badgeText.length === 1) {
+  roleBadge.style.width = "16px";
+  roleBadge.style.height = "16px";
+  roleBadge.style.padding = "0";
+  roleBadge.style.borderRadius = "50%";
+  roleBadge.style.textAlign = "center";
 }
 
+// 特定角色文字顏色深灰
+if (["熊"].includes(badgeText)) {
+  roleBadge.style.color = "#333333";
+}
 wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
