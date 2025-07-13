@@ -175,12 +175,12 @@ const typeKeywordMap = {
 const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 const bagStyles = ["斜背包", "鑰匙包"];
 
-const stickerSubTypes = [
-  { groupName: "單張貼紙-貼紙包", types: ["單張貼紙"], styles: ["貼紙包"] },
-  { groupName: "特殊貼紙", types: ["特殊貼紙"], styles: ["特貼"] },
-  { groupName: "圖鑑貼紙", types: ["圖鑑貼紙"], styles: ["圖鑑", "封蠟"] },
-  { groupName: "單張貼紙-單張壁貼", types: ["單張貼紙"], styles: ["單張", "壁貼"] },
-  { groupName: "膠帶", types: ["膠帶"], styles: ["膠帶"] }
+const stickerGroups = [
+  { groupName: "貼紙包", styleKeywords: ["貼紙包"] },
+  { groupName: "圖鑑貼紙", styleKeywords: ["圖鑑", "封蠟"] },
+  { groupName: "特殊貼紙", styleKeywords: ["特貼"] },
+  { groupName: "單張壁貼", styleKeywords: ["單張", "壁貼"] },
+  { groupName: "膠帶", styleKeywords: ["膠帶"] },
 ];
 
 const categoriesOrder = [
@@ -267,19 +267,17 @@ function renderCards(items, typeName) {
   grouped["其他"] = [];
 
   items.forEach(item => {
-    // 先判斷貼紙子分類
-    let assigned = false;
-    for (const sub of stickerSubTypes) {
-      if (
-        sub.types.includes(item.type) &&
-        sub.styles.some(s => item.style.includes(s))
-      ) {
-        grouped[sub.groupName].push(item);
-        assigned = true;
+  if (item.type === "貼紙") {
+    let matched = false;
+    for (const group of stickerGroups) {
+      if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
+        grouped[group.groupName].push(item);
+        matched = true;
         break;
       }
     }
-    if (assigned) return;
+    if (matched) return;  // 已分組就跳過後面判斷
+  }
 
     // 原本分組判斷
     const combined = (item.type || "") + (item.style || "") + (item.name || "");
