@@ -137,17 +137,38 @@
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ナガノ";
+
 const categoryMap = {
   "吊娃": "吊娃、娃", "娃": "吊娃、娃",
-  "包包": "包包",
+  "包包": "包袋",
   "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
-  "立牌": "立牌、徽章、磁鐵、玩具", "徽章": "立牌、徽章、磁鐵、玩具",
-  "磁鐵": "立牌、徽章、磁鐵、玩具", "玩具": "立牌、徽章、磁鐵、玩具",
-  "文具": "文具、貼紙", "貼紙": "文具、貼紙",
-  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
-  "飾品": "飾品、衣服", "衣服": "飾品、衣服",
+  "立牌": "立牌、徽章",
+  "徽章": "立牌、徽章",
+  "磁鐵": "文具、磁鐵",
+  "玩具": "玩具、盲",
+  "盲抽": "玩具、盲",
+  "文具": "文具、磁鐵",
+  "貼紙": "貼紙",
+  "3C": "3C、居家、毛巾",
+  "居家": "3C、居家、毛巾",
+  "毛巾": "3C、居家、毛巾",
+  "飾品": "飾品、衣服",
+  "衣服": "飾品、衣服",
   "餐廚": "餐廚"
 };
+
+const categoryOrder = [
+  "吊娃、娃",
+  "包袋",
+  "鑰匙圈、御守",
+  "立牌、徽章",
+  "玩具、盲",
+  "文具、磁鐵",
+  "貼紙",
+  "3C、居家、毛巾",
+  "飾品、衣服",
+  "餐廚"
+];
 
 function loadSheetData() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -157,14 +178,16 @@ function loadSheetData() {
     .then(data => {
       const rows = data.table.rows;
       const items = rows.map(row => ({
+        role: row.c[0]?.v || "",
         category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
-        name: row.c[2]?.v || "",
-        img: row.c[10]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-        price: row.c[4]?.v,
-        stock: row.c[5]?.v,
-        notStock: row.c[6]?.v,
-        up: row.c[7]?.v,
-        preorder: row.c[8]?.v
+        style: row.c[2]?.v || "",
+        name: row.c[3]?.v || "",
+        price: row.c[5]?.v || "",
+        stock: row.c[6]?.v || "",
+        notStock: row.c[7]?.v || "",
+        up: row.c[8]?.v || "",
+        preorder: row.c[9]?.v || "",
+        img: row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       }));
       renderCards(items);
     })
@@ -177,72 +200,73 @@ function loadSheetData() {
 function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
-  const grouped = {};
-  items.forEach(item => {
-    if (!grouped[item.category]) grouped[item.category] = [];
-    grouped[item.category].push(item);
+
+  // 先依「種類 ➜ 款式 ➜ 名稱」排序
+  items.sort((a, b) => {
+    const catA = categoryOrder.indexOf(a.category);
+    const catB = categoryOrder.indexOf(b.category);
+    if (catA !== catB) return catA - catB;
+
+    const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
+    if (styleCompare !== 0) return styleCompare;
+
+    return (a.name || "").localeCompare(b.name || "", 'zh-Hant');
   });
 
-  Object.keys(grouped).forEach(category => {
-    const divider = document.createElement("div");
-    divider.className = "type-divider";
-    divider.textContent = category;
-    container.appendChild(divider);
+  let currentCategory = "";
+  let groupDiv;
 
-    const groupDiv = document.createElement("div");
-groupDiv.className = "group-grid";
+  items.forEach(item => {
+    if (item.category !== currentCategory) {
+      currentCategory = item.category;
 
-    let sortedItems;
-    if (category === "吊娃、娃") {
-      sortedItems = grouped[category];
-    } else {
-      sortedItems = grouped[category].sort((a, b) => {
-        const aKey = a.name.substring(0, 2);
-        const bKey = b.name.substring(0, 2);
-        return aKey.localeCompare(bKey, 'zh-Hant');
-      });
+      // 新增種類分隔標題
+      const divider = document.createElement("div");
+      divider.className = "type-divider";
+      divider.textContent = currentCategory;
+      container.appendChild(divider);
+
+      // 新增商品卡群組
+      groupDiv = document.createElement("div");
+      groupDiv.className = "group-grid";
+      container.appendChild(groupDiv);
     }
 
-    sortedItems.forEach(item => {
-      const status = getStatus(item);
-      if (!status) return;
+    const status = getStatus(item);
+    if (!status) return;
 
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+    const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+    const wrapper = document.createElement(link ? "a" : "div");
+    wrapper.className = "card";
 
-      const wrapper = document.createElement(link ? "a" : "div");
-      wrapper.className = "card";
+    if (link) {
+      wrapper.href = link;
+      wrapper.target = "_blank";
+    }
 
-      if (link) {
-        wrapper.href = link;
-        wrapper.target = "_blank";
-      }
+    const img = document.createElement("img");
+    img.src = item.img;
+    img.alt = item.name;
+    wrapper.appendChild(img);
 
-      const img = document.createElement("img");
-      img.src = item.img;
-      img.alt = item.name;
-      wrapper.appendChild(img);
+    const badge = document.createElement("div");
+    badge.className = "status-badge";
+    badge.style.background = status.bg;
+    badge.style.color = status.color;
+    badge.textContent = status.text;
+    wrapper.appendChild(badge);
 
-      const badge = document.createElement("div");
-      badge.className = "status-badge";
-      badge.style.background = status.bg;
-      badge.style.color = status.color;
-      badge.textContent = status.text;
-      wrapper.appendChild(badge);
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "name";
+    nameDiv.innerHTML = formatName(item.name);
+    wrapper.appendChild(nameDiv);
 
-      const nameDiv = document.createElement("div");
-      nameDiv.className = "name";
-      nameDiv.innerHTML = formatName(item.name);
-      wrapper.appendChild(nameDiv);
+    const priceDiv = document.createElement("div");
+    priceDiv.className = "price";
+    priceDiv.textContent = formatPrice(item.price);
+    wrapper.appendChild(priceDiv);
 
-      const priceDiv = document.createElement("div");
-      priceDiv.className = "price";
-      priceDiv.textContent = formatPrice(item.price);
-      wrapper.appendChild(priceDiv);
-
-      groupDiv.appendChild(wrapper);
-    });
-
-    container.appendChild(groupDiv);
+    groupDiv.appendChild(wrapper);
   });
 }
 
@@ -276,10 +300,8 @@ function formatName(name) {
   const cleanName = name.trim();
   const totalLength = cleanName.length;
 
-  // 若總字數 <= 9，不換行
   if (totalLength <= 9) return cleanName;
 
-  // 找 9 字內最後一個空白鍵
   const maxLengthBeforeWrap = 9;
   const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
 
@@ -291,10 +313,9 @@ function formatName(name) {
     );
   }
 
-  // 若 9 字內找不到空白，直接硬切第 9 字
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
-  
+
 loadSheetData();
 </script>
 </body>
