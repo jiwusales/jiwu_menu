@@ -64,12 +64,10 @@
       margin: 0 10px;
     }
     .group-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
   justify-content: center;
-  padding: 0 10px;
-  gap: 12px 8px; /* 水平間距 12px，垂直 8px */
-  box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
