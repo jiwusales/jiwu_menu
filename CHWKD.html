@@ -160,6 +160,7 @@ const typeKeywordMap = {
 };
 
 const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+const bagStyles = ["斜背包", "鑰匙包"];
 
 function getRoleChar(role) {
   return (role || "").charAt(0);
@@ -198,37 +199,28 @@ function loadSheetData() {
         img: row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       }))
       .filter(item =>
-  keywords.some(keyword =>
-    item.type.includes(keyword) || item.style.includes(keyword)
-  ) &&
-  item.up !== "x" &&
-  item.stock !== "x" &&
-  !((item.type === "娃" || item.type === "吊娃") && item.style === "")
-)
+        keywords.some(keyword =>
+          item.type.includes(keyword) || item.style.includes(keyword)
+        ) &&
+        item.up !== "x" &&
+        item.stock !== "x" &&
+        !((item.type === "娃" || item.type === "吊娃") && item.style === "")
+      )
       .sort((a, b) => {
         const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
         if (typeCompare !== 0) return typeCompare;
-
         const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
         if (styleCompare !== 0) return styleCompare;
-
         const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
         if (nameCompare !== 0) return nameCompare;
-
         const roleA = getRoleChar(a.role);
         const roleB = getRoleChar(b.role);
         const idxA = rolePriority.indexOf(roleA);
         const idxB = rolePriority.indexOf(roleB);
-
-        if (idxA !== -1 && idxB !== -1) {
-          return idxA - idxB;
-        } else if (idxA !== -1) {
-          return -1;
-        } else if (idxB !== -1) {
-          return 1;
-        } else {
-          return roleA.localeCompare(roleB, "zh-Hant");
-        }
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        else if (idxA !== -1) return -1;
+        else if (idxB !== -1) return 1;
+        else return roleA.localeCompare(roleB, "zh-Hant");
       });
 
       renderCards(items, currentType);
@@ -244,43 +236,36 @@ function renderCards(items, typeName) {
   container.innerHTML = "";
 
   const categoriesOrder = [
-  "包包", "鑰匙圈", "御守", "立牌", "徽章", "盲抽", "玩具",
-  "證件套", "文具", "磁鐵", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
-];
+    "包包", "鑰匙圈", "御守", "立牌", "徽章", "盲抽", "玩具",
+    "證件套", "文具", "磁鐵", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
+  ];
 
-const grouped = {};
-categoriesOrder.forEach(cat => grouped[cat] = []);
-grouped["其他"] = [];
-grouped["盲抽"] = [];
+  const grouped = {};
+  categoriesOrder.forEach(cat => grouped[cat] = []);
+  grouped["其他"] = [];
 
-items.forEach(item => {
-  const combinedText = (item.type || "") + (item.style || "") + (item.name || "");
-  const isBlind = /盲/.test(combinedText);
-
-  if (isBlind) {
-    grouped["盲抽"].push(item);
-  } else if (item.style === "娃徽章") {
-    grouped["徽章"].push(item);
-  } else if (item.style === "娃夾子") {
-    grouped["文具"].push(item);
-  } else if (
-    item.style === "斜背包" ||
-    item.style === "鑰匙包" ||  // ✅ 無論是哪個 type，只要 style 是鑰匙包就歸類到包包
-    (item.type === "吊娃" && item.style === "鑰匙包")  // ✅ 額外保險條件，強化處理特殊 case
-  ) {
-    grouped["包包"].push(item);
-  } else if (item.style === "證件套") {
-    grouped["證件套"].push(item);
-  } else if (item.type === "娃" && item.style === "抱枕") {
-    grouped["居家"].push(item);
-  } else if (categoriesOrder.includes(item.style)) {
-    grouped[item.style].push(item);
-  } else if (categoriesOrder.includes(item.type)) {
-    grouped[item.type].push(item);
-  } else {
-    grouped["其他"].push(item);
-  }
-});
+  items.forEach(item => {
+    const combined = (item.type || "") + (item.style || "") + (item.name || "");
+    if (/盲/.test(combined)) {
+      grouped["盲抽"].push(item);
+    } else if (item.style === "娃徽章") {
+      grouped["徽章"].push(item);
+    } else if (item.style === "娃夾子") {
+      grouped["文具"].push(item);
+    } else if (bagStyles.includes(item.style)) {
+      grouped["包包"].push(item);
+    } else if (item.style === "證件套") {
+      grouped["證件套"].push(item);
+    } else if (item.type === "娃" && item.style === "抱枕") {
+      grouped["居家"].push(item);
+    } else if (categoriesOrder.includes(item.style)) {
+      grouped[item.style].push(item);
+    } else if (categoriesOrder.includes(item.type)) {
+      grouped[item.type].push(item);
+    } else {
+      grouped["其他"].push(item);
+    }
+  });
 
   const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
@@ -299,38 +284,22 @@ items.forEach(item => {
     groupDiv.style.gap = "8px";
 
     grouped[category].sort((a, b) => {
-    // 1. 先比種類 type
-    const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
-    if (typeCompare !== 0) return typeCompare;
+      const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
+      if (typeCompare !== 0) return typeCompare;
+      const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
+      if (styleCompare !== 0) return styleCompare;
+      const nameCompare = a.name.trim().localeCompare(b.name.trim(), "zh-Hant");
+      if (nameCompare !== 0) return nameCompare;
+      const roleA = getRoleChar(a.role);
+      const roleB = getRoleChar(b.role);
+      const idxA = rolePriority.indexOf(roleA);
+      const idxB = rolePriority.indexOf(roleB);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      else if (idxA !== -1) return -1;
+      else if (idxB !== -1) return 1;
+      else return roleA.localeCompare(roleB, "zh-Hant");
+    });
 
-    // 2. 再比款式 style
-    const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
-    if (styleCompare !== 0) return styleCompare;
-
-    // 3. 再比名稱 name
-    const nameA = a.name.trim();
-    const nameB = b.name.trim();
-    const nameCompare = nameA.localeCompare(nameB, "zh-Hant");
-    if (nameCompare !== 0) return nameCompare;
-
-    // 4. **名稱相同時才比角色優先順序**
-    const roleA = getRoleChar(a.role);
-    const roleB = getRoleChar(b.role);
-
-    const idxA = rolePriority.indexOf(roleA);
-    const idxB = rolePriority.indexOf(roleB);
-
-    if (idxA !== -1 && idxB !== -1) {
-    return idxA - idxB;
-  } else if (idxA !== -1) {
-    return -1;
-  } else if (idxB !== -1) {
-    return 1;
-  } else {
-    return roleA.localeCompare(roleB, "zh-Hant");
-  }
-});
-    
     grouped[category].forEach(item => {
       const status = getStatus(item);
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
@@ -373,23 +342,14 @@ function getStatus(item) {
 
 function formatName(name) {
   if (!name) return "";
-
   const cleanName = name.trim();
   const totalLength = cleanName.length;
-
   if (totalLength <= 9) return cleanName;
-
   const maxLengthBeforeWrap = 9;
   const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
-
   if (spaceIndex > 0) {
-    return (
-      cleanName.slice(0, spaceIndex) +
-      "<br>" +
-      cleanName.slice(spaceIndex + 1)
-    );
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
   }
-
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
