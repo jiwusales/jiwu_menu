@@ -263,7 +263,11 @@ items.forEach(item => {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
-  } else if (["斜背包", "鑰匙包"].includes(item.style)) {
+  } else if (
+    item.style === "斜背包" ||
+    item.style === "鑰匙包" ||  // ✅ 無論是哪個 type，只要 style 是鑰匙包就歸類到包包
+    (item.type === "吊娃" && item.style === "鑰匙包")  // ✅ 額外保險條件，強化處理特殊 case
+  ) {
     grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);
