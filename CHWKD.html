@@ -154,7 +154,7 @@ const typeKeywordMap = {
   "立牌徽章": ["立牌", "徽章", "娃徽章"],
   "鑰匙圈御守": ["鑰匙圈", "御守"],
   "玩具盲抽": ["玩具", "盲"],
-  "服飾包袋": ["包包", "衣服", "飾品", "娃包"],
+  "服飾包袋": ["包包", "衣服", "飾品", "斜背包"],
   "生活居家": ["3C", "居家", "毛巾"],
   "餐廚用品": ["餐廚"]
 };
@@ -257,6 +257,8 @@ items.forEach(item => {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
+    } else if (item.style === "斜背包") {
+  grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);  // 新增這行
   } else if (categoriesOrder.includes(item.style)) {
