@@ -263,6 +263,8 @@ items.forEach(item => {
     grouped["包包"].push(item);
   } else if (item.style === "證件套") {
     grouped["證件套"].push(item);
+  } else if (item.type === "娃" && item.style === "抱枕") {
+    grouped["居家"].push(item);
   } else if (categoriesOrder.includes(item.style)) {
     grouped[item.style].push(item);
   } else if (categoriesOrder.includes(item.type)) {
