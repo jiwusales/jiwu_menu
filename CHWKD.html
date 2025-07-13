@@ -201,8 +201,7 @@ function loadSheetData() {
         keywords.some(keyword => item.type.includes(keyword)) &&
         item.up !== "x" &&
         item.stock !== "x" &&
-        item.type !== "吊娃" &&
-        !(item.type === "娃" && !item.style)
+        !((item.type === "娃" || item.type === "吊娃") && !item.style)
       )
       .sort((a, b) => {
         const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
