@@ -361,6 +361,9 @@ groupDiv.appendChild(wrapper);
   });
 }
 
+container.appendChild(groupDiv); // ✅ 貼在這裡
+});
+                          
 function formatPrice(price) {
   if (!price) return "私訊花花";
   if (price === "-") return "組合出售";
