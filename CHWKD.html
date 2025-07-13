@@ -257,10 +257,12 @@ items.forEach(item => {
     grouped["徽章"].push(item);
   } else if (item.style === "娃夾子") {
     grouped["文具"].push(item);
-    } else if (item.style === "斜背包") {
-  grouped["包包"].push(item);
+  } else if (item.style === "斜背包") {
+    grouped["包包"].push(item);
+  } else if (item.type === "吊娃" && item.style === "鑰匙套") {
+    grouped["包包"].push(item);
   } else if (item.style === "證件套") {
-    grouped["證件套"].push(item);  // 新增這行
+    grouped["證件套"].push(item);
   } else if (categoriesOrder.includes(item.style)) {
     grouped[item.style].push(item);
   } else if (categoriesOrder.includes(item.type)) {
