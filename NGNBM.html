@@ -190,10 +190,7 @@ function renderCards(items) {
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
-    groupDiv.style.display = "flex";
-    groupDiv.style.flexWrap = "wrap";
-    groupDiv.style.justifyContent = "flex-start";
-    groupDiv.style.gap = "8px";
+groupDiv.className = "group-grid";
 
     let sortedItems;
     if (category === "吊娃、娃") {
