@@ -193,7 +193,7 @@ const categoryOrder = [
 
   const roleColors = {
   "熊": "#FDD1D2",
-  "狗": "#F8EFE4",
+  "狗": "#999999",
   "餅": "#F3BC50",
   "馬來": "#25C0C0",
   "水族": "#88B2CC",
@@ -304,10 +304,6 @@ if (badgeText.length === 1) {
   roleBadge.style.textAlign = "center";
 }
 
-// 特定角色文字顏色深灰
-if (["熊"].includes(badgeText)) {
-  roleBadge.style.color = "#333333";
-}
 wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
