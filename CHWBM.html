@@ -203,6 +203,12 @@ const categoryMap = {
   "餐廚": "餐廚"
 };
 
+// ✅ 種類排序優先順序（照 categoryMap 合併後分類順序）
+const categoryOrder = [
+  "吊娃、娃", "包袋", "鑰匙圈、御守", "立牌、徽章、磁鐵、玩具",
+  "文具、貼紙", "3C、居家、毛巾", "飾品、衣服", "餐廚", "未分類"
+];
+
 // ✅ 抓 URL 中角色參數
 function getRoleFromURL() {
   const params = new URLSearchParams(window.location.search);
@@ -247,26 +253,35 @@ function loadSheetData() {
     });
 }
 
-// ✅ 渲染主畫面
+// ✅ 渲染主畫面（角色→種類→款式→名稱排序）
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
+  // 收集款式排序順序（依試算表資料先後）
+  const styleOrder = [];
+  items.forEach(item => {
+    if (!styleOrder.includes(item.style)) styleOrder.push(item.style);
+  });
+
+  // 先分類（依合併分類）
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
-  // ✅ 自動建立款式排序順序（依照試算表原始順序）
-  const styleOrder = [];
-  items.forEach(item => {
-    if (!styleOrder.includes(item.style)) {
-      styleOrder.push(item.style);
-    }
+  // 依種類排序列出各分類
+  const sortedCategories = Object.keys(grouped).sort((a,b) => {
+    const idxA = categoryOrder.indexOf(a);
+    const idxB = categoryOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
   });
 
-  Object.keys(grouped).forEach(category => {
+  sortedCategories.forEach(category => {
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -275,25 +290,40 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    const sortedItems = (category === "吊娃、娃")
-      ? grouped[category]
-      : grouped[category].slice().sort((a, b) => {
-          const styleCompare = styleOrder.indexOf(a.style) - styleOrder.indexOf(b.style);
-          if (styleCompare !== 0) return styleCompare;
+    // 從全部 items 過濾該分類再排序
+    const filteredItems = items.filter(i => i.category === category);
 
-          const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
-          if (nameCompare !== 0) return nameCompare;
+    const sortedItems = filteredItems.slice().sort((a, b) => {
+      // 1. 角色排序
+      const roleA = (a.role || "").charAt(0);
+      const roleB = (b.role || "").charAt(0);
+      const idxRoleA = rolePriority.indexOf(roleA);
+      const idxRoleB = rolePriority.indexOf(roleB);
+      if (idxRoleA !== -1 && idxRoleB !== -1 && idxRoleA !== idxRoleB) return idxRoleA - idxRoleB;
+      if (idxRoleA !== -1 && idxRoleB === -1) return -1;
+      if (idxRoleB !== -1 && idxRoleA === -1) return 1;
 
-          const roleA = (a.role || "").charAt(0);
-          const roleB = (b.role || "").charAt(0);
-          const idxA = rolePriority.indexOf(roleA);
-          const idxB = rolePriority.indexOf(roleB);
-          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-          if (idxA !== -1) return -1;
-          if (idxB !== -1) return 1;
+      // 2. 種類排序（理論上皆相同，因已過濾）
+      const idxCatA = categoryOrder.indexOf(a.category);
+      const idxCatB = categoryOrder.indexOf(b.category);
+      if (idxCatA !== -1 && idxCatB !== -1 && idxCatA !== idxCatB) return idxCatA - idxCatB;
+      if (idxCatA !== -1 && idxCatB === -1) return -1;
+      if (idxCatB !== -1 && idxCatA === -1) return 1;
 
-          return a.index - b.index;
-        });
+      // 3. 款式排序
+      const idxStyleA = styleOrder.indexOf(a.style);
+      const idxStyleB = styleOrder.indexOf(b.style);
+      if (idxStyleA !== -1 && idxStyleB !== -1 && idxStyleA !== idxStyleB) return idxStyleA - idxStyleB;
+      if (idxStyleA !== -1 && idxStyleB === -1) return -1;
+      if (idxStyleB !== -1 && idxStyleA === -1) return 1;
+
+      // 4. 名稱排序
+      const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
+      if (nameCompare !== 0) return nameCompare;
+
+      // 5. 保持原序
+      return a.index - b.index;
+    });
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
