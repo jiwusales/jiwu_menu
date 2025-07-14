@@ -258,21 +258,18 @@ function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  // 收集款式排序順序（依試算表資料先後）
   const styleOrder = [];
   items.forEach(item => {
     if (!styleOrder.includes(item.style)) styleOrder.push(item.style);
   });
 
-  // 先分類（依合併分類）
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
-  // 依種類排序列出各分類
-  const sortedCategories = Object.keys(grouped).sort((a,b) => {
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
     const idxA = categoryOrder.indexOf(a);
     const idxB = categoryOrder.indexOf(b);
     if (idxA !== -1 && idxB !== -1) return idxA - idxB;
@@ -294,14 +291,34 @@ function renderCards(items, roleName) {
 
     let sortedItems;
     if (category === "吊娃、娃") {
-      // 「吊娃、娃」分類，保留原始資料順序，不排序
-      sortedItems = filteredItems.slice().sort((a,b) => a.index - b.index);
+      // 吊娃、娃類別維持原始資料順序
+      sortedItems = filteredItems.slice().sort((a, b) => a.index - b.index);
     } else {
-      // 其他分類正常排序：角色優先 → 款式順序 → 名稱
+      // 其他類別排序：
+      // 多角色：依原始資料順序排序
+      // 單角色：角色優先 → 款式 → 名稱 → 原始順序
       sortedItems = filteredItems.slice().sort((a, b) => {
-        // 角色排序（單字優先）
-        const roleA = (a.role || "").charAt(0);
-        const roleB = (b.role || "").charAt(0);
+        const rolesA = (a.role || "").replace(/\s/g, "").split("");
+        const rolesB = (b.role || "").replace(/\s/g, "").split("");
+
+        const isMultiA = rolesA.length > 1;
+        const isMultiB = rolesB.length > 1;
+
+        if (isMultiA && isMultiB) {
+          // 兩邊都是多角色，維持原始順序
+          return a.index - b.index;
+        }
+        if (isMultiA && !isMultiB) {
+          // 多角色排後面
+          return 1;
+        }
+        if (!isMultiA && isMultiB) {
+          return -1;
+        }
+
+        // 單角色排序：角色優先
+        const roleA = rolesA[0];
+        const roleB = rolesB[0];
         const idxRoleA = rolePriority.indexOf(roleA);
         const idxRoleB = rolePriority.indexOf(roleB);
         if (idxRoleA !== -1 && idxRoleB !== -1 && idxRoleA !== idxRoleB) return idxRoleA - idxRoleB;
@@ -319,7 +336,7 @@ function renderCards(items, roleName) {
         const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
         if (nameCompare !== 0) return nameCompare;
 
-        // 保持原序
+        // 最後以原始順序排序
         return a.index - b.index;
       });
     }
