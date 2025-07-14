@@ -150,7 +150,10 @@ function loadSheetData() {
         const baseCategory = categoryMap[kind] || kind || "未分類";
         let categoriesToAdd = [baseCategory];
         if (kind === "娃" && style === "抱枕" && !categoriesToAdd.includes("3C、居家、毛巾")) {
-          categoriesToAdd.push("3C、居家、毛巾");
+        categoriesToAdd.push("3C、居家、毛巾");
+        }
+        if (kind === "娃" && style === "背包" && !categoriesToAdd.includes("包袋")) {
+        categoriesToAdd.push("包袋");
         }
 
         categoriesToAdd.forEach(cat => {
