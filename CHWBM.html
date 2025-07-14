@@ -290,40 +290,39 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    // 從全部 items 過濾該分類再排序
     const filteredItems = items.filter(i => i.category === category);
 
-    const sortedItems = filteredItems.slice().sort((a, b) => {
-      // 1. 角色排序
-      const roleA = (a.role || "").charAt(0);
-      const roleB = (b.role || "").charAt(0);
-      const idxRoleA = rolePriority.indexOf(roleA);
-      const idxRoleB = rolePriority.indexOf(roleB);
-      if (idxRoleA !== -1 && idxRoleB !== -1 && idxRoleA !== idxRoleB) return idxRoleA - idxRoleB;
-      if (idxRoleA !== -1 && idxRoleB === -1) return -1;
-      if (idxRoleB !== -1 && idxRoleA === -1) return 1;
+    let sortedItems;
+    if (category === "吊娃、娃") {
+      // 「吊娃、娃」分類，保留原始資料順序，不排序
+      sortedItems = filteredItems.slice().sort((a,b) => a.index - b.index);
+    } else {
+      // 其他分類正常排序：角色優先 → 款式順序 → 名稱
+      sortedItems = filteredItems.slice().sort((a, b) => {
+        // 角色排序（單字優先）
+        const roleA = (a.role || "").charAt(0);
+        const roleB = (b.role || "").charAt(0);
+        const idxRoleA = rolePriority.indexOf(roleA);
+        const idxRoleB = rolePriority.indexOf(roleB);
+        if (idxRoleA !== -1 && idxRoleB !== -1 && idxRoleA !== idxRoleB) return idxRoleA - idxRoleB;
+        if (idxRoleA !== -1 && idxRoleB === -1) return -1;
+        if (idxRoleB !== -1 && idxRoleA === -1) return 1;
 
-      // 2. 種類排序（理論上皆相同，因已過濾）
-      const idxCatA = categoryOrder.indexOf(a.category);
-      const idxCatB = categoryOrder.indexOf(b.category);
-      if (idxCatA !== -1 && idxCatB !== -1 && idxCatA !== idxCatB) return idxCatA - idxCatB;
-      if (idxCatA !== -1 && idxCatB === -1) return -1;
-      if (idxCatB !== -1 && idxCatA === -1) return 1;
+        // 款式排序
+        const idxStyleA = styleOrder.indexOf(a.style);
+        const idxStyleB = styleOrder.indexOf(b.style);
+        if (idxStyleA !== -1 && idxStyleB !== -1 && idxStyleA !== idxStyleB) return idxStyleA - idxStyleB;
+        if (idxStyleA !== -1 && idxStyleB === -1) return -1;
+        if (idxStyleB !== -1 && idxStyleA === -1) return 1;
 
-      // 3. 款式排序
-      const idxStyleA = styleOrder.indexOf(a.style);
-      const idxStyleB = styleOrder.indexOf(b.style);
-      if (idxStyleA !== -1 && idxStyleB !== -1 && idxStyleA !== idxStyleB) return idxStyleA - idxStyleB;
-      if (idxStyleA !== -1 && idxStyleB === -1) return -1;
-      if (idxStyleB !== -1 && idxStyleA === -1) return 1;
+        // 名稱排序
+        const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
+        if (nameCompare !== 0) return nameCompare;
 
-      // 4. 名稱排序
-      const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
-      if (nameCompare !== 0) return nameCompare;
-
-      // 5. 保持原序
-      return a.index - b.index;
-    });
+        // 保持原序
+        return a.index - b.index;
+      });
+    }
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
