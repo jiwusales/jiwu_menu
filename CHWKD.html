@@ -155,63 +155,55 @@
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
 
-const roleColors = {
-  "吉": "#d77485", "八": "#6293b8", "兔": "#f9be3c",
-  "桃": "#838BC2", "獺": "#CCAFA5", "栗": "#94C973",
-  "獅": "#FBAA60", "古": "#eb9e97", "其": "#45818e", "綜": "#dac7b7"
+/* 角色→單字縮寫 */
+const roleMap = {
+  "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
+  "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
 };
-
-const colors = {
-  "貼紙膠帶": "#F8C0C8", "文具磁鐵": "#BAD3E4", "立牌徽章": "#d5a6bd",
-  "鑰匙圈御守": "#7E9DC2", "玩具盲抽": "#90ADC6", "服飾包袋": "#b4a7d6",
-  "生活居家": "#98D7C2", "餐廚用品": "#F1A17E"
-};
-
-const typeKeywordMap = {
-  "貼紙膠帶": ["貼紙"],
-  "文具磁鐵": ["文具", "磁鐵", "娃夾子"],
-  "立牌徽章": ["立牌", "徽章", "娃徽章"],
-  "鑰匙圈御守": ["鑰匙圈", "御守"],
-  "玩具盲抽": ["玩具", "盲"],
-  "服飾包袋": ["包包", "衣服", "飾品", "斜背包", "鑰匙包"],
-  "生活居家": ["3C", "居家", "毛巾"],
-  "餐廚用品": ["餐廚"]
-};
-
+/* 單字縮寫角色排序優先度 */
 const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-const bagStyles = ["斜背包", "鑰匙包"];
-
-const stickerGroups = [
-  { groupName: "貼紙包", styleKeywords: ["貼紙包"] },
-  { groupName: "圖鑑貼紙", styleKeywords: ["圖鑑", "封蠟"] },
-  { groupName: "特殊貼紙", styleKeywords: ["特貼"] },
-  { groupName: "單張貼紙", styleKeywords: ["單張", "壁貼"] },
-  { groupName: "膠帶", styleKeywords: ["膠帶"] },
-];
-
-const categoriesOrder = [
-  "貼紙包", "圖鑑貼紙", "特殊貼紙", "單張貼紙", "膠帶",
-  "包包", "鑰匙圈", "御守", "立牌", "徽章", "盲抽", "玩具",
-  "證件套", "文具", "磁鐵", "貼紙", "3C", "居家", "毛巾", "飾品", "衣服", "餐廚"
-];
 
 function getRoleChar(role) {
-  return (role || "").charAt(0);
+  return (role || "").charAt(0);   // 取第一字元作比較
 }
 
-function getTypeFromURL() {
+/* 角色顏色（沿用 1️⃣） */
+const colors = {
+  "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c",
+  "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973",
+  "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
+};
+
+/* 類別對應（沿用 1️⃣） */
+const categoryMap = {
+  "吊娃": "吊娃、娃", "娃": "吊娃、娃",
+  "包包": "包袋",
+  "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
+  "立牌": "立牌、徽章、磁鐵、玩具", "徽章": "立牌、徽章、磁鐵、玩具",
+  "磁鐵": "立牌、徽章、磁鐵、玩具", "玩具": "立牌、徽章、磁鐵、玩具",
+  "文具": "文具、貼紙", "貼紙": "文具、貼紙",
+  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
+  "飾品": "飾品、衣服", "衣服": "飾品、衣服",
+  "餐廚": "餐廚"
+};
+
+/* 讀取網址上的 ?role= 參數 */
+function getRoleFromURL() {
   const params = new URLSearchParams(window.location.search);
-  const typeParam = params.get("type");
-  return colors[typeParam] ? typeParam : "貼紙膠帶";
+  const roleParam = params.get("role");
+  return roleMap[roleParam] ? roleParam : "吉伊";
 }
 
+/* 下載 Google Sheets 資料並轉成陣列 */
 function loadSheetData() {
-  const currentType = getTypeFromURL();
-  document.documentElement.style.setProperty('--tab-color', colors[currentType]);
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) themeMeta.setAttribute("content", colors[currentType]);
+  const currentRole = getRoleFromURL();
 
-  const keywords = typeKeywordMap[currentType];
+  /* 動態設定主題色 */
+  document.documentElement.style.setProperty("--tab-color", colors[currentRole] || "#999");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute("content", colors[currentRole] || "#999");
+
+  const keyword = roleMap[currentRole];   // 只抓屬於此角色的資料
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
   fetch(url)
@@ -219,44 +211,22 @@ function loadSheetData() {
     .then(text => JSON.parse(text.substr(47).slice(0, -2)))
     .then(data => {
       const rows = data.table.rows;
+
+      /* 這裡把「款式 style」也帶進來 */
       const items = rows.map(row => ({
         role: row.c[0]?.v || "",
-        type: row.c[1]?.v || "",
-        style: row.c[2]?.v || "",
+        category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
+        style: row.c[2]?.v || "",            // ← 新增款式
         name: row.c[3]?.v || "",
+        img: row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
         price: row.c[5]?.v,
         stock: row.c[6]?.v,
         notStock: row.c[7]?.v,
         up: row.c[8]?.v,
-        preorder: row.c[9]?.v,
-        img: row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
-      }))
-      .filter(item =>
-        keywords.some(keyword =>
-          item.type.includes(keyword) || item.style.includes(keyword)
-        ) &&
-        item.up !== "x" &&
-        item.stock !== "x" &&
-        !((item.type === "娃" || item.type === "吊娃") && item.style === "")
-      )
-      .sort((a, b) => {
-        const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
-        if (typeCompare !== 0) return typeCompare;
-        const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
-        if (styleCompare !== 0) return styleCompare;
-        const nameCompare = a.name.localeCompare(b.name, "zh-Hant");
-        if (nameCompare !== 0) return nameCompare;
-        const roleA = getRoleChar(a.role);
-        const roleB = getRoleChar(b.role);
-        const idxA = rolePriority.indexOf(roleA);
-        const idxB = rolePriority.indexOf(roleB);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        else if (idxA !== -1) return -1;
-        else if (idxB !== -1) return 1;
-        else return roleA.localeCompare(roleB, "zh-Hant");
-      });
+        preorder: row.c[9]?.v
+      })).filter(item => item.role.includes(keyword));
 
-      renderCards(items, currentType);
+      renderCards(items, currentRole);
     })
     .catch(err => {
       document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
@@ -264,55 +234,40 @@ function loadSheetData() {
     });
 }
 
-function renderCards(items, typeName) {
+/* 排序用比較函式：款式 → 名稱 → 角色 */
+function cardSorter(a, b) {
+  const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
+  if (styleCompare !== 0) return styleCompare;
+
+  const nameCompare = a.name.trim().localeCompare(b.name.trim(), "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
+
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+
+  if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+  if (idxA !== -1) return -1;
+  if (idxB !== -1) return 1;
+  return roleA.localeCompare(roleB, "zh-Hant");
+}
+
+/* 產生畫面 */
+function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
+  /* 依「種類」分群（沿用 1️⃣） */
   const grouped = {};
-  categoriesOrder.forEach(cat => grouped[cat] = []);
-  grouped["其他"] = [];
-
   items.forEach(item => {
-  if (item.type === "貼紙") {
-    let matched = false;
-    for (const group of stickerGroups) {
-      if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
-        grouped[group.groupName].push(item);
-        matched = true;
-        break;
-      }
-    }
-    if (matched) return;  // 已分組就跳過後面判斷
-  }
-
-    // 原本分組判斷
-    const combined = (item.type || "") + (item.style || "") + (item.name || "");
-    if (/盲/.test(combined)) {
-      grouped["盲抽"].push(item);
-    } else if (item.style === "娃徽章") {
-      grouped["徽章"].push(item);
-    } else if (item.style === "娃夾子") {
-      grouped["文具"].push(item);
-    } else if (bagStyles.includes(item.style)) {
-      grouped["包包"].push(item);
-    } else if (item.style === "證件套") {
-      grouped["證件套"].push(item);
-    } else if (item.type === "娃" && item.style === "抱枕") {
-      grouped["居家"].push(item);
-    } else if (categoriesOrder.includes(item.style)) {
-      grouped[item.style].push(item);
-    } else if (categoriesOrder.includes(item.type)) {
-      grouped[item.type].push(item);
-    } else {
-      grouped["其他"].push(item);
-    }
+    if (!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push(item);
   });
 
-  const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-
-  categoriesOrder.forEach(category => {
-    if (grouped[category].length === 0) return;
-
+  /* 每個種類內套用新的排序邏輯 */
+  Object.keys(grouped).forEach(category => {
+    /* 種類標題 */
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -321,58 +276,58 @@ function renderCards(items, typeName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    grouped[category].sort((a, b) => {
-      const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
-      if (typeCompare !== 0) return typeCompare;
-      const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
-      if (styleCompare !== 0) return styleCompare;
-      const nameCompare = a.name.trim().localeCompare(b.name.trim(), "zh-Hant");
-      if (nameCompare !== 0) return nameCompare;
-      const roleA = getRoleChar(a.role);
-      const roleB = getRoleChar(b.role);
-      const idxA = rolePriority.indexOf(roleA);
-      const idxB = rolePriority.indexOf(roleB);
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      else if (idxA !== -1) return -1;
-      else if (idxB !== -1) return 1;
-      else return roleA.localeCompare(roleB, "zh-Hant");
+    /* ✨ 重點：排序 */
+    const sortedItems = grouped[category].sort(cardSorter);
+
+    sortedItems.forEach(item => {
+      const status = getStatus(item);
+      if (!status) return; // 不顯示不上架等
+
+      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+      const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
+
+      const needLink = (item.price === "-" || !item.price);
+      const link = needLink ? "https://lin.ee/X6FUFI9" : null;
+
+      const cardHTML = `
+        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${formatName(item.name)}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
+
+      const wrapper = document.createElement(link ? "a" : "div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[roleName] || "#ccc";
+      if (link) {
+        wrapper.href = link;
+        wrapper.target = "_blank";
+        wrapper.rel = "noopener noreferrer";
+      }
+      wrapper.innerHTML = cardHTML;
+      groupDiv.appendChild(wrapper);
     });
-
-    grouped[category].forEach(item => {
-  const status = getStatus(item);
-  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-  const badgeColor = roleColors[roleText] || "#ccc";
-
-  // 判斷售價是否為組合出售或私訊花花
-  const needLink = (item.price === "-" || !item.price);
-  const linkUrl = "https://lin.ee/X6FUFI9";  // 你想導向的連結網址，可以改成你自己的
-
-  const cardHTML = `
-    <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
-    <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-    <div class="name">${formatName(item.name)}</div>
-    <div class="price">${formatPrice(item.price)}</div>
-  `;
-
-  // 若需要超連結，建立 <a>，否則用 <div>
-  const wrapper = document.createElement(needLink ? "a" : "div");
-  wrapper.className = "card";
-  wrapper.style.borderColor = colors[typeName] || "#ccc";
-  wrapper.innerHTML = cardHTML;
-
-  if (needLink) {
-    wrapper.href = linkUrl;
-    wrapper.target = "_blank";
-    wrapper.rel = "noopener noreferrer";
-  }
-
-  groupDiv.appendChild(wrapper);
-});
 
     container.appendChild(groupDiv);
   });
+}
+
+/* ===== 其餘輔助函式（與 1️⃣ 相同） ===== */
+function formatName(name) {
+  if (!name) return "";
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+  if (totalLength <= 9) return cleanName;
+
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+  if (spaceIndex > 0) {
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
+  }
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
 function formatPrice(price) {
@@ -382,26 +337,21 @@ function formatPrice(price) {
 }
 
 function getStatus(item) {
-  if (item.preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#fff" };
-  if (item.stock > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333" };
-  if (item.stock == 0 && !item.notStock) return { text: "需預訂", bg: "#D4BBDD", color: "#333" };
-  if (item.stock == 0 && item.notStock) return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
+  const stock = (item.stock ?? "").toString().trim();
+  const notStock = (item.notStock ?? "").toString().trim();
+  const preorder = (item.preorder ?? "").toString().trim();
+  const up = (item.up ?? "").toString().trim();
+
+  if (preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#fff" };
+  if (stock === "x" || up === "x") return null;
+  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0) return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
+  if (stock === "0") return { text: "需預訂", bg: "#D4BBDD", color: "#333" };
+  if (/^\d+$/.test(stock) && Number(stock) > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333" };
+  if (stock === "" && notStock === "" && preorder === "" && up === "") return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
   return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
 }
 
-function formatName(name) {
-  if (!name) return "";
-  const cleanName = name.trim();
-  const totalLength = cleanName.length;
-  if (totalLength <= 9) return cleanName;
-  const maxLengthBeforeWrap = 9;
-  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
-  if (spaceIndex > 0) {
-    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
-  }
-  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
-}
-
+/* 開始執行 */
 loadSheetData();
 </script>
 </body>
