@@ -238,33 +238,30 @@ function loadSheetData() {
     });
 }
 
-function renderCards(items, roleName) {
-  const container = document.getElementById("card-container");
-  container.innerHTML = "";
-  const grouped = {};
-  items.forEach(item => {
-    if (!grouped[item.category]) grouped[item.category] = [];
-    grouped[item.category].push(item);
-  });
-
-  Object.keys(grouped).forEach(category => {
-    const divider = document.createElement("div");
-    divider.className = "type-divider";
-    divider.textContent = category;
-    container.appendChild(divider);
-
-    const groupDiv = document.createElement("div");
-groupDiv.className = "group-grid";
-
-    // 排序邏輯
-    let sortedItems;
-    if (category === "吊娃、娃") {
-      sortedItems = grouped[category];
     } else {
       sortedItems = grouped[category].sort((a, b) => {
-        const aKey = a.name.substring(0, 2);
-        const bKey = b.name.substring(0, 2);
-        return aKey.localeCompare(bKey, 'zh-Hant');
+        // 1. 先比「類型」
+        const typeCompare = (a.type || "").localeCompare(b.type || "", "zh-Hant");
+        if (typeCompare !== 0) return typeCompare;
+
+        // 2. 類型相同再比「款式」
+        const styleCompare = (a.style || "").localeCompare(b.style || "", "zh-Hant");
+        if (styleCompare !== 0) return styleCompare;
+
+        // 3. 款式相同再比「名稱」
+        const nameCompare = (a.name || "").trim().localeCompare((b.name || "").trim(), "zh-Hant");
+        if (nameCompare !== 0) return nameCompare;
+
+        // 4. 名稱相同最後比「角色優先順」
+        const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+        const roleA = (a.role || "").charAt(0);
+        const roleB = (b.role || "").charAt(0);
+        const idxA = rolePriority.indexOf(roleA);
+        const idxB = rolePriority.indexOf(roleB);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return roleA.localeCompare(roleB, "zh-Hant");
       });
     }
 
