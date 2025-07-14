@@ -275,15 +275,19 @@ function cardSorter(a, b) {
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
+
+  /* 依種類(group)先分群 */
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
+  /* 角色優先順序 */
   const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
   Object.keys(grouped).forEach(category => {
+    /* 分類標題 */
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -292,64 +296,65 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    let sortedItems;
-    if (category === "吊娃、娃") {
-      sortedItems = grouped[category]; // 不排序
-    } else {
-      sortedItems = grouped[category].sort((a, b) => {
-        // 種類（type）排序
-        const typeCompare = (a.type || "").localeCompare(b.type || "", "zh-Hant");
-        if (typeCompare !== 0) return typeCompare;
+    /* ─── ⭐ 1. 整理「款式」在試算表中的出現順序 ─── */
+    const styleOrder = [];
+    grouped[category].forEach(it => {
+      if (!styleOrder.includes(it.style)) styleOrder.push(it.style);
+    });
 
-        // 款式（style）排序
-        const styleCompare = (a.style || "").localeCompare(b.style || "", "zh-Hant");
-        if (styleCompare !== 0) return styleCompare;
+    /* ─── ⭐ 2. 排序 ─── */
+    const sortedItems = (category === "吊娃、娃")
+      ? grouped[category]            // 吊娃、娃完全不動
+      : grouped[category].slice().sort((a, b) => {
+          /* (1) 款式依 styleOrder */
+          const styleCompare = styleOrder.indexOf(a.style) - styleOrder.indexOf(b.style);
+          if (styleCompare !== 0) return styleCompare;
 
-        // 名稱排序
-        const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
-        if (nameCompare !== 0) return nameCompare;
+          /* (2) 名稱 */
+          const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
+          if (nameCompare !== 0) return nameCompare;
 
-        // 角色排序（依照 rolePriority）
-        const roleA = (a.role || "").charAt(0);
-        const roleB = (b.role || "").charAt(0);
-        const idxA = rolePriority.indexOf(roleA);
-        const idxB = rolePriority.indexOf(roleB);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        return roleA.localeCompare(roleB, "zh-Hant");
-      });
-    }
+          /* (3) 角色 */
+          const roleA = (a.role || "").charAt(0);
+          const roleB = (b.role || "").charAt(0);
+          const idxA = rolePriority.indexOf(roleA);
+          const idxB = rolePriority.indexOf(roleB);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return roleA.localeCompare(roleB, "zh-Hant");
+        });
+
+    /* ─── ⭐ 3. 產生卡片 ─── */
+    const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
-      if (!status) return;
+      if (!status) return;                          // 不顯示不上架
 
-      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
-      const showRoleBadge = !(category === "吊娃、娃");
+      const roleText = (roleChars.length === 1 && singleCharRoles.includes(roleChars[0]))
+                       ? roleChars[0] : "綜";
+      const showRoleBadge = (category !== "吊娃、娃");
       const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
-      const cardHTML = `
+      const needLink = (item.price === "-" || !item.price);
+      const wrapper = document.createElement(needLink ? "a" : "div");
+      wrapper.className = "card";
+      wrapper.style.borderColor = colors[roleName] || "#ccc";
+      if (needLink) {
+        wrapper.href = "https://lin.ee/X6FUFI9";
+        wrapper.target = "_blank";
+        wrapper.rel = "noopener";
+      }
+
+      wrapper.innerHTML = `
         ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
         <div class="name">${formatName(item.name)}</div>
         <div class="price">${formatPrice(item.price)}</div>
       `;
-
-      const wrapper = document.createElement(link ? "a" : "div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[roleName] || "#ccc";
-
-      if (link) {
-        wrapper.href = link;
-        wrapper.target = "_blank";
-      }
-      wrapper.innerHTML = cardHTML;
-
       groupDiv.appendChild(wrapper);
     });
 
