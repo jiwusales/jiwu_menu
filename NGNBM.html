@@ -282,10 +282,12 @@ items.sort((a, b) => {
   const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
   if (nameCompare !== 0) return nameCompare;
 
+  // 名稱相同時，再依角色順序排序
   function getRoleKey(role) {
     const chars = (role.match(/[\u4e00-\u9fff]/g) || []);
     return chars.slice(0, 2).join('');
   }
+
   const roleA = getRoleKey(a.role);
   const roleB = getRoleKey(b.role);
   const idxA = rolePriority.indexOf(roleA);
