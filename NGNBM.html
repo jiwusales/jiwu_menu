@@ -282,7 +282,8 @@ items.sort((a, b) => {
   const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
   if (nameCompare !== 0) return nameCompare;
 
-  // 名稱相同時，再依角色順序排序
+  // 🔺 這一段是你漏掉的「角色順序」邏輯
+  const rolePriority = ["熊", "狗", "餅", "馬來", "其", "水族"];
   function getRoleKey(role) {
     const chars = (role.match(/[\u4e00-\u9fff]/g) || []);
     return chars.slice(0, 2).join('');
