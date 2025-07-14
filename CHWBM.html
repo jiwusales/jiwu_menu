@@ -174,23 +174,23 @@
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
 
-// ✅ 角色縮寫對照（例如：吉伊 ➜ 吉）
+// ✅ 角色縮寫對照
 const roleMap = {
   "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
   "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
 };
 
-// ✅ 角色排序優先順序（單字縮寫）
+// ✅ 角色排序優先順序
 const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
-// ✅ 顏色設定（角色主題色）
+// ✅ 角色主題色
 const colors = {
   "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c",
   "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973",
   "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
 };
 
-// ✅ 類別合併邏輯（將不同小分類合併為大區塊）
+// ✅ 類別合併邏輯
 const categoryMap = {
   "吊娃": "吊娃、娃", "娃": "吊娃、娃",
   "包包": "包袋",
@@ -203,23 +203,21 @@ const categoryMap = {
   "餐廚": "餐廚"
 };
 
-// ✅ 從網址取得 ?role= 參數
+// ✅ 抓 URL 中角色參數
 function getRoleFromURL() {
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
   return roleMap[roleParam] ? roleParam : "吉伊";
 }
 
-// ✅ 開始載入 Google Sheets 資料
+// ✅ 載入 Google Sheets 資料
 function loadSheetData() {
   const currentRole = getRoleFromURL();
-
-  // ⬇️ 設定主題色
   document.documentElement.style.setProperty("--tab-color", colors[currentRole] || "#999");
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if (themeMeta) themeMeta.setAttribute("content", colors[currentRole] || "#999");
 
-  const keyword = roleMap[currentRole];   // 比對角色
+  const keyword = roleMap[currentRole];
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
   fetch(url)
@@ -227,10 +225,8 @@ function loadSheetData() {
     .then(text => JSON.parse(text.substr(47).slice(0, -2)))
     .then(data => {
       const rows = data.table.rows;
-
-      // ✅ 將資料轉成陣列（並加入 index，方便照表格順序排序）
       const items = rows.map((row, index) => ({
-        index,  // ← 新增 index
+        index,
         role: row.c[0]?.v || "",
         category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
         style: row.c[2]?.v || "",
@@ -251,23 +247,25 @@ function loadSheetData() {
     });
 }
 
-// ✅ 主畫面渲染 function
+// ✅ 渲染主畫面
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
+
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
-  // ✅ 自訂款式排序順序（依照你的試算表出現順序手動填）
-  const styleOrder = [
-    "小包", "皮革小包", "仙境收納包", "側背包", "斜背包", "束口袋", "掛包",
-    "悠遊卡包", "口金包", "磁吸包", "手機包", "零錢包"
-  ];
+  // ✅ 自動建立款式排序順序（依照試算表原始順序）
+  const styleOrder = [];
+  items.forEach(item => {
+    if (!styleOrder.includes(item.style)) {
+      styleOrder.push(item.style);
+    }
+  });
 
-  // ✅ 逐一分類渲染
   Object.keys(grouped).forEach(category => {
     const divider = document.createElement("div");
     divider.className = "type-divider";
@@ -277,19 +275,15 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    // ✅ 排序邏輯：款式 ➝ 名稱 ➝ 角色 ➝ 試算表順序（index）
     const sortedItems = (category === "吊娃、娃")
-      ? grouped[category] // ⬅️ 不排序的例外分類
+      ? grouped[category]
       : grouped[category].slice().sort((a, b) => {
-          // 1️⃣ 款式排序（依照 styleOrder 手動順序）
           const styleCompare = styleOrder.indexOf(a.style) - styleOrder.indexOf(b.style);
           if (styleCompare !== 0) return styleCompare;
 
-          // 2️⃣ 名稱排序
           const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
           if (nameCompare !== 0) return nameCompare;
 
-          // 3️⃣ 角色排序（依照 rolePriority）
           const roleA = (a.role || "").charAt(0);
           const roleB = (b.role || "").charAt(0);
           const idxA = rolePriority.indexOf(roleA);
@@ -298,11 +292,9 @@ function renderCards(items, roleName) {
           if (idxA !== -1) return -1;
           if (idxB !== -1) return 1;
 
-          // 4️⃣ 如果都一樣就看表格原始順序
           return a.index - b.index;
         });
 
-    // ✅ 每一張卡片產生
     sortedItems.forEach(item => {
       const status = getStatus(item);
       if (!status) return;
@@ -337,7 +329,7 @@ function renderCards(items, roleName) {
   });
 }
 
-// ✅ 輔助：名稱自動斷行（9 字為限）
+// ✅ 名稱自動斷行（最多 9 字）
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
@@ -352,14 +344,14 @@ function formatName(name) {
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
-// ✅ 輔助：售價處理
+// ✅ 價格格式化
 function formatPrice(price) {
   if (!price) return "私訊花花";
   if (price === "-") return "組合出售";
   return price;
 }
 
-// ✅ 輔助：庫存標籤顏色與文案判斷
+// ✅ 貨況狀態
 function getStatus(item) {
   const stock = (item.stock ?? "").toString().trim();
   const notStock = (item.notStock ?? "").toString().trim();
