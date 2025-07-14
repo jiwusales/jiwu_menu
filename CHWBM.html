@@ -246,8 +246,8 @@ function loadSheetData(){
       .filter(it=>it.role.includes(keyword))
       .map(it=>({
         ...it,
-        category: categoryMap[it.rawType] || categoryMap[it.style] || it.rawType || "未分類"
-      }));
+        category: (it.style === "證件套") ? "證件套" : (categoryMap[it.rawType] || categoryMap[it.style] || it.rawType || "未分類")
+}));
 
       renderCards(items,currentRole);
     })
