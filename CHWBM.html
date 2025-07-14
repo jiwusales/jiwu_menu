@@ -330,40 +330,6 @@ function renderCards(items, roleName) {
   });
 }
   
-    sortedItems.forEach(item => {
-      const status = getStatus(item);
-      if (!status) return;
-
-      const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
-      const showRoleBadge = !(category === "吊娃、娃");
-      const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
-
-      const cardHTML = `
-        ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
-        <img src="${item.img}" alt="${item.name}">
-        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-        <div class="name">${formatName(item.name)}</div>
-        <div class="price">${formatPrice(item.price)}</div>
-      `;
-
-      const wrapper = document.createElement(link ? "a" : "div");
-      wrapper.className = "card";
-      wrapper.style.borderColor = colors[roleName] || "#ccc";
-      if (link) {
-        wrapper.href = link;
-        wrapper.target = "_blank";
-      }
-      wrapper.innerHTML = cardHTML;
-      groupDiv.appendChild(wrapper);
-    });
-
-    container.appendChild(groupDiv);
-  });
-}
-
 // ✅ 名稱自動斷行（最多 9 字）
 function formatName(name) {
   if (!name) return "";
