@@ -267,23 +267,33 @@ function renderCards(items) {
   container.innerHTML = "";
 
   // 先依「種類 ➜ 款式 ➜ 名稱」排序
- items.sort((a, b) => {
+ const rolePriority = ["熊", "狗", "餅", "馬來", "其", "水族"];
+
+items.sort((a, b) => {
   const catA = categoryOrder.indexOf(a.category);
   const catB = categoryOrder.indexOf(b.category);
   if (catA !== catB) return catA - catB;
 
-  // 如果是吊娃、娃分類，款式排序改成不變動順序（視為相同）
-  if (a.category === "吊娃、娃") {
-    // 款式不排序，保持原本順序
-    return 0;
-  }
+  if (a.category === "吊娃、娃") return 0; // 不排序款式
 
-  // 其他分類依款式字串排序
   const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
   if (styleCompare !== 0) return styleCompare;
 
-  // 最後依名稱排序
-  return (a.name || "").localeCompare(b.name || "", 'zh-Hant');
+  const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
+  if (nameCompare !== 0) return nameCompare;
+
+  function getRoleKey(role) {
+    const chars = (role.match(/[\u4e00-\u9fff]/g) || []);
+    return chars.slice(0, 2).join('');
+  }
+  const roleA = getRoleKey(a.role);
+  const roleB = getRoleKey(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+  if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+  if (idxA !== -1) return -1;
+  if (idxB !== -1) return 1;
+  return roleA.localeCompare(roleB, 'zh-Hant');
 });
 
   let currentCategory = "";
