@@ -172,15 +172,27 @@
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
+
+/* 角色→單字縮寫 */
 const roleMap = {
   "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
   "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
 };
+/* 單字縮寫角色排序優先度 */
+const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+
+function getRoleChar(role) {
+  return (role || "").charAt(0);   // 取第一字元作比較
+}
+
+/* 角色顏色（沿用 1️⃣） */
 const colors = {
   "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c",
   "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973",
   "獅薩": "#FBAA60", "古本": "#eb9e97", "其他角色": "#45818e"
 };
+
+/* 類別對應（沿用 1️⃣） */
 const categoryMap = {
   "吊娃": "吊娃、娃", "娃": "吊娃、娃",
   "包包": "包袋",
@@ -193,24 +205,23 @@ const categoryMap = {
   "餐廚": "餐廚"
 };
 
+/* 讀取網址上的 ?role= 參數 */
 function getRoleFromURL() {
   const params = new URLSearchParams(window.location.search);
   const roleParam = params.get("role");
   return roleMap[roleParam] ? roleParam : "吉伊";
 }
 
+/* 下載 Google Sheets 資料並轉成陣列 */
 function loadSheetData() {
   const currentRole = getRoleFromURL();
 
-  // 設定頁面主要顏色
-  document.documentElement.style.setProperty('--tab-color', colors[currentRole] || "#999");
-
+  /* 動態設定主題色 */
+  document.documentElement.style.setProperty("--tab-color", colors[currentRole] || "#999");
   const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) {
-    themeMeta.setAttribute("content", colors[currentRole] || "#999");
-  }
+  if (themeMeta) themeMeta.setAttribute("content", colors[currentRole] || "#999");
 
-  const keyword = roleMap[currentRole];
+  const keyword = roleMap[currentRole];   // 只抓屬於此角色的資料
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
   fetch(url)
@@ -218,9 +229,12 @@ function loadSheetData() {
     .then(text => JSON.parse(text.substr(47).slice(0, -2)))
     .then(data => {
       const rows = data.table.rows;
+
+      /* 這裡把「款式 style」也帶進來 */
       const items = rows.map(row => ({
         role: row.c[0]?.v || "",
         category: categoryMap[row.c[1]?.v] || row.c[1]?.v || "未分類",
+        style: row.c[2]?.v || "",            // ← 新增款式
         name: row.c[3]?.v || "",
         img: row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
         price: row.c[5]?.v,
@@ -238,50 +252,65 @@ function loadSheetData() {
     });
 }
 
+/* 排序用比較函式：款式 → 名稱 → 角色 */
+function cardSorter(a, b) {
+  const styleCompare = a.style.localeCompare(b.style, "zh-Hant");
+  if (styleCompare !== 0) return styleCompare;
+
+  const nameCompare = a.name.trim().localeCompare(b.name.trim(), "zh-Hant");
+  if (nameCompare !== 0) return nameCompare;
+
+  const roleA = getRoleChar(a.role);
+  const roleB = getRoleChar(b.role);
+  const idxA = rolePriority.indexOf(roleA);
+  const idxB = rolePriority.indexOf(roleB);
+
+  if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+  if (idxA !== -1) return -1;
+  if (idxB !== -1) return 1;
+  return roleA.localeCompare(roleB, "zh-Hant");
+}
+
+/* 產生畫面 */
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
+
+  /* 依「種類」分群（沿用 1️⃣） */
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
+  /* 每個種類內套用新的排序邏輯 */
   Object.keys(grouped).forEach(category => {
+    /* 種類標題 */
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
-groupDiv.className = "group-grid";
+    groupDiv.className = "group-grid";
 
-    // 排序邏輯
-    let sortedItems;
-    if (category === "吊娃、娃") {
-      sortedItems = grouped[category];
-    } else {
-      sortedItems = grouped[category].sort((a, b) => {
-        const aKey = a.name.substring(0, 2);
-        const bKey = b.name.substring(0, 2);
-        return aKey.localeCompare(bKey, 'zh-Hant');
-      });
-    }
+    /* ✨ 重點：排序 */
+    const sortedItems = grouped[category].sort(cardSorter);
 
     sortedItems.forEach(item => {
       const status = getStatus(item);
-      if (!status) return; // 不顯示卡片（如不上架狀況）
+      if (!status) return; // 不顯示不上架等
 
       const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
       const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
       const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-
-      const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
-      const showRoleBadge = !(category === "吊娃、娃");
       const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
+      const needLink = (item.price === "-" || !item.price);
+      const link = needLink ? "https://lin.ee/X6FUFI9" : null;
+
       const cardHTML = `
-        ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
         <img src="${item.img}" alt="${item.name}">
         <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
         <div class="name">${formatName(item.name)}</div>
@@ -291,42 +320,31 @@ groupDiv.className = "group-grid";
       const wrapper = document.createElement(link ? "a" : "div");
       wrapper.className = "card";
       wrapper.style.borderColor = colors[roleName] || "#ccc";
-
       if (link) {
         wrapper.href = link;
         wrapper.target = "_blank";
+        wrapper.rel = "noopener noreferrer";
       }
       wrapper.innerHTML = cardHTML;
-
       groupDiv.appendChild(wrapper);
     });
 
     container.appendChild(groupDiv);
   });
 }
-  
+
+/* ===== 其餘輔助函式（與 1️⃣ 相同） ===== */
 function formatName(name) {
   if (!name) return "";
-
   const cleanName = name.trim();
   const totalLength = cleanName.length;
-
-  // 若總字數 <= 9，不換行
   if (totalLength <= 9) return cleanName;
 
-  // 找 9 字內最後一個空白鍵
   const maxLengthBeforeWrap = 9;
   const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
-
   if (spaceIndex > 0) {
-    return (
-      cleanName.slice(0, spaceIndex) +
-      "<br>" +
-      cleanName.slice(spaceIndex + 1)
-    );
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
   }
-
-  // 若 9 字內找不到空白，直接硬切第 9 字
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
@@ -342,40 +360,16 @@ function getStatus(item) {
   const preorder = (item.preorder ?? "").toString().trim();
   const up = (item.up ?? "").toString().trim();
 
-  // 1. ✅ 受注品（最優先，只要是 v 就是）
-  if (preorder === "v") {
-    return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-  }
-
-  // 2. ❌ 不上架（庫存或上架欄含 x）
-  if (stock === "x" || up === "x") {
-    return null;
-  }
-
-  // 3. ✅ 搭飛機中：庫存=0且非現欄為數字且 > 0
-  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0) {
-    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
-  }
-
-  // 4. ⚠️ 庫存 = 0 顯示「需預訂」
-  if (stock === "0") {
-    return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
-  }
-
-  // 5. ✅ 現貨：庫存為數字且 > 0
-  if (/^\d+$/.test(stock) && Number(stock) > 0) {
-    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
-  }
-
-  // 6. ✅ 全部空白：視為「點貨中」
-  if (stock === "" && notStock === "" && preorder === "" && up === "") {
-    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
-  }
-
-  // 7. ✅ 其他全部當「點貨中」
-  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
+  if (preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#fff" };
+  if (stock === "x" || up === "x") return null;
+  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0) return { text: "搭飛機中", bg: "#5885AF", color: "#fff" };
+  if (stock === "0") return { text: "需預訂", bg: "#D4BBDD", color: "#333" };
+  if (/^\d+$/.test(stock) && Number(stock) > 0) return { text: "現貨", bg: "#FFF4BD", color: "#333" };
+  if (stock === "" && notStock === "" && preorder === "" && up === "") return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
+  return { text: "點貨中", bg: "#E7F2F8", color: "#333" };
 }
 
+/* 開始執行 */
 loadSheetData();
 </script>
 </body>
