@@ -170,28 +170,12 @@ function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  items.sort((a, b) => {
-    const catA = categoryOrder.indexOf(a.category);
-    const catB = categoryOrder.indexOf(b.category);
-    if (catA !== catB) return catA - catB;
-
-    if (a.category === "吊娃、娃") return 0;
-
-    const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
-    if (styleCompare !== 0) return styleCompare;
-
-    const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
-    if (nameCompare !== 0) return nameCompare;
-
-    const roleA = a.role.trim();
-    const roleB = b.role.trim();
-    const idxA = roleOrder.indexOf(roleA);
-    const idxB = roleOrder.indexOf(roleB);
-    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-    if (idxA !== -1) return -1;
-    if (idxB !== -1) return 1;
-    return roleA.localeCompare(roleB, 'zh-Hant');
-  });
+ // 依種類順序，保留原始資料順序
+items.sort((a, b) => {
+  const catA = categoryOrder.indexOf(a.category);
+  const catB = categoryOrder.indexOf(b.category);
+  return catA - catB;
+});
 
   let currentCategory = "";
   let groupDiv;
