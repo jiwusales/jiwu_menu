@@ -7,80 +7,53 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   <meta name="theme-color" content="#68aad6" />
   <style>
-    :root {
-      --tab-color: #68aad6;
-    }
+    :root { --tab-color: #68aad6; }
     body {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
       background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
       background-repeat: repeat;
       background-size: 135px;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       color: #333333;
       text-align: center;
     }
     .top-bar {
-      background: var(--tab-color);
-      color: #fff;
-      padding: 10px 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 999;
-      user-select: none;
-      font-size: 18px;
+      background: var(--tab-color); color: #fff;
+      padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%;
+      z-index: 999; user-select: none; font-size: 18px;
     }
     .top-bar .pulse-text {
       display: inline-block;
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
-      0% { transform: scale(1); }
+      0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
     }
     #card-container {
       padding: 60px 10px 6px 7px;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       gap: 6px;
-      margin: 0;
     }
     .type-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 8px 0;
-      color: #333333;
-      font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      margin: 8px 0; color: #333; font-weight: bold;
     }
-    .type-divider::before,
-    .type-divider::after {
-      content: "";
-      flex: 1;
-      border-top: 1px solid #333333;
-      margin: 0 10px;
+    .type-divider::before, .type-divider::after {
+      content: ""; flex: 1; border-top: 1px solid #333; margin: 0 10px;
     }
-
     .group-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, 120px);
       justify-content: start;
-      gap: 6px; /* 可依你喜好調整 */
+      gap: 6px;
     }
-
     @media (max-width: 480px) {
-    .group-grid {
-      grid-template-columns: repeat(4, 1fr);
-      }
+      .group-grid { grid-template-columns: repeat(4, 1fr); }
     }
-    
     .card {
-      width: 97%;
-      max-width: 120px;
+      width: 97%; max-width: 120px;
       border: 2px solid #ccc;
       border-radius: 8px;
       background-color: #fff;
@@ -88,35 +61,16 @@
       text-align: center;
       color: #333;
       transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card img {
-      width: 80px;
-      margin-top: 5px;
-      object-fit: contain;
-    }
-    .card .name {
-      margin: 1px auto;
-      font-size: 9px;
-      font-weight: bold;
-      line-height: 1.2;
-    }
-    .card .price {
-      font-size: 10px;
-      margin: 1px auto 5px;
-    }
-    
-    .card,
-    .card * {
       text-decoration: none;
-      color: inherit;
     }
-    
+    .card img { width: 80px; margin-top: 5px; object-fit: contain; }
+    .card .name {
+      margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2;
+    }
+    .card .price { font-size: 10px; margin: 1px auto 5px; }
     .status-badge {
-      display: inline-block;
-      border-radius: 12px;
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
+      display: inline-block; border-radius: 12px;
+      padding: 2px 6px; font-size: 10px; font-weight: bold;
       margin: 0 auto 4px auto;
     }
     @media (min-width: 768px) {
@@ -124,23 +78,14 @@
       .card img { width: 116px; }
       .card .name, .card .price { font-size: 12px; }
     }
-
     .role-badge {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  height: 16px;
-  padding: 0 6px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 16px;
-  color: #fff;
-  user-select: none;
-  white-space: nowrap;
-  background-color: #FDD1D2; /* 預設為綜 */
-}
-
+      position: absolute; top: 3px; right: 3px;
+      height: 16px; padding: 0 6px;
+      border-radius: 8px; font-size: 10px; font-weight: bold;
+      line-height: 16px; color: #fff;
+      user-select: none; white-space: nowrap;
+      background-color: #FDD1D2;
+    }
   </style>
 </head>
 <body>
@@ -156,52 +101,26 @@ const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ナガノ";
 
 const categoryMap = {
-  "吊娃": "吊娃、娃",
-  "娃": "吊娃、娃",
-  "娃 抱枕": "3C、居家、毛巾",
-  "包包": "包袋",
-  "背包": "包袋",
-  "鑰匙圈": "鑰匙圈、御守",
-  "御守": "鑰匙圈、御守",
-  "立牌": "立牌、徽章",
-  "徽章": "立牌、徽章",
-  "玩具": "玩具、盲抽",
-  "盲": "玩具、盲抽",
-  "盲抽": "玩具、盲抽",
-  "文具": "文具、磁鐵",
-  "磁鐵": "文具、磁鐵",
-  "貼紙": "貼紙",
-  "3C": "3C、居家、毛巾",
-  "居家": "3C、居家、毛巾",
-  "毛巾": "3C、居家、毛巾",
-  "飾品": "飾品、衣服",
-  "衣服": "飾品、衣服",
-  "餐廚": "餐廚"
+  "吊娃": "吊娃、娃", "娃": "吊娃、娃", "娃 抱枕": "3C、居家、毛巾",
+  "包包": "包袋", "背包": "包袋", "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
+  "立牌": "立牌、徽章", "徽章": "立牌、徽章", "玩具": "玩具、盲抽", "盲": "玩具、盲抽", "盲抽": "玩具、盲抽",
+  "文具": "文具、磁鐵", "磁鐵": "文具、磁鐵", "貼紙": "貼紙",
+  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
+  "飾品": "飾品、衣服", "衣服": "飾品、衣服", "餐廚": "餐廚"
 };
 
 const categoryOrder = [
-  "吊娃、娃",
-  "包袋",
-  "文具、磁鐵",
-  "鑰匙圈、御守",
-  "立牌、徽章",
-  "玩具、盲抽",
-  "貼紙",
-  "3C、居家、毛巾",
-  "飾品、衣服",
-  "餐廚"
+  "吊娃、娃", "包袋", "文具、磁鐵", "鑰匙圈、御守",
+  "立牌、徽章", "玩具、盲抽", "貼紙",
+  "3C、居家、毛巾", "飾品、衣服", "餐廚"
 ];
 
-  const roleColors = {
-  "熊": "#E6C2BF",
-  "狗": "#999999",
-  "餅": "#F3BC50",
-  "馬來": "#25C0C0",
-  "水族": "#88B2CC",
-  "其": "#D4BBDD",
-  "綜": "#dac7b7"
+const roleColors = {
+  "熊": "#E6C2BF", "狗": "#999999", "餅": "#F3BC50",
+  "馬來": "#25C0C0", "水族": "#88B2CC", "其": "#D4BBDD", "綜": "#dac7b7"
 };
 
+let roleOrder = [];
 
 function loadSheetData() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -224,33 +143,18 @@ function loadSheetData() {
         const preorder = row.c[9]?.v || "";
         const img = row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
 
-        // 預設主分類
-        const baseCategory = categoryMap[kind] || kind || "未分類";
-
-        // 建立要加入的分類清單
-        let categoriesToAdd = [baseCategory];
-
-        // 如果種類是娃且款式是抱枕，加第二個分類「3C、居家、毛巾」
-        if (kind === "娃" && style === "抱枕") {
-          if (!categoriesToAdd.includes("3C、居家、毛巾")) {
-            categoriesToAdd.push("3C、居家、毛巾");
-          }
+        if (role && !roleOrder.includes(role)) {
+          roleOrder.push(role);
         }
 
-        // 把同一筆資料拆成多筆，分別放到不同分類裡
+        const baseCategory = categoryMap[kind] || kind || "未分類";
+        let categoriesToAdd = [baseCategory];
+        if (kind === "娃" && style === "抱枕" && !categoriesToAdd.includes("3C、居家、毛巾")) {
+          categoriesToAdd.push("3C、居家、毛巾");
+        }
+
         categoriesToAdd.forEach(cat => {
-          items.push({
-            role: role,
-            category: cat,
-            style: style,
-            name: name,
-            price: price,
-            stock: stock,
-            notStock: notStock,
-            up: up,
-            preorder: preorder,
-            img: img
-          });
+          items.push({ role, category: cat, style, name, price, stock, notStock, up, preorder, img });
         });
       });
 
@@ -266,38 +170,28 @@ function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  // 先依「種類 ➜ 款式 ➜ 名稱」排序
- const rolePriority = ["熊", "狗", "餅", "馬來", "其", "水族"];
+  items.sort((a, b) => {
+    const catA = categoryOrder.indexOf(a.category);
+    const catB = categoryOrder.indexOf(b.category);
+    if (catA !== catB) return catA - catB;
 
-items.sort((a, b) => {
-  const catA = categoryOrder.indexOf(a.category);
-  const catB = categoryOrder.indexOf(b.category);
-  if (catA !== catB) return catA - catB;
+    if (a.category === "吊娃、娃") return 0;
 
-  if (a.category === "吊娃、娃") return 0; // 不排序款式
+    const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
+    if (styleCompare !== 0) return styleCompare;
 
-  const styleCompare = (a.style || "").localeCompare(b.style || "", 'zh-Hant');
-  if (styleCompare !== 0) return styleCompare;
+    const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
+    if (nameCompare !== 0) return nameCompare;
 
-  const nameCompare = (a.name || "").localeCompare(b.name || "", 'zh-Hant');
-  if (nameCompare !== 0) return nameCompare;
-
-  // 🔺 這一段是你漏掉的「角色順序」邏輯
-  const rolePriority = ["熊", "狗", "餅", "馬來", "其", "水族"];
-  function getRoleKey(role) {
-    const chars = (role.match(/[\u4e00-\u9fff]/g) || []);
-    return chars.slice(0, 2).join('');
-  }
-
-  const roleA = getRoleKey(a.role);
-  const roleB = getRoleKey(b.role);
-  const idxA = rolePriority.indexOf(roleA);
-  const idxB = rolePriority.indexOf(roleB);
-  if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-  if (idxA !== -1) return -1;
-  if (idxB !== -1) return 1;
-  return roleA.localeCompare(roleB, 'zh-Hant');
-});
+    const roleA = a.role.trim();
+    const roleB = b.role.trim();
+    const idxA = roleOrder.indexOf(roleA);
+    const idxB = roleOrder.indexOf(roleB);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return roleA.localeCompare(roleB, 'zh-Hant');
+  });
 
   let currentCategory = "";
   let groupDiv;
@@ -305,14 +199,11 @@ items.sort((a, b) => {
   items.forEach(item => {
     if (item.category !== currentCategory) {
       currentCategory = item.category;
-
-      // 新增種類分隔標題
       const divider = document.createElement("div");
       divider.className = "type-divider";
       divider.textContent = currentCategory;
       container.appendChild(divider);
 
-      // 新增商品卡群組
       groupDiv = document.createElement("div");
       groupDiv.className = "group-grid";
       container.appendChild(groupDiv);
@@ -321,36 +212,32 @@ items.sort((a, b) => {
     const status = getStatus(item);
     if (!status) return;
 
-    const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+    const link = (!item.price || item.price === "-") ? "https://lin.ee/X6FUFI9" : null;
     const wrapper = document.createElement(link ? "a" : "div");
     wrapper.className = "card";
-
     if (link) {
       wrapper.href = link;
       wrapper.target = "_blank";
     }
 
-    // 產生角色標籤（右上）
-const roleChars = (item.role.match(/[\u4e00-\u9fff]/g) || []);
-const roleKey = roleChars.slice(0, 2).join(''); // 最多兩字
-const badgeColor = roleColors[roleKey] || roleColors["綜"];
-const badgeText = roleKey || "綜";
+    const roleKey = item.role.trim();
+    const badgeColor = roleColors[roleKey] || roleColors["綜"];
+    const badgeText = roleKey || "綜";
 
-const roleBadge = document.createElement("div");
-roleBadge.className = "role-badge";
-roleBadge.style.backgroundColor = badgeColor;
-roleBadge.textContent = badgeText;
+    const roleBadge = document.createElement("div");
+    roleBadge.className = "role-badge";
+    roleBadge.style.backgroundColor = badgeColor;
+    roleBadge.textContent = badgeText;
 
-// 單字：正圓 + 中央置中
-if (badgeText.length === 1) {
-  roleBadge.style.width = "16px";
-  roleBadge.style.height = "16px";
-  roleBadge.style.padding = "0";
-  roleBadge.style.borderRadius = "50%";
-  roleBadge.style.textAlign = "center";
-}
+    if (badgeText.length === 1) {
+      roleBadge.style.width = "16px";
+      roleBadge.style.height = "16px";
+      roleBadge.style.padding = "0";
+      roleBadge.style.borderRadius = "50%";
+      roleBadge.style.textAlign = "center";
+    }
 
-wrapper.appendChild(roleBadge);
+    wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
     img.src = item.img;
@@ -385,10 +272,10 @@ function formatPrice(price) {
 }
 
 function getStatus(item) {
-  const stock = (item.stock ?? "").toString().trim();
-  const notStock = (item.notStock ?? "").toString().trim();
-  const preorder = (item.preorder ?? "").toString().trim();
-  const up = (item.up ?? "").toString().trim();
+  const stock = (item.stock ?? "").trim();
+  const notStock = (item.notStock ?? "").trim();
+  const preorder = (item.preorder ?? "").trim();
+  const up = (item.up ?? "").trim();
 
   if (preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
   if (stock === "x" || up === "x") return null;
@@ -397,30 +284,20 @@ function getStatus(item) {
   if (stock === "0") return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
   if (/^\d+$/.test(stock) && Number(stock) > 0)
     return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
-  if (stock === "" && notStock === "" && preorder === "" && up === "")
-    return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
   return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
 function formatName(name) {
   if (!name) return "";
-
   const cleanName = name.trim();
   const totalLength = cleanName.length;
-
   if (totalLength <= 9) return cleanName;
 
   const maxLengthBeforeWrap = 9;
   const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
-
   if (spaceIndex > 0) {
-    return (
-      cleanName.slice(0, spaceIndex) +
-      "<br>" +
-      cleanName.slice(spaceIndex + 1)
-    );
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
   }
-
   return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
