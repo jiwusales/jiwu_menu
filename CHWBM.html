@@ -258,27 +258,21 @@ function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
+  // 取得所有款式順序（依出現順序）
   const styleOrder = [];
   items.forEach(item => {
     if (!styleOrder.includes(item.style)) styleOrder.push(item.style);
   });
 
+  // 依類別分組
   const grouped = {};
   items.forEach(item => {
     if (!grouped[item.category]) grouped[item.category] = [];
     grouped[item.category].push(item);
   });
 
-  const sortedCategories = Object.keys(grouped).sort((a, b) => {
-    const idxA = categoryOrder.indexOf(a);
-    const idxB = categoryOrder.indexOf(b);
-    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-    if (idxA !== -1) return -1;
-    if (idxB !== -1) return 1;
-    return a.localeCompare(b);
-  });
-
-  sortedCategories.forEach(category => {
+  Object.keys(grouped).forEach(category => {
+    // 建立分類標題
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -287,60 +281,55 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    const filteredItems = items.filter(i => i.category === category);
+    // 類別內依款式分組
+    const byStyle = {};
+    grouped[category].forEach(item => {
+      if (!byStyle[item.style]) byStyle[item.style] = [];
+      byStyle[item.style].push(item);
+    });
 
-    let sortedItems;
-    if (category === "吊娃、娃") {
-      // 吊娃、娃類別維持原始資料順序
-      sortedItems = filteredItems.slice().sort((a, b) => a.index - b.index);
-    } else {
-      // 其他類別排序：
-      // 多角色：依原始資料順序排序
-      // 單角色：角色優先 → 款式 → 名稱 → 原始順序
-      sortedItems = filteredItems.slice().sort((a, b) => {
-        const rolesA = (a.role || "").replace(/\s/g, "").split("");
-        const rolesB = (b.role || "").replace(/\s/g, "").split("");
+    // 依款式原始順序排列款式
+    styleOrder.forEach(style => {
+      if (!byStyle[style]) return;
 
-        const isMultiA = rolesA.length > 1;
-        const isMultiB = rolesB.length > 1;
+      // 同款式內，全部依試算表 index 原始順序排序（不額外排序角色或名稱）
+      const sortedItems = byStyle[style].slice().sort((a, b) => a.index - b.index);
 
-        if (isMultiA && isMultiB) {
-          // 兩邊都是多角色，維持原始順序
-          return a.index - b.index;
+      sortedItems.forEach(item => {
+        const status = getStatus(item);
+        if (!status) return;
+
+        const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+        const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+        const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+        const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
+        const showRoleBadge = !(category === "吊娃、娃");
+        const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
+
+        const cardHTML = `
+          ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+          <img src="${item.img}" alt="${item.name}">
+          <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+          <div class="name">${formatName(item.name)}</div>
+          <div class="price">${formatPrice(item.price)}</div>
+        `;
+
+        const wrapper = document.createElement(link ? "a" : "div");
+        wrapper.className = "card";
+        wrapper.style.borderColor = colors[roleName] || "#ccc";
+        if (link) {
+          wrapper.href = link;
+          wrapper.target = "_blank";
         }
-        if (isMultiA && !isMultiB) {
-          // 多角色排後面
-          return 1;
-        }
-        if (!isMultiA && isMultiB) {
-          return -1;
-        }
-
-        // 單角色排序：角色優先
-        const roleA = rolesA[0];
-        const roleB = rolesB[0];
-        const idxRoleA = rolePriority.indexOf(roleA);
-        const idxRoleB = rolePriority.indexOf(roleB);
-        if (idxRoleA !== -1 && idxRoleB !== -1 && idxRoleA !== idxRoleB) return idxRoleA - idxRoleB;
-        if (idxRoleA !== -1 && idxRoleB === -1) return -1;
-        if (idxRoleB !== -1 && idxRoleA === -1) return 1;
-
-        // 款式排序
-        const idxStyleA = styleOrder.indexOf(a.style);
-        const idxStyleB = styleOrder.indexOf(b.style);
-        if (idxStyleA !== -1 && idxStyleB !== -1 && idxStyleA !== idxStyleB) return idxStyleA - idxStyleB;
-        if (idxStyleA !== -1 && idxStyleB === -1) return -1;
-        if (idxStyleB !== -1 && idxStyleA === -1) return 1;
-
-        // 名稱排序
-        const nameCompare = (a.name || "").localeCompare(b.name || "", "zh-Hant");
-        if (nameCompare !== 0) return nameCompare;
-
-        // 最後以原始順序排序
-        return a.index - b.index;
+        wrapper.innerHTML = cardHTML;
+        groupDiv.appendChild(wrapper);
       });
-    }
+    });
 
+    container.appendChild(groupDiv);
+  });
+}
+  
     sortedItems.forEach(item => {
       const status = getStatus(item);
       if (!status) return;
