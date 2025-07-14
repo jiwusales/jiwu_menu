@@ -253,26 +253,48 @@ function loadSheetData() {
     });
 }
 
-// ✅ 渲染主畫面（角色→種類→款式→名稱排序）
+// ✅ 渲染主畫面（依你的需求）
 function renderCards(items, roleName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  // 取得所有款式順序（依出現順序）
+  /* 1️⃣ 依出現順序記錄 style 順序（之後款式要照表格排） */
   const styleOrder = [];
-  items.forEach(item => {
-    if (!styleOrder.includes(item.style)) styleOrder.push(item.style);
-  });
+  items.forEach(it => { if (!styleOrder.includes(it.style)) styleOrder.push(it.style); });
 
-  // 依類別分組
+  /* 2️⃣ 將資料分到類別中──先放原本分類，再依規則「複製」到其他分類 */
   const grouped = {};
+
+  /* ➡️ 指定「吊娃 / 娃」在特定 style 時，要額外屬於哪個大分類 */
+  const extraStyleCategoryMap = {
+    "鑰匙包": "包袋",        // 吊娃 → 包袋
+    "娃夾子": "文具、貼紙",   // 娃  → 文具
+    "斜背包": "包袋",        // 娃  → 包袋
+    "娃徽章": "立牌、徽章、磁鐵、玩具", // 娃 → 徽章(大區)
+    "抱枕":   "3C、居家、毛巾"          // 娃 → 居家(大區)
+  };
+
   items.forEach(item => {
-    if (!grouped[item.category]) grouped[item.category] = [];
-    grouped[item.category].push(item);
+    /* === (a) 先放進原本的合併分類 === */
+    const cat = item.category;
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(item);
+
+    /* === (b) 若原分類是「吊娃、娃」且 style 在對照表中，就複製一份到對應分類 === */
+    if (cat === "吊娃、娃") {
+      const targetCat = extraStyleCategoryMap[item.style];
+      if (targetCat) {
+        if (!grouped[targetCat]) grouped[targetCat] = [];
+        grouped[targetCat].push({ ...item });   // 複製一份 (淺拷貝即可)
+      }
+    }
   });
 
-  Object.keys(grouped).forEach(category => {
-    // 建立分類標題
+  /* 3️⃣ 依 categoryOrder 的順序輸出各分類 */
+  categoryOrder.forEach(category => {
+    if (!grouped[category] || grouped[category].length === 0) return;
+
+    /* ---------- 分類標題 ---------- */
     const divider = document.createElement("div");
     divider.className = "type-divider";
     divider.textContent = category;
@@ -281,48 +303,42 @@ function renderCards(items, roleName) {
     const groupDiv = document.createElement("div");
     groupDiv.className = "group-grid";
 
-    // 類別內依款式分組
+    /* 4️⃣ 類別內依 style 分組，再按 index 原始順序輸出（保持表格順序） */
     const byStyle = {};
-    grouped[category].forEach(item => {
-      if (!byStyle[item.style]) byStyle[item.style] = [];
-      byStyle[item.style].push(item);
+    grouped[category].forEach(it => {
+      if (!byStyle[it.style]) byStyle[it.style] = [];
+      byStyle[it.style].push(it);
     });
 
-    // 依款式原始順序排列款式
     styleOrder.forEach(style => {
       if (!byStyle[style]) return;
+      const itemsInStyle = byStyle[style].slice().sort((a, b) => a.index - b.index);
 
-      // 同款式內，全部依試算表 index 原始順序排序（不額外排序角色或名稱）
-      const sortedItems = byStyle[style].slice().sort((a, b) => a.index - b.index);
-
-      sortedItems.forEach(item => {
+      itemsInStyle.forEach(item => {
+        /* 卡片產生（與你原本相同） */
         const status = getStatus(item);
         if (!status) return;
 
-        const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
-        const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-        const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-        const link = (item.price === "-" || !item.price) ? `https://lin.ee/X6FUFI9` : null;
-        const showRoleBadge = !(category === "吊娃、娃");
+        const singleRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
+        const chs = item.role.match(/[\u4e00-\u9fff]/g) || [];
+        const roleText = chs.length === 1 && singleRoles.includes(chs[0]) ? chs[0] : "綜";
+        const link = (item.price === "-" || !item.price) ? "https://lin.ee/X6FUFI9" : null;
+        const showBadge = category !== "吊娃、娃";
         const badgeColor = roleText === "綜" ? "#dac7b7" : (colors[roleName] || "#ccc");
 
-        const cardHTML = `
-          ${showRoleBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
+        const card = document.createElement(link ? "a" : "div");
+        card.className = "card";
+        card.style.borderColor = colors[roleName] || "#ccc";
+        if (link) { card.href = link; card.target = "_blank"; }
+
+        card.innerHTML = `
+          ${showBadge ? `<div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>` : ""}
           <img src="${item.img}" alt="${item.name}">
           <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
           <div class="name">${formatName(item.name)}</div>
           <div class="price">${formatPrice(item.price)}</div>
         `;
-
-        const wrapper = document.createElement(link ? "a" : "div");
-        wrapper.className = "card";
-        wrapper.style.borderColor = colors[roleName] || "#ccc";
-        if (link) {
-          wrapper.href = link;
-          wrapper.target = "_blank";
-        }
-        wrapper.innerHTML = cardHTML;
-        groupDiv.appendChild(wrapper);
+        groupDiv.appendChild(card);
       });
     });
 
