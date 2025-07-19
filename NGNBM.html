@@ -101,18 +101,18 @@ const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ナガノ";
 
 const categoryMap = {
-  "吊娃": "吊娃、娃", "娃": "吊娃、娃", "娃 抱枕": "3C、居家、毛巾",
+  "吊娃": "吊娃、娃", "娃": "吊娃、娃", "娃 抱枕": "居家、毛巾",
   "包包": "包袋", "背包": "包袋", "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
   "立牌": "立牌、徽章", "徽章": "立牌、徽章", "玩具": "玩具、盲抽", "盲": "玩具、盲抽", "盲抽": "玩具、盲抽",
   "文具": "文具、磁鐵", "磁鐵": "文具、磁鐵", "貼紙": "貼紙",
-  "3C": "3C、居家、毛巾", "居家": "3C、居家、毛巾", "毛巾": "3C、居家、毛巾",
+  "3C": "居家、毛巾", "居家": "居家、毛巾", "毛巾": "居家、毛巾",
   "飾品": "飾品、衣服", "衣服": "飾品、衣服", "餐廚": "餐廚"
 };
 
 const categoryOrder = [
   "吊娃、娃", "包袋", "文具、磁鐵", "鑰匙圈、御守",
   "立牌、徽章", "玩具、盲抽", "貼紙",
-  "3C、居家、毛巾", "飾品、衣服", "餐廚"
+  "居家、毛巾", "飾品、衣服", "餐廚"
 ];
 
 const roleColors = {
@@ -149,8 +149,8 @@ function loadSheetData() {
 
         const baseCategory = categoryMap[kind] || kind || "未分類";
         let categoriesToAdd = [baseCategory];
-        if (kind === "娃" && style === "抱枕" && !categoriesToAdd.includes("3C、居家、毛巾")) {
-        categoriesToAdd.push("3C、居家、毛巾");
+        if (kind === "娃" && style === "抱枕" && !categoriesToAdd.includes("居家、毛巾")) {
+        categoriesToAdd.push("居家、毛巾");
         }
         if (kind === "娃" && style === "背包" && !categoriesToAdd.includes("包袋")) {
         categoriesToAdd.push("包袋");
