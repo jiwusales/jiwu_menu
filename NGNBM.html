@@ -39,12 +39,21 @@
       margin: 0; /* 確保沒有 margin */
     }
     .type-divider {
-      display: flex; align-items: center; justify-content: center;
-      margin: 8px 0; color: #333; font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0;
+      color: #333333;
+      font-weight: bold;
     }
-    .type-divider::before, .type-divider::after {
-      content: ""; flex: 1; border-top: 1px solid #333; margin: 0 10px;
+    .type-divider::before,
+    .type-divider::after {
+      content: "";
+      flex: 1;
+      border-top: 1px solid #333333;
+      margin: 0 10px;
     }
+    
     .group-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, 120px);
@@ -52,8 +61,10 @@
       gap: 6px;
     }
     @media (max-width: 480px) {
-      .group-grid { grid-template-columns: repeat(4, 1fr); }
+      .group-grid {
+      grid-template-columns: repeat(4, 1fr);
     }
+  }
     .card {
       width: 97%; max-width: 120px;
       border: 2px solid #ccc;
@@ -65,28 +76,65 @@
       transition: transform 0.2s, box-shadow 0.2s;
       text-decoration: none;
     }
-    .card img { width: 80px; margin-top: 5px; object-fit: contain; }
-    .card .name {
-      margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2;
+    .card img {
+      width: 80px;
+      margin-top: 5px;
+      object-fit: contain;
     }
-    .card .price { font-size: 10px; margin: 1px auto 5px; }
+    .card .name {
+      margin: 1px auto;
+      font-size: 9px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+    .card .price {
+      font-size: 10px;
+      margin: 1px auto 5px;
+    }
+    .card,
+.card * {
+  text-decoration: none;
+  color: inherit;
+}
     .status-badge {
-      display: inline-block; border-radius: 12px;
-      padding: 2px 6px; font-size: 10px; font-weight: bold;
+      display: inline-block;
+      border-radius: 12px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
       margin: 0 auto 4px auto;
     }
-    @media (min-width: 768px) {
-      .card { width: 120px; }
-      .card img { width: 116px; }
-      .card .name, .card .price { font-size: 12px; }
-    }
+    
+    /* 角色圓形標籤 */
     .role-badge {
-      position: absolute; top: 3px; right: 3px;
-      height: 16px; padding: 0 6px;
-      border-radius: 8px; font-size: 10px; font-weight: bold;
-      line-height: 16px; color: #fff;
-      user-select: none; white-space: nowrap;
-      background-color: #FDD1D2;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--tab-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+    /* 大螢幕版型調整 */
+    @media (min-width: 768px) {
+      .card {
+        width: 120px;
+      }
+      .card img {
+        width: 116px;
+      }
+      .card .name,
+      .card .price {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
