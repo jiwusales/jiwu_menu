@@ -49,33 +49,32 @@
     }
 
     /* 商品卡片容器 */
-    #card-container {
-      padding: 60px 10px 6px 7px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: 12px;
-      margin: 0;
-    }
+   #card-container {
+  padding: 60px 10px 6px 7px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  width: 100%; /* 確保容器寬度撐滿 */
+  box-sizing: border-box;
+}
 
     /* 商品卡片基礎樣式 */
     .card {
-      max-width: 140px; /* 可根據需求微調最大寬度 */
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      background-color: #fff;
-      position: relative;
-      text-align: center;
-      color: #333;
-      padding: 6px 4px 12px;
-      box-sizing: border-box;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
+  flex: 0 1 140px; /* 不會擴大，但允許縮小，基底寬度140px */
+  max-width: 140px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  position: relative;
+  text-align: center;
+  color: #333;
+  padding: 6px 4px 12px;
+  box-sizing: border-box;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
 
     /* 卡片內多張圖片容器 */
     .images-container {
