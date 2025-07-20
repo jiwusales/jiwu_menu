@@ -81,36 +81,34 @@ body {
 /* 名稱與價格同一行容器 */
 .title-row {
   display: flex;
-  justify-content: flex-start; /* 整行靠左 */
+  justify-content: center; /* 水平置中整行 */
   align-items: center;
-  gap: 8px; /* 名稱和價格間距 */
+  gap: 8px; /* 名稱與價格間距 */
   margin: 12px 0 4px;
   padding: 0 6px;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 組合名稱靠右 */
+/* 名稱 */
 .name {
-  margin-left: auto; /* 推到最右 */
-  text-align: right;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.3;
   color: #333333;
   word-break: break-word;
-  flex-shrink: 0;
+  margin: 0;
+  text-align: center;
 }
 
-/* 組合價靠左 */
+/* 價格 */
 .price {
-  text-align: left;
   font-size: 14px;
   font-weight: 400;
   color: #333333;
-  flex-shrink: 0;
-  white-space: nowrap;
   margin: 0;
+  white-space: nowrap;
+  text-align: center;
 }
 
 /* 備註 */
