@@ -63,8 +63,10 @@
 
     /* 商品卡片基礎樣式 */
     .card {
-  flex: 0 1 140px; /* 不會擴大，但允許縮小，基底寬度140px */
-  max-width: 140px;
+  flex: 0 1 auto;   /* 允許寬度自動 */
+  max-width: none;  /* 取消最大寬度限制 */
+  min-width: 140px; /* 你可以加個最小寬度保持排版 */
+  /* 其他不變 */
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
