@@ -9,8 +9,7 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
 
   <style>  
-    /* 頁面基礎樣式 */
-    /* 頁面基礎樣式 */
+/* 頁面基礎樣式 */
 body {
   font-family: Arial, sans-serif;
   background-color: #f9f9f9;
@@ -79,22 +78,45 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-    /* 名稱 */
+/* 名稱與價格同一行容器 */
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0 4px;
+  padding: 0 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 名稱 */
 .name {
-  margin: 12px auto 4px;   /* ↑ 上方加大間距 */
   font-size: 16px;
   font-weight: 700;        /* 加粗文字 */
   line-height: 1.3;
   color: #333333;
   word-break: break-word;
+  margin: 0;
+  flex: 1;
+  text-align: left;
 }
-    
-    /* 價格 */
- .price {
-  margin-top: 4px;
+
+/* 價格 */
+.price {
   font-size: 14px;
   font-weight: 400; /* 不加粗 */
   color: #333333;
+  margin: 0 0 0 8px;
+  white-space: nowrap;
+}
+
+/* 備註 */
+.remark {
+  font-size: 12px;
+  color: #666666;
+  margin: 0 6px 12px;
+  text-align: left;
+  min-height: 1.2em; /* 若無備註也留空間 */
 }
 
 /* 手機版限制卡片最大寬度 */
@@ -167,14 +189,13 @@ function loadSheetData(){
     .then(r => r.text())
     .then(t => JSON.parse(t.substr(47).slice(0,-2)))
     .then(data=>{
-  const rows = data.table.rows || [];
-  // 跳過第一列，從 index 1 開始
   const items = rows.slice(1).map(row => ({
-    ip: row.c[0]?.v || "",
-    combo: row.c[1]?.v || "",
-    comboPrice: row.c[2]?.v || "",
-    img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-  }));
+  ip: row.c[0]?.v || "",
+  combo: row.c[1]?.v || "",
+  comboPrice: row.c[2]?.v || "",
+  img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+  remark: row.c[7]?.v || "",  // 新增備註欄位（若無可空字串）
+}));
 
   // 依 IP + 組合做分組，合併圖片
   const groupedByIpCombo = items.reduce((acc, item) => {
@@ -211,8 +232,11 @@ const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-
 
 card.innerHTML = `
   <div class="${imagesContainerClass}">${imgsHtml}</div>
-  <div class="name">${formatName(item.combo)}</div>
-  <div class="price">${item.comboPrice}</div>
+  <div class="title-row">
+    <div class="name">${formatName(item.combo)}</div>
+    <div class="price">${item.comboPrice}</div>
+  </div>
+  <div class="remark">${item.remark}</div>
 `;
 
     container.appendChild(card);
