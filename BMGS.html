@@ -130,8 +130,14 @@ body {
 @media (max-width: 480px) {
   .images-container img {
     max-height: 100px;
-    max-width: calc((100% - 24px) / 4); /* 每排4張 */
-    width: 100%;
+    max-width: calc((100% - 24px) / 4); /* 預設4張一排 */
+  }
+}
+
+/* 手機版超過4張改成3張一排 */
+@media (max-width: 480px) {
+  .images-container.three-per-row img {
+    max-width: calc((100% - 16px) / 3); /* 3張一排 */
   }
 }
 
@@ -199,6 +205,15 @@ function renderCards(items) {
 
     // 多圖分行呈現
     const imgsHtml = item.imgs.map(src => `<img src="${src}" alt="${item.combo}">`).join("");
+
+// 判斷圖片數量，超過4張就加三張一排 class
+const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
+
+card.innerHTML = `
+  <div class="${imagesContainerClass}">${imgsHtml}</div>
+  <div class="name">${formatName(item.combo)}</div>
+  <div class="price">${item.comboPrice}</div>
+`;
 
     card.innerHTML = `
       <div class="images-container">${imgsHtml}</div>
