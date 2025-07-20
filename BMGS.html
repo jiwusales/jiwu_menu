@@ -64,15 +64,15 @@ body {
 
 /* 商品卡片 */
 .card {
-  flex: 0 1 140px;     /* 允許縮小，但基準寬140px */
-  max-width: 140px;
-  min-width: 140px;
+  flex: 0 1 auto;    /* 不強制固定寬度 */
+  max-width: 100%;   /* 最多不要超過容器寬度 */
+  min-width: 140px;  /* 保持最小寬度 */
+  display: inline-flex;  /* 讓內容決定寬度 */
+  flex-direction: column;
+  align-items: center;
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
-  position: relative;
-  text-align: center;
-  color: #333;
   padding: 6px 4px 12px;
   box-sizing: border-box;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -80,25 +80,24 @@ body {
 
 /* 多張圖片容器 */
 .images-container {
-  display: flex;
-  flex-direction: row;
+  display: inline-flex; /* inline-flex 讓寬度隨內容縮放 */
   gap: 6px;
   align-items: center;
   justify-content: center;
-  max-width: 100%;    /* 限制不超出卡片 */
-  overflow: hidden;   /* 避免圖片超出 */
+  max-width: 100%;  /* 不會超出卡片 */
+  overflow-x: auto; /* 橫向溢出可滑動 */
+  padding-bottom: 4px;
   box-sizing: border-box;
 }
 
 /* 圖片樣式 */
 .images-container img {
-  flex: 1 1 auto;      /* 允許圖片寬度縮小/成長 */
-  max-width: 80px;     /* 最大寬度限制 */
-  width: 100%;
-  height: auto;
+  width: auto;
+  max-height: 80px;  /* 限制高度 */
+  max-width: 80px;   /* 限制最大寬度 */
   object-fit: contain;
   border-radius: 4px;
-  box-sizing: border-box;
+  flex-shrink: 0;    /* 不讓圖片縮小 */
 }
 
 /* 響應式：手機版 */
