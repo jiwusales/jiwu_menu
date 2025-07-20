@@ -64,73 +64,51 @@ body {
 
 /* 商品卡片 */
 .card {
-  flex: 1 1 140px;       /* 基本寬度140，允許成長縮小 */
-  max-width: 370px;      /* 最大寬度限制370px */
+  flex: 1 1 auto;
+  max-width: 370px;
   min-width: 140px;
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
-  position: relative;
+  padding: 6px 12px 12px;
+  box-sizing: border-box;
   text-align: center;
   color: #333;
-  padding: 6px 12px 12px;  /* 左右加大padding，避免緊貼邊緣 */
-  box-sizing: border-box;
-  transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* 多張圖片容器 */
+/* 圖片容器 */
 .images-container {
   display: flex;
-  flex-wrap: nowrap;     /* 一行水平排列，不換行 */
+  flex-wrap: wrap;         /* 換行 */
   gap: 8px;
-  justify-content: center;
-  width: 100%;           /* 撐滿卡片寬度 */
-  overflow-x: auto;      /* 溢出可橫向滑動 */
+  justify-content: center; /* 中心排列 */
+  width: 100%;
   box-sizing: border-box;
-  padding-bottom: 6px;
 }
 
-/* 圖片樣式 */
+/* 圖片 */
 .images-container img {
   height: auto;
-  max-height: 150px;     /* 限制最大高度，避免圖片過高 */
-  max-width: 100%;       /* 圖片寬度不超過容器 */
+  max-height: 120px;
+  max-width: calc((100% - 24px) / 3); /* 假設一排最多3張，計算圖片寬度，留空隙 */
   object-fit: contain;
   border-radius: 4px;
-  flex-shrink: 0;        /* 不縮小圖片比例 */
+  flex-shrink: 0;
 }
 
-/* 名稱 */
-.name {
-  margin: 8px auto 4px;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-/* 價格 */
-.price {
-  font-size: 14px;
-  font-weight: bold;
-  color: #444;
-}
-
-/* 手機版響應式 */
+/* 手機版調整 */
 @media (max-width: 480px) {
   .card {
-    flex: 1 1 90vw;
     max-width: 370px;
     padding: 6px 8px 12px;
   }
-  .images-container {
-    gap: 6px;
-  }
   .images-container img {
-    max-height: 120px;
+    max-height: 100px;
+    max-width: calc((100% - 16px) / 2); /* 手機版一排最多2張 */
   }
   .name {
     font-size: 11px;
@@ -140,14 +118,14 @@ body {
   }
 }
 
-/* 平板以上 */
+/* 平板及以上 */
 @media (min-width: 768px) {
   .card {
     max-width: 370px;
-    padding: 6px 12px 12px;
   }
   .images-container img {
     max-height: 150px;
+    max-width: calc((100% - 24px) / 3);
   }
   .name {
     font-size: 12px;
