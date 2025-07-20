@@ -64,8 +64,7 @@ body {
 
 /* 商品卡片 */
 .card {
-  flex: 1 1 auto;
-  max-width: 370px;
+  flex: 0 1 auto;
   min-width: 140px;
   border: 2px solid #ccc;
   border-radius: 8px;
@@ -80,58 +79,48 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
+/* 手機版限制卡片最大寬度 */
+@media (max-width: 480px) {
+  .card {
+    max-width: 370px;
+    width: 90vw;
+  }
+}
+
 /* 圖片容器 */
 .images-container {
   display: flex;
-  flex-wrap: wrap;         /* 換行 */
+  flex-wrap: wrap;
   gap: 8px;
-  justify-content: center; /* 中心排列 */
+  justify-content: center;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 圖片 */
+/* 圖片：桌機不限制張數，寬度自適應 */
 .images-container img {
   height: auto;
-  max-height: 120px;
-  max-width: calc((100% - 24px) / 3); /* 假設一排最多3張，計算圖片寬度，留空隙 */
+  max-height: 150px;
+  max-width: none;     /* 不限制寬度 */
+  width: auto;
   object-fit: contain;
   border-radius: 4px;
   flex-shrink: 0;
 }
 
-/* 手機版調整 */
+/* 手機版調整：每排最多4張 */
 @media (max-width: 480px) {
-  .card {
-    max-width: 370px;
-    padding: 6px 8px 12px;
-  }
   .images-container img {
     max-height: 100px;
-    max-width: calc((100% - 16px) / 2); /* 手機版一排最多2張 */
-  }
-  .name {
-    font-size: 11px;
-  }
-  .price {
-    font-size: 13px;
+    max-width: calc((100% - 24px) / 4); /* 每排4張 */
+    width: 100%;
   }
 }
 
-/* 平板及以上 */
+/* 平板及以上（大螢幕） */
 @media (min-width: 768px) {
-  .card {
-    max-width: 370px;
-  }
   .images-container img {
     max-height: 150px;
-    max-width: calc((100% - 24px) / 3);
-  }
-  .name {
-    font-size: 12px;
-  }
-  .price {
-    font-size: 14px;
   }
 }
   </style>
