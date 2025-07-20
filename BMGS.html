@@ -7,143 +7,133 @@
   
   <!-- 分頁小圖（favicon）-->
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
- 
-  <style>
-    /* 頁面基礎樣式 */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
-      background-repeat: repeat;
-      background-size: 135px;
-      margin: 0;
-      padding: 0;
-      color: #333333;
-      text-align: center;
-    }
-    /* 頂部通知條（色塊+文字跳動動畫） */
-    .top-bar {
-      background: var(--tab-color);
-      color: #fff;
-      padding: 10px 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 999;
-      user-select: none;
-      text-align: center;
-      font-size: 18px;
-      }
 
-    .top-bar .pulse-text {
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-      }
+  <style>  
+/* 頁面基礎樣式 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+  background-repeat: repeat;
+  background-size: 135px;
+  margin: 0;
+  padding: 0;
+  color: #333333;
+  text-align: center;
+}
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-      }
-    
-    /* 商品卡片容器 */
-    #card-container {
-      padding: 60px 10px 6px 7px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin: 0; /* 確保沒有 margin */
-   
-    /* 分類標題與橫線 */
-    .type-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 8px 0;
-      color: #333333;
-      font-weight: bold;
-    }
-    .type-divider::before,
-    .type-divider::after {
-      content: "";
-      flex: 1;
-      border-top: 1px solid #333333;
-      margin: 0 10px;
-    }
+/* 頂部通知條（色塊+文字跳動動畫） */
+.top-bar {
+  background: var(--tab-color, #999);
+  color: #fff;
+  padding: 10px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  user-select: none;
+  text-align: center;
+  font-size: 18px;
+}
 
-    .group-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, 120px);
-      justify-content: start;
-      gap: 6px; /* 可依你喜好調整 */
-   }
+.top-bar .pulse-text {
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
 
-    @media (max-width: 480px) {
-      .group-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-        /* 商品卡片基礎樣式 */
-   .card {
-  display: inline-block; /* 讓卡片寬度跟內容走 */
-  max-width: none;       /* 移除原本的寬度限制 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* 商品卡片容器 */
+#card-container {
+  padding: 60px 10px 6px 7px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+  margin: 0;
+}
+
+/* 商品卡片基礎樣式 */
+.card {
+  max-width: 140px; /* 可根據需求微調最大寬度 */
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
   position: relative;
   text-align: center;
   color: #333;
+  padding: 6px 4px 12px;
+  box-sizing: border-box;
   transition: transform 0.2s, box-shadow 0.2s;
-  padding: 4px;
 }
 
-    .card img {
-      width: 80px;
-      margin-top: 5px;
-      object-fit: contain;
-    }
-    .card .name {
-      margin: 1px auto;
-      font-size: 9px;
-      font-weight: bold;
-      line-height: 1.2;
-    }
-    .card .price {
-      font-size: 10px;
-      margin: 1px auto 5px;
-    }
-
-      .card,
-.card * {
-  text-decoration: none;
-  color: inherit;
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
-    
-    /* 貨況狀態標籤 */
-    .status-badge {
-      display: inline-block;
-      border-radius: 12px;
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
-      margin: 0 auto 4px auto;
-    }
 
-       /* 大螢幕版型調整 */
-    @media (min-width: 768px) {
-      .card {
-        width: 120px;
-      }
-      .card img {
-        width: 116px;
-      }
-      .card .name,
-      .card .price {
-        font-size: 12px;
-      }
-    }
-  </style>
+/* 卡片內多張圖片容器 */
+.images-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 圖片樣式 */
+.images-container img {
+  width: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* 名稱 */
+.name {
+  margin: 8px auto 4px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* 價格 */
+.price {
+  font-size: 12px;
+  font-weight: bold;
+  color: #444;
+}
+
+/* 響應式 */
+@media (max-width: 480px) {
+  #card-container {
+    justify-content: center;
+  }
+  .card {
+    max-width: 45vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .card {
+    max-width: 140px;
+  }
+  .images-container img {
+    width: 100px;
+  }
+  .name {
+    font-size: 12px;
+  }
+  .price {
+    font-size: 14px;
+  }
+}
+  <style>
 </head>
 <body>
     <div class="top-bar">
@@ -156,97 +146,71 @@
 <script>
 // ================= 基礎設定 =================
 const SHEET_ID  = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
-const sheetName = "組合出售區";
+const sheetName = "組合出售區";  // <-- 你說的分頁名稱
 
-// ================ 載入資料 ================
 function loadSheetData(){
-  // 固定頂部色塊顏色
-  document.documentElement.style.setProperty("--tab-color", "#6293b8");
-
-  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`)
-    .then(r=>r.text())
-    .then(t=>JSON.parse(t.substr(47).slice(0,-2)))
+  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`)
+    .then(r => r.text())
+    .then(t => JSON.parse(t.substr(47).slice(0,-2)))
     .then(data=>{
-      const rows = data.table.rows || [];
-      const items = rows.map(row => ({
-        ip: row.c[0]?.v || "",
-        combo: row.c[1]?.v || "",
-        comboPrice: row.c[2]?.v || "",
-        img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-        note: row.c[7]?.v || ""
-      }));
+  const rows = data.table.rows || [];
+  // 跳過第一列，從 index 1 開始
+  const items = rows.slice(1).map(row => ({
+    ip: row.c[0]?.v || "",
+    combo: row.c[1]?.v || "",
+    comboPrice: row.c[2]?.v || "",
+    img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
+  }));
 
-      // 依 IP+組合 分組
-      const grouped = {};
-      items.forEach(item => {
-        const key = item.ip + "||" + item.combo;
-        if (!grouped[key]) {
-          grouped[key] = {
-            ip: item.ip,
-            combo: item.combo,
-            comboPrice: item.comboPrice,
-            img: item.img,
-            note: item.note
-          };
-        }
-      });
-      const groupedArray = Object.values(grouped);
-      renderCards(groupedArray);
-    })
-    .catch(()=>document.getElementById("card-container").textContent="載入資料失敗");
+  // 依 IP + 組合做分組，合併圖片
+  const groupedByIpCombo = items.reduce((acc, item) => {
+    if (!item.ip) return acc;
+    const key = item.ip + "||" + item.combo;
+    if (!acc[key]) acc[key] = { ip: item.ip, combo: item.combo, comboPrice: item.comboPrice, imgs: [] };
+    acc[key].imgs.push(item.img);
+    return acc;
+  }, {});
+  const groupedArray = Object.values(groupedByIpCombo);
+
+  renderCards(groupedArray);
+})
+    .catch(() => {
+      document.getElementById("card-container").textContent = "載入資料失敗";
+    });
 }
 
-// ================ 畫面渲染 ================
-function renderCards(items){
+// 渲染卡片
+function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-  // 按 IP 分類顯示
-  const groupedByIp = {};
-  items.forEach(it => {
-    if (!groupedByIp[it.ip]) groupedByIp[it.ip] = [];
-    groupedByIp[it.ip].push(it);
-  });
+  items.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.borderColor = "#ccc";  // 可以自己調顏色
 
-  Object.keys(groupedByIp).forEach(ipName => {
-    const div = document.createElement("div");
-    div.className = "type-divider";
-    div.textContent = ipName;
-    container.appendChild(div);
+    // 多圖分行呈現
+    const imgsHtml = item.imgs.map(src => `<img src="${src}" alt="${item.combo}">`).join("");
 
-    const gdiv = document.createElement("div");
-    gdiv.className = "group-grid";
+    card.innerHTML = `
+      <div class="images-container">${imgsHtml}</div>
+      <div class="name">${formatName(item.combo)}</div>
+      <div class="price">${item.comboPrice}</div>
+    `;
 
-    groupedByIp[ipName].forEach(item => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.borderColor = "#6293b8";
-
-      card.innerHTML = `
-        <img src="${item.img}" alt="${item.combo}">
-        <div class="status-badge" style="background:#FFF4BD;color:#333">組合出售</div>
-        <div class="name">${formatName(item.combo)}</div>
-        <div class="price">${formatPrice(item.comboPrice)}</div>
-      `;
-      gdiv.appendChild(card);
-    });
-
-    container.appendChild(gdiv);
+    container.appendChild(card);
   });
 }
 
-// ================ 輔助函式 ================
+// 名稱換行輔助函式
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
-  return cleanName.length <= 9 ? cleanName : cleanName.slice(0, 9) + "...";
+  if (cleanName.length <= 9) return cleanName;
+  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
 }
 
-function formatPrice(price) {
-  return price ? price : "私訊花花";
-}
-
-// ================ 啟動 =====================
+// 啟動
 loadSheetData();
 </script>
 </body>
