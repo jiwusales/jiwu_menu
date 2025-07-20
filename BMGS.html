@@ -64,58 +64,73 @@ body {
 
 /* 商品卡片 */
 .card {
-  flex: 0 1 auto;    /* 不強制固定寬度 */
-  max-width: 100%;   /* 最多不要超過容器寬度 */
-  min-width: 140px;  /* 保持最小寬度 */
-  display: inline-flex;  /* 讓內容決定寬度 */
-  flex-direction: column;
-  align-items: center;
+  flex: 1 1 140px;       /* 基本寬度140，允許成長縮小 */
+  max-width: 370px;      /* 最大寬度限制370px */
+  min-width: 140px;
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
-  padding: 6px 4px 12px;
+  position: relative;
+  text-align: center;
+  color: #333;
+  padding: 6px 12px 12px;  /* 左右加大padding，避免緊貼邊緣 */
   box-sizing: border-box;
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* 多張圖片容器 */
 .images-container {
-  display: inline-flex; /* inline-flex 讓寬度隨內容縮放 */
-  gap: 6px;
-  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;     /* 一行水平排列，不換行 */
+  gap: 8px;
   justify-content: center;
-  max-width: 100%;  /* 不會超出卡片 */
-  overflow-x: auto; /* 橫向溢出可滑動 */
-  padding-bottom: 4px;
+  width: 100%;           /* 撐滿卡片寬度 */
+  overflow-x: auto;      /* 溢出可橫向滑動 */
   box-sizing: border-box;
+  padding-bottom: 6px;
 }
 
 /* 圖片樣式 */
 .images-container img {
-  width: auto;
-  max-height: 80px;  /* 限制高度 */
-  max-width: 80px;   /* 限制最大寬度 */
+  height: auto;
+  max-height: 150px;     /* 限制最大高度，避免圖片過高 */
+  max-width: 100%;       /* 圖片寬度不超過容器 */
   object-fit: contain;
   border-radius: 4px;
-  flex-shrink: 0;    /* 不讓圖片縮小 */
+  flex-shrink: 0;        /* 不縮小圖片比例 */
 }
 
-/* 響應式：手機版 */
+/* 名稱 */
+.name {
+  margin: 8px auto 4px;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* 價格 */
+.price {
+  font-size: 14px;
+  font-weight: bold;
+  color: #444;
+}
+
+/* 手機版響應式 */
 @media (max-width: 480px) {
-  #card-container {
-    justify-content: center;
-  }
   .card {
-    flex: 0 1 90vw;       /* 手機卡片寬度約 90% 螢幕寬 */
-    max-width: 90vw;
-    min-width: auto;
+    flex: 1 1 90vw;
+    max-width: 370px;
+    padding: 6px 8px 12px;
   }
   .images-container {
-    max-width: 100%;
+    gap: 6px;
   }
   .images-container img {
-    max-width: 33vw;      /* 圖片最大寬度約為螢幕1/3 */
-    width: 100%;
+    max-height: 120px;
   }
   .name {
     font-size: 11px;
@@ -125,16 +140,14 @@ body {
   }
 }
 
-/* 響應式：平板及以上 */
+/* 平板以上 */
 @media (min-width: 768px) {
   .card {
-    flex: 0 1 140px;
-    max-width: 140px;
-    min-width: 140px;
+    max-width: 370px;
+    padding: 6px 12px 12px;
   }
   .images-container img {
-    max-width: 100px;
-    width: 100%;
+    max-height: 150px;
   }
   .name {
     font-size: 12px;
