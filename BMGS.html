@@ -62,9 +62,9 @@ body {
   box-sizing: border-box;
 }
 
-/* 商品卡片基礎樣式 */
+/* 商品卡片 */
 .card {
-  flex: 1 1 140px;       /* 允許成長和縮小，基準寬度140px */
+  flex: 0 1 140px;     /* 允許縮小，但基準寬140px */
   max-width: 140px;
   min-width: 140px;
   border: 2px solid #ccc;
@@ -78,38 +78,27 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* 卡片內多張圖片容器 */
+/* 多張圖片容器 */
 .images-container {
   display: flex;
   flex-direction: row;
   gap: 6px;
   align-items: center;
   justify-content: center;
+  max-width: 100%;    /* 限制不超出卡片 */
+  overflow: hidden;   /* 避免圖片超出 */
+  box-sizing: border-box;
 }
 
-/* 圖片樣式 - 寬度自適應，最大寬度限制 */
+/* 圖片樣式 */
 .images-container img {
+  flex: 1 1 auto;      /* 允許圖片寬度縮小/成長 */
+  max-width: 80px;     /* 最大寬度限制 */
   width: 100%;
-  max-width: 80px;
   height: auto;
   object-fit: contain;
   border-radius: 4px;
-}
-
-/* 名稱 */
-.name {
-  margin: 8px auto 4px;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-/* 價格 */
-.price {
-  font-size: 12px;
-  font-weight: bold;
-  color: #444;
+  box-sizing: border-box;
 }
 
 /* 響應式：手機版 */
@@ -118,12 +107,15 @@ body {
     justify-content: center;
   }
   .card {
-    max-width: 45vw;
+    flex: 0 1 90vw;       /* 手機卡片寬度約 90% 螢幕寬 */
+    max-width: 90vw;
     min-width: auto;
-    flex-basis: auto;
+  }
+  .images-container {
+    max-width: 100%;
   }
   .images-container img {
-    max-width: 100%;
+    max-width: 33vw;      /* 圖片最大寬度約為螢幕1/3 */
     width: 100%;
   }
   .name {
@@ -137,13 +129,13 @@ body {
 /* 響應式：平板及以上 */
 @media (min-width: 768px) {
   .card {
+    flex: 0 1 140px;
     max-width: 140px;
     min-width: 140px;
-    flex-basis: 140px;
   }
   .images-container img {
-    width: 100px;
-    max-width: none;
+    max-width: 100px;
+    width: 100%;
   }
   .name {
     font-size: 12px;
