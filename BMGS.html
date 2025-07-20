@@ -10,63 +10,63 @@
 
   <style>  
     /* 頁面基礎樣式 */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
-      background-repeat: repeat;
-      background-size: 135px;
-      margin: 0;
-      padding: 0;
-      color: #333333;
-      text-align: center;
-    }
+    /* 頁面基礎樣式 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+  background-repeat: repeat;
+  background-size: 135px;
+  margin: 0;
+  padding: 0;
+  color: #333333;
+  text-align: center;
+}
 
-    /* 頂部通知條（色塊+文字跳動動畫） */
-    .top-bar {
-      background: var(--tab-color, #999);
-      color: #fff;
-      padding: 10px 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 999;
-      user-select: none;
-      text-align: center;
-      font-size: 18px;
-    }
+/* 頂部通知條（色塊+文字跳動動畫） */
+.top-bar {
+  background: var(--tab-color, #999);
+  color: #fff;
+  padding: 10px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  user-select: none;
+  text-align: center;
+  font-size: 18px;
+}
 
-    .top-bar .pulse-text {
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-    }
+.top-bar .pulse-text {
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
 
-    /* 商品卡片容器 */
-   #card-container {
-  padding: 60px 10px 6px 7px;
+/* 商品卡片容器 */
+#card-container {
+  padding: 60px 10px 6px 10px;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: flex-start;
   gap: 12px;
   margin: 0;
-  width: 100%; /* 確保容器寬度撐滿 */
+  width: 100%;
   box-sizing: border-box;
 }
 
-    /* 商品卡片基礎樣式 */
-    .card {
-  flex: 0 1 auto;   /* 允許寬度自動 */
-  max-width: none;  /* 取消最大寬度限制 */
-  min-width: 140px; /* 你可以加個最小寬度保持排版 */
-  /* 其他不變 */
+/* 商品卡片基礎樣式 */
+.card {
+  flex: 1 1 140px;       /* 允許成長和縮小，基準寬度140px */
+  max-width: 140px;
+  min-width: 140px;
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
@@ -78,62 +78,80 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-    /* 卡片內多張圖片容器 */
-    .images-container {
+/* 卡片內多張圖片容器 */
+.images-container {
   display: flex;
-  flex-direction: row;  /* 改成水平排列 */
+  flex-direction: row;
   gap: 6px;
   align-items: center;
   justify-content: center;
 }
 
-    /* 圖片樣式 */
-    .images-container img {
-      width: 80px;
-      object-fit: contain;
-      border-radius: 4px;
-    }
+/* 圖片樣式 - 寬度自適應，最大寬度限制 */
+.images-container img {
+  width: 100%;
+  max-width: 80px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
 
-    /* 名稱 */
-    .name {
-      margin: 8px auto 4px;
-      font-size: 10px;
-      font-weight: bold;
-      line-height: 1.2;
-      word-break: break-word;
-    }
+/* 名稱 */
+.name {
+  margin: 8px auto 4px;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1.2;
+  word-break: break-word;
+}
 
-    /* 價格 */
-    .price {
-      font-size: 12px;
-      font-weight: bold;
-      color: #444;
-    }
+/* 價格 */
+.price {
+  font-size: 12px;
+  font-weight: bold;
+  color: #444;
+}
 
-    /* 響應式 */
-    @media (max-width: 480px) {
-      #card-container {
-        justify-content: center;
-      }
-      .card {
-        max-width: 45vw;
-      }
-    }
+/* 響應式：手機版 */
+@media (max-width: 480px) {
+  #card-container {
+    justify-content: center;
+  }
+  .card {
+    max-width: 45vw;
+    min-width: auto;
+    flex-basis: auto;
+  }
+  .images-container img {
+    max-width: 100%;
+    width: 100%;
+  }
+  .name {
+    font-size: 11px;
+  }
+  .price {
+    font-size: 13px;
+  }
+}
 
-    @media (min-width: 768px) {
-      .card {
-        max-width: 140px;
-      }
-      .images-container img {
-        width: 100px;
-      }
-      .name {
-        font-size: 12px;
-      }
-      .price {
-        font-size: 14px;
-      }
-    }
+/* 響應式：平板及以上 */
+@media (min-width: 768px) {
+  .card {
+    max-width: 140px;
+    min-width: 140px;
+    flex-basis: 140px;
+  }
+  .images-container img {
+    width: 100px;
+    max-width: none;
+  }
+  .name {
+    font-size: 12px;
+  }
+  .price {
+    font-size: 14px;
+  }
+}
   </style>
 </head>
 <body>
