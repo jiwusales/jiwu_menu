@@ -144,34 +144,6 @@ body {
   user-select: none;
 }
 
-/* 組合內容圖片 */
-.combo-images {
-  display: grid;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.combo-images.desktop {
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  max-width: 660px; /* 6張100px寬 + 間距 */
-}
-
-.combo-images.mobile-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.combo-images.mobile-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.combo-images img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  object-fit: contain;
-}
-
 /* 大螢幕版型調整 */
 @media (min-width: 768px) {
   .card {
@@ -217,6 +189,39 @@ body {
 }
 .close-btn:hover {
   color: #333;
+}
+    .img-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.img-container img {
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* 手機 4張一排 */
+.img-row-4 img {
+  width: calc((100% - 15px) / 4); /* 四張，間距5*3=15 */
+}
+
+/* 手機 3張一排 */
+.img-row-3 img {
+  width: calc((100% - 10px) / 3); /* 三張，間距5*2=10 */
+}
+
+/* 平板+電腦 6張一排 */
+.img-row-6 img {
+  width: calc((100% - 25px) / 6); /* 六張，間距5*5=25 */
+}
+
+/* 響應式備用 */
+@media (max-width: 480px) {
+  /* 強制手機使用 img-row-3 或 img-row-4 不用這裡改 */
 }
 
   </style>
@@ -383,46 +388,68 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 找出所有組合名稱含comboName的項目（模糊匹配）
-      const comboItems = rows.filter(row => {
-        const nameField = (row.c[1]?.v || "").trim();
-        return nameField.includes(comboName.trim());
+      // 先找出所有包含 comboName 字串的列 (第二欄是組合欄)
+      const filteredRows = rows.filter(row => {
+        const comboField = (row.c[1]?.v || "").trim();
+        return comboField.includes(comboName.trim());
       });
 
-      if (!comboItems.length) {
+      if (!filteredRows.length) {
         body.innerHTML = "組合內容整理中(๑´ㅂ`๑)";
         return;
       }
 
-      const price = comboItems[0].c[2]?.v || "";
+      // 將資料依「組合」欄位（第二欄）分組
+      const groupedByCombo = {};
+      filteredRows.forEach(row => {
+        const comboGroupName = (row.c[1]?.v || "").trim();
+        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
+        groupedByCombo[comboGroupName].push(row);
+      });
 
-      // 產生圖片 HTML
-      const imgsHTML = comboItems.map(row => {
-        const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-        return `<img src="${img}" alt="${comboName}">`;
-      }).join("");
+      // 組合 HTML，顯示圖片、組合名、組合價，組與組之間加分隔線
+      let html = "";
+      const groupNames = Object.keys(groupedByCombo);
 
-      // 判斷裝置與圖片數量，決定要用哪個 class
-      const isMobile = window.matchMedia("(max-width: 480px)").matches;
-      let gridClass = "desktop";
+      groupNames.forEach((group, index) => {
+        const items = groupedByCombo[group];
+        const price = items[0].c[2]?.v || ""; // 組合價（假設同組價錢相同）
 
-      if (isMobile) {
-        if (comboItems.length <= 4) {
-          gridClass = "mobile-4";
-        } else {
-          gridClass = "mobile-3";
+        // 圖片列表
+       const imgCount = items.length;
+let imgClass = "";
+
+if (window.innerWidth <= 480) {
+  // 手機
+  if (imgCount <= 4) imgClass = "img-row-4";  // 一排4張
+  else imgClass = "img-row-3";                // 一排3張
+} else {
+  // 平板+桌機
+  imgClass = "img-row-6";                     // 一排6張
+}
+
+const imgList = items.map(row => {
+  const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+  return `<img src="${img}" alt="${group}" />`;
+}).join("");
+
+html += `
+  <div style="text-align:center; margin-bottom: 8px;">
+    <div class="img-container ${imgClass}">
+      ${imgList}
+    </div>
+    <div style="font-size:16px; font-weight:bold; margin-bottom:2px;">${group}</div>
+    <div style="font-size:14px;">組合價：${formatPrice(price)}</div>
+  </div>
+`;
+
+        // 不是最後一組時加分隔線
+        if (index !== groupNames.length - 1) {
+          html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
         }
-      }
+      });
 
-      body.innerHTML = `
-        <div style="text-align:center;">
-          <div class="combo-images ${gridClass}">
-            ${imgsHTML}
-          </div>
-          <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">${comboName}</div>
-          <div style="font-size:14px;">組合價：${formatPrice(price)}</div>
-        </div>
-      `;
+      body.innerHTML = html;
     })
     .catch(() => {
       body.textContent = "載入組合內容失敗";
