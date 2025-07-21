@@ -151,15 +151,17 @@
 }
 
     @media (max-width: 480px) {
-      .card {
-        max-width: 370px;
-        width: 90vw;
-      }
-      .images-container img {
-        max-height: 100px;
-        max-width: calc((100% - 24px) / 4);
-      }
-    }
+  /* 預設四張一排 */
+  .images-container img {
+    max-height: 100px;
+    max-width: calc((100% - 24px) / 4);
+  }
+
+  /* 如果圖片超過 4 張，改三張一排 */
+  .images-container.three-per-row img {
+    max-width: calc((100% - 16px) / 3);
+  }
+}
 
     @media (min-width: 768px) {
       .images-container img {
@@ -228,6 +230,9 @@ function renderCards(items) {
     const card = document.createElement("div");
     card.className = "card";
 
+    // 判斷圖片數量 > 4 改用三張一排
+    const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
+
     const imgsHtml = item.imgs.map(imgObj => `
       <div class="image-wrapper">
         <img src="${imgObj.src}" alt="${item.combo}">
@@ -236,7 +241,7 @@ function renderCards(items) {
     `).join("");
 
     card.innerHTML = `
-      <div class="images-container">${imgsHtml}</div>
+      <div class="${imagesContainerClass}">${imgsHtml}</div>
       <div class="title-row">
         <div class="name">${formatName(item.combo)}</div>
         <div class="price">${item.comboPrice}</div>
