@@ -342,7 +342,7 @@ function renderCards(items,roleName){
 }
 
 // ================ Modal 組合內容 ================
-function loadComboDetails(comboName){
+function loadComboDetails(comboName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
   document.getElementById("comboTitle").textContent = comboName;
@@ -354,23 +354,30 @@ function loadComboDetails(comboName){
     .then(t => JSON.parse(t.substr(47).slice(0, -2)))
     .then(data => {
       const rows = data.table.rows || [];
-      const comboItem = rows.find(row => {
-        const comboNameField = (row.c[1]?.v || "").trim();
-        return comboNameField === comboName.trim();
+
+      // 找出所有組合名稱相同的項目
+      const comboItems = rows.filter(row => {
+        const nameField = (row.c[1]?.v || "").trim(); // 欄位 2 = 組合
+        return nameField === comboName.trim();
       });
 
-      if (!comboItem) {
+      if (!comboItems.length) {
         body.innerHTML = "組合內容整理中(๑´ㅂ`๑)";
         return;
       }
 
-      const img = comboItem.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-      const price = comboItem.c[5]?.v || "";
+      const price = comboItems[0].c[2]?.v || ""; // 欄位 3 = 組合價
+
+      // 圖片橫向排列
+      const imgList = comboItems.map(row => {
+        const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 欄位 7 = 圖片
+        return `<img src="${img}" alt="${comboName}" style="width:80px;height:auto;margin:5px;border-radius:6px;">`;
+      }).join("");
 
       body.innerHTML = `
         <div style="text-align:center;">
-          <img src="${img}" alt="${comboName}" style="width:200px;border-radius:8px;margin-bottom:10px;">
-          <div style="font-size:18px;font-weight:bold;margin-top:8px;">組合價：${formatPrice(price)}</div>
+          <div style="font-size:18px;font-weight:bold;margin-bottom:8px;">組合價：${formatPrice(price)}</div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:center;">${imgList}</div>
         </div>
       `;
     })
