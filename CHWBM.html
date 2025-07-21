@@ -300,12 +300,14 @@ function renderCards(items,roleName){
       const arr=byStyle[sty];
       if(!arr)return;
       arr.sort((a,b)=>a.index-b.index).forEach(item=>{
-        const status=getStatus(item);if(!status)return;
+        const status=getStatus(item);
+        if(!status)return;
         const single="吉八兔桃獺栗獅古其";
         const ch=item.role.match(/[\u4e00-\u9fff]/g)||[];
         const rtxt=(ch.length===1&&single.includes(ch[0]))?ch[0]:"綜";
+
         const isCombo = item.price === "組合出售";
-        const needLineLink = (!item.price || item.price === "-");
+        const needLineLink = item.price === "私訊花花";
 
         const card = document.createElement(isCombo ? "div" : (needLineLink ? "a" : "div"));
         card.className = "card";
@@ -313,9 +315,12 @@ function renderCards(items,roleName){
 
         if(isCombo){
           card.onclick = () => loadComboDetails(item.name);
+          card.style.cursor = "pointer";
         }else if(needLineLink){
           card.href = "https://lin.ee/X6FUFI9";
           card.target = "_blank";
+          card.style.textDecoration = "none";
+          card.style.color = "inherit";
         }
 
         card.innerHTML=`
@@ -340,7 +345,7 @@ function loadComboDetails(comboName){
   body.innerHTML="載入中...";
   modal.style.display="block";
 
-  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售`)
+  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售區`)
     .then(r=>r.text())
     .then(t=>JSON.parse(t.substr(47).slice(0,-2)))
     .then(data=>{
