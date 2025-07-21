@@ -404,7 +404,7 @@ function loadComboDetails(clickedItemName) {
       const currentRole = roleMap[getRoleFromURL()] || "";
       const targetItem = clickedItemName.trim();
 
-      let lastRole = "", lastItem = "";
+      llet lastRole = "", lastItem = "";
 const filteredRows = rows.filter(row => {
   const roleField = (row.c[1]?.v || lastRole).trim();
   const itemField = (row.c[2]?.v || lastItem).trim();
