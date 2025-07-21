@@ -178,7 +178,7 @@ body {
   width: 80%;
   max-width: 400px;
   border-radius: 8px;
-  text-align: left;
+  text-align: center;
 }
 .close-btn {
   color: #aaa;
@@ -205,7 +205,6 @@ body {
   <div id="comboModal" class="modal">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
-      <h2 id="comboTitle">組合內容</h2>
       <div id="comboBody">載入中...</div>
     </div>
   </div>
@@ -355,7 +354,7 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 先找出所有包含 comboName 字串的列 (第二欄是組合欄)
+      // 篩選符合組合名稱的資料列
       const filteredRows = rows.filter(row => {
         const comboField = (row.c[1]?.v || "").trim();
         return comboField.includes(comboName.trim());
@@ -366,7 +365,7 @@ function loadComboDetails(comboName) {
         return;
       }
 
-      // 將資料依「組合」欄位（第二欄）分組
+      // 依組合欄位分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
         const comboGroupName = (row.c[1]?.v || "").trim();
@@ -374,32 +373,35 @@ function loadComboDetails(comboName) {
         groupedByCombo[comboGroupName].push(row);
       });
 
-      // 組合 HTML，顯示圖片、組合名、組合價，組與組之間加分隔線
       let html = "";
       const groupNames = Object.keys(groupedByCombo);
 
-    groupNames.forEach((group, index) => {
-  const items = groupedByCombo[group];
-  const price = items[0].c[2]?.v || "";
+      groupNames.forEach((group, index) => {
+        const items = groupedByCombo[group];
+        const price = items[0].c[2]?.v || "";
 
-  const imgList = items.map(row => {
-    const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-    return `<img src="${img}" alt="${group}" style="width:80px; height:auto; border-radius:6px;">`;
-  }).join("");
+        // 圖片區塊，排列成彈性盒 (flex)，可多張圖片一排
+        const imgList = items.map(row => {
+          const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          return `<img src="${img}" alt="${group.trim()}" style="width:80px; height:auto; border-radius:6px; margin: 0 4px 6px 4px;">`;
+        }).join("");
 
-  html += `
-  <div style="display:block; font-size:16px; font-weight:bold; margin-bottom:4px; text-align:center;">
-    ${group}
-  </div>
-  <div style="display:block; font-size:14px; text-align:center;">
-    組合價：${formatPrice(price)}
-  </div>
-`;
+        html += `
+          <div style="text-align:center; font-size:16px; font-weight:bold; margin-bottom:4px;">
+            ${group.trim()}
+          </div>
+          <div style="display:flex; justify-content:center; flex-wrap: wrap; margin-bottom: 6px;">
+            ${imgList}
+          </div>
+          <div style="text-align:center; font-size:14px; color:#444; margin-bottom: 10px;">
+            組合價：${formatPrice(price)}
+          </div>
+        `;
 
-  if (index !== groupNames.length - 1) {
-    html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
-  }
-});
+        if (index !== groupNames.length - 1) {
+          html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
+        }
+      });
 
       body.innerHTML = html;
     })
