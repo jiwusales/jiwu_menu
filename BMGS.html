@@ -5,180 +5,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物寶寶目錄</title>
   
-  <!-- 分頁小圖（favicon）-->
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
 
-  <style>  
-/* 頁面基礎樣式 */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
-  background-repeat: repeat;
-  background-size: 135px;
-  margin: 0;
-  padding: 0;
-  color: #333333;
-  text-align: center;
-}
+  <style>
+    /* 頁面基礎樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+      background-repeat: repeat;
+      background-size: 135px;
+      margin: 0;
+      padding: 0;
+      color: #333333;
+      text-align: center;
+    }
 
-/* 頂部通知條 */
-.top-bar {
-  background: #738FA7;
-  color: #ffffff;
-  padding: 10px 0;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  z-index: 999;
-  user-select: none;
-  text-align: center;
-  font-size: 18px;
-}
+    .top-bar {
+      background: #738FA7;
+      color: #ffffff;
+      padding: 10px 0;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 999;
+      user-select: none;
+      text-align: center;
+      font-size: 18px;
+    }
 
-.top-bar .pulse-text {
-  display: inline-block;
-  animation: pulse 1.5s infinite;
-}
+    .top-bar .pulse-text {
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
 
-/* 商品卡片容器 */
-#card-container {
-  padding: 60px 2px 6px 2px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
+    #card-container {
+      padding: 60px 2px 6px 2px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-/* 商品卡片 */
-.card {
-  flex: 0 1 auto;
-  min-width: 140px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  padding: 6px 12px 12px;
-  box-sizing: border-box;
-  text-align: center;
-  color: #333333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+    .card {
+      flex: 0 1 auto;
+      min-width: 140px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 6px 12px 12px;
+      box-sizing: border-box;
+      text-align: center;
+      color: #333333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-/* 名稱與價格同一行容器，置中對齊 */
-.title-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 12px 0 4px;
-  padding: 0 6px;
-  width: 100%;
-  box-sizing: border-box;
-  gap: 12px;
-}
+    .title-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 12px 0 4px;
+      padding: 0 6px;
+      width: 100%;
+      box-sizing: border-box;
+      gap: 12px;
+    }
 
-/* 名稱 */
-.name {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: #333333;
-  word-break: break-word;
-  margin: 0;
-  text-align: center;
-}
+    .name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #333333;
+      word-break: break-word;
+      margin: 0;
+      text-align: center;
+    }
 
-/* 價格 */
-.price {
-  font-size: 16px;
-  font-weight: 400;
-  color: #333333;
-  margin: 0;
-  white-space: nowrap;
-  text-align: center;
-}
+    .price {
+      font-size: 16px;
+      font-weight: 400;
+      color: #333333;
+      margin: 0;
+      white-space: nowrap;
+      text-align: center;
+    }
 
-/* 標籤樣式 */
-.overlay-tag {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #ECA4B1;    /* 改成你指定的粉紅色 */
-  color: #ffffff;         /* 白色字 */
-  padding: 2px 6px;
-  font-size: 11px;
-  border-radius: 0 0 4px 4px;
-  pointer-events: none;
-  text-align: center;
-  max-width: 90%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+    .remark {
+      font-size: 12px;
+      color: #666666;
+      margin: 0 6px 6px;
+      text-align: left;
+      min-height: 1.2em;
+    }
 
-/* 手機版限制卡片最大寬度 */
-@media (max-width: 480px) {
-  .card {
-    max-width: 370px;
-    width: 90vw;
-  }
-}
+    .images-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-/* 圖片容器 */
-.images-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-}
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+    }
 
-/* 圖片大小設定 */
-.images-container img {
-  height: auto;
-  max-height: 150px;
-  max-width: none;
-  width: auto;
-  object-fit: contain;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
+    .images-container img {
+      height: auto;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
 
-/* 手機版每排最多4張 */
-@media (max-width: 480px) {
-  .images-container img {
-    max-height: 100px;
-    max-width: calc((100% - 24px) / 4);
-  }
-}
+    .overlay-tag {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ECA4B1;
+      color: #ffffff;
+      padding: 2px 6px;
+      font-size: 11px;
+      border-radius: 0 0 4px 4px;
+      pointer-events: none;
+      text-align: center;
+      max-width: 90%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-/* 手機版超過4張改3張一排 */
-@media (max-width: 480px) {
-  .images-container.three-per-row img {
-    max-width: calc((100% - 16px) / 3);
-  }
-}
+    @media (max-width: 480px) {
+      .card {
+        max-width: 370px;
+        width: 90vw;
+      }
+      .images-container img {
+        max-height: 100px;
+        max-width: calc((100% - 24px) / 4);
+      }
+    }
 
-/* 平板及以上大螢幕 */
-@media (min-width: 768px) {
-  .images-container img {
-    max-height: 150px;
-  }
-}
+    @media (min-width: 768px) {
+      .images-container img {
+        max-height: 150px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -205,6 +192,7 @@ function loadSheetData() {
       comboPrice: row.c[2]?.v || "",
       img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
       tag: row.c[7]?.v || "",
+      remark: row.c[8]?.v || ""
     }));
 
     const groupedByCombo = items.reduce((acc, item) => {
@@ -215,6 +203,7 @@ function loadSheetData() {
           combo: item.combo,
           comboPrice: item.comboPrice,
           imgs: [],
+          remark: ""
         };
       }
       acc[key].imgs.push({ src: item.img, tag: item.tag });
