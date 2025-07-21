@@ -376,10 +376,9 @@ function renderCards(items,roleName){
 }
 
 // ================ Modal 組合內容 ================
-function loadComboDetails(comboName) {
+function loadComboDetails(roleName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
-  document.getElementById("comboTitle").textContent = comboName;
   body.innerHTML = "載入中...";
   modal.style.display = "block";
 
@@ -389,10 +388,10 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 找出所有包含 comboName 字串的列 (第二欄是組合欄)
+      // 找出所有角色欄（B欄）符合 roleName 的列
       const filteredRows = rows.filter(row => {
-        const comboField = (row.c[1]?.v || "").trim();
-        return comboField.includes(comboName.trim());
+        const roleField = (row.c[1]?.v || "").trim();
+        return roleField === roleName.trim();
       });
 
       if (!filteredRows.length) {
@@ -400,10 +399,10 @@ function loadComboDetails(comboName) {
         return;
       }
 
-      // 依組合欄分組
+      // 依組合欄（C欄）分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
-        const comboGroupName = (row.c[1]?.v || "").trim();
+        const comboGroupName = (row.c[2]?.v || "").trim();
         if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
         groupedByCombo[comboGroupName].push(row);
       });
@@ -413,21 +412,19 @@ function loadComboDetails(comboName) {
 
       groupNames.forEach((group, index) => {
         const items = groupedByCombo[group];
-        const price = items[0].c[2]?.v || "";
+        const price = items[0].c[3]?.v || ""; // D欄 組合價
 
         const imgCount = items.length;
         let imgClass = "";
 
         if (window.innerWidth <= 480) {
-          // 手機裝置
           imgClass = (imgCount <= 4) ? "img-row-4" : "img-row-3";
         } else {
-          // 平板以上
           imgClass = "img-row-6";
         }
 
         const imgList = items.map(row => {
-          const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // H欄 圖片
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
@@ -437,19 +434,19 @@ function loadComboDetails(comboName) {
               ${imgList}
             </div>
             <div style="
-            font-size:16px; 
-            font-weight:bold;  
-            margin-bottom:2px; 
-            display:flex; 
-            justify-content:center; 
-            gap:10px; 
-            align-items:center;
-            text-align:center;
-            width: 100%;
+              font-size:16px;
+              margin-bottom:2px;
+              display:flex;
+              justify-content:center;
+              gap:5px;
+              align-items:center;
+              text-align:center;
+              width:100%;
             ">
-      <span>${group}</span>
-      <span style="font-size:16px; white-space: nowrap; font-weight: normal;">${formatPrice(price)}</span>
-      </div>
+              <span>${group}</span>
+              <span style="font-size:16px; white-space:nowrap;">${formatPrice(price)}</span>
+            </div>
+          </div>
         `;
 
         if (index !== groupNames.length - 1) {
@@ -464,8 +461,11 @@ function loadComboDetails(comboName) {
     });
 }
 
-document.querySelector(".close-btn").onclick=()=>document.getElementById("comboModal").style.display="none";
-window.onclick=e=>{if(e.target===document.getElementById("comboModal"))document.getElementById("comboModal").style.display="none";};
+document.querySelector(".close-btn").onclick = () => document.getElementById("comboModal").style.display = "none";
+window.onclick = e => {
+  if (e.target === document.getElementById("comboModal")) document.getElementById("comboModal").style.display = "none";
+};
+
 
 // ================ 輔助函式 ================
 function formatName(name){
