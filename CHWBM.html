@@ -436,10 +436,8 @@ function loadComboDetails(clickedItemName) {
       for (let i = 0; i < twoImgCombos.length; i += 2) {
         pairedGroups.push([twoImgCombos[i], twoImgCombos[i + 1]]);
       }
-      // 其它組合獨立放成陣列，方便後面一起輸出
       const singleGroups = otherCombos;
 
-      // 總共要顯示的區塊數量
       const totalBlocks = pairedGroups.length + singleGroups.length;
       let currentIndex = 0;
 
@@ -451,20 +449,18 @@ function loadComboDetails(clickedItemName) {
         if (!groupB) {
           const itemsC = groupedByCombo[groupA];
           const priceC = itemsC[0].c[4]?.v || "";
-          const remarkC = itemsC[0].c[9]?.v || ""; // 假設 J 欄是第10欄 c[9]
+          const remarkC = itemsC[0].c[9]?.v || "";
           const imgListC = itemsC.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
 
           html += `
             <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div>${groupA}</div>
-                  <div style="font-weight: normal;">${formatPrice(priceC)}</div>
+                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceC)}</div>
                 </div>
-                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
-                  ${remarkC}
-                </div>
+                ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
                 <!-- 右側空白占位 -->
@@ -486,29 +482,24 @@ function loadComboDetails(clickedItemName) {
             <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div>${groupA}</div>
-                  <div style="font-weight: normal;">${formatPrice(priceA)}</div>
+                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceA)}</div>
                 </div>
-                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
-                  ${remarkA}
-                </div>
+                ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div>${groupB}</div>
-                  <div style="font-weight: normal;">${formatPrice(priceB)}</div>
+                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceB)}</div>
                 </div>
-                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
-                  ${remarkB}
-                </div>
+                ${remarkB ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkB}</div>` : ""}
               </div>
             </div>
           `;
         }
 
-        // 不是最後一個區塊才加分隔線
         if (currentIndex < totalBlocks) {
           html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
         }
@@ -526,13 +517,11 @@ function loadComboDetails(clickedItemName) {
         html += `
           <div style="text-align:center; margin-bottom:8px;">
             <div class="img-container ${rowClass}">${imgList}</div>
-            <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
+            <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline; margin-top:4px;">
               <div>${group}</div>
-              <div style="font-weight: normal;">${formatPrice(price)}</div>
+              <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
             </div>
-            <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
-              ${remark}
-            </div>
+            ${remark ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remark}</div>` : ""}
           </div>
         `;
 
@@ -552,7 +541,6 @@ document.querySelector(".close-btn").onclick = () => document.getElementById("co
 window.onclick = e => {
   if (e.target === document.getElementById("comboModal")) document.getElementById("comboModal").style.display = "none";
 };
-
 
 // ================ 輔助函式 ================
 function formatName(name){
