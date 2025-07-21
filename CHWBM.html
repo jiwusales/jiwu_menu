@@ -451,18 +451,20 @@ function loadComboDetails(clickedItemName) {
         if (!groupB) {
           const itemsC = groupedByCombo[groupA];
           const priceC = itemsC[0].c[4]?.v || "";
-          const remarkC = itemsC[0].c[9]?.v || "";
+          const remarkC = itemsC[0].c[9]?.v || ""; // 假設 J 欄是第10欄 c[9]
           const imgListC = itemsC.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
 
           html += `
             <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; margin-bottom:4px;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
                   <div>${groupA}</div>
-                  <div>${formatPrice(priceC)}</div>
+                  <div style="font-weight: normal;">${formatPrice(priceC)}</div>
                 </div>
-                ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:9999px; padding:2px 10px; font-size:12px; display:inline-block;">${remarkC}</div>` : ''}
+                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
+                  ${remarkC}
+                </div>
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
                 <!-- 右側空白占位 -->
@@ -484,19 +486,23 @@ function loadComboDetails(clickedItemName) {
             <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; margin-bottom:4px;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
                   <div>${groupA}</div>
-                  <div>${formatPrice(priceA)}</div>
+                  <div style="font-weight: normal;">${formatPrice(priceA)}</div>
                 </div>
-                ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:9999px; padding:2px 10px; font-size:12px; display:inline-block;">${remarkA}</div>` : ''}
+                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
+                  ${remarkA}
+                </div>
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
-                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; margin-bottom:4px;">
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
                   <div>${groupB}</div>
-                  <div>${formatPrice(priceB)}</div>
+                  <div style="font-weight: normal;">${formatPrice(priceB)}</div>
                 </div>
-                ${remarkB ? `<div style="background:#647C90; color:#fff; border-radius:9999px; padding:2px 10px; font-size:12px; display:inline-block;">${remarkB}</div>` : ''}
+                <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
+                  ${remarkB}
+                </div>
               </div>
             </div>
           `;
@@ -520,11 +526,13 @@ function loadComboDetails(clickedItemName) {
         html += `
           <div style="text-align:center; margin-bottom:8px;">
             <div class="img-container ${rowClass}">${imgList}</div>
-            <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; margin-top:4px; margin-bottom:4px;">
+            <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:center;">
               <div>${group}</div>
-              <div>${formatPrice(price)}</div>
+              <div style="font-weight: normal;">${formatPrice(price)}</div>
             </div>
-            ${remark ? `<div style="background:#647C90; color:#fff; border-radius:9999px; padding:2px 10px; font-size:12px; display:inline-block;">${remark}</div>` : ''}
+            <div style="margin-top:4px; background:#647C90; color:#fff; border-radius:12px; display:inline-block; padding:2px 10px; font-size:14px;">
+              ${remark}
+            </div>
           </div>
         `;
 
