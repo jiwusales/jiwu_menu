@@ -219,7 +219,14 @@ function renderCards(items) {
 
     // 判斷圖片數量，超過4張就加三張一排 class
     const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
-   
+
+    // 生成圖片 HTML，**不帶標籤**
+    const imgsHtml = item.imgs.map(imgObj => `
+      <div class="image-wrapper">
+        <img src="${imgObj.src}" alt="${item.combo}">
+      </div>
+    `).join("");
+
     card.innerHTML = `
       <div class="${imagesContainerClass}">${imgsHtml}</div>
       <div class="title-row">
