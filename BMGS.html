@@ -387,7 +387,7 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 找出所有包含 comboName 的列
+      // 找出所有包含 comboName 的列（第1欄 = 組合）
       const filteredRows = rows.filter(row => {
         const comboField = (row.c[1]?.v || "").trim();
         return comboField.includes(comboName.trim());
@@ -402,7 +402,7 @@ function loadComboDetails(comboName) {
       const firstComboGroupName = (filteredRows[0].c[1]?.v || "").trim();
       document.getElementById("comboTitle").textContent = firstComboGroupName;
 
-      // 將資料依「組合」欄位分組
+      // 將資料依「組合」欄分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
         const comboGroupName = (row.c[1]?.v || "").trim();
@@ -416,8 +416,8 @@ function loadComboDetails(comboName) {
 
       groupNames.forEach((group, index) => {
         const items = groupedByCombo[group];
-        const price = items[0].c[2]?.v || ""; // 組合價
-        const code = (items[0].c[3]?.v || "").trim(); // 編號欄（假設在第4欄）
+        const price = items[0].c[3]?.v || "";        // 第3欄：組合價
+        const code  = (items[0].c[2]?.v || "").trim(); // 第2欄：編號
 
         // 圖片排列樣式
         const imgCount = items.length;
@@ -429,7 +429,7 @@ function loadComboDetails(comboName) {
         }
 
         const imgList = items.map(row => {
-          const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 第7欄：圖片
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
