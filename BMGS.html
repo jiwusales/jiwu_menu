@@ -388,13 +388,13 @@ function loadComboDetails(comboName) {
   }).join("");
 
   html += `
-   <div style="font-size:16px; font-weight:bold; margin-bottom:4px; text-align:center;">
-  ${group}
-</div>
-<div style="font-size:14px; text-align:center;">
-  組合價：${formatPrice(price)}
-</div>
-  `;
+  <div style="display:block; font-size:16px; font-weight:bold; margin-bottom:4px; text-align:center;">
+    ${group}
+  </div>
+  <div style="display:block; font-size:14px; text-align:center;">
+    組合價：${formatPrice(price)}
+  </div>
+`;
 
   if (index !== groupNames.length - 1) {
     html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
