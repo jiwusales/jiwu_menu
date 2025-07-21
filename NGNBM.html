@@ -414,12 +414,13 @@ function loadComboDetails(clickedItemName) {
 
       let lastRole = "", lastItem = "";
       const filteredRows = rows.filter(row => {
-        const roleField = (row.c[1]?.v || lastRole).trim();
-        const itemField = (row.c[2]?.v || lastItem).trim();
-        if (row.c[1]?.v) lastRole = row.c[1].v; // 更新角色
-        if (row.c[2]?.v) lastItem = row.c[2].v; // 更新組合名稱
-        return roleField === currentRole && itemField === targetItem;
-      });
+  const roleField = (row.c[1]?.v || lastRole).trim();
+  const itemField = (row.c[2]?.v || lastItem).trim();
+  if (row.c[1]?.v) lastRole = row.c[1].v; // 更新角色
+  if (row.c[2]?.v) lastItem = row.c[2].v; // 更新組合名稱
+  // 不過濾角色，只比對組合名稱
+  return itemField === targetItem;
+});
 
       if (!filteredRows.length) {
         body.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟдﾟ)/<br>可以先私訊花花詢問！";
