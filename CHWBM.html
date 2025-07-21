@@ -404,7 +404,6 @@ function loadComboDetails(clickedItemName) {
       const currentRole = roleMap[getRoleFromURL()] || "";
       const targetItem = clickedItemName.trim();
 
-      // 篩出當前角色、點擊商品的資料列
       const filteredRows = rows.filter(row => {
         const roleField = (row.c[1]?.v || "").trim();
         const itemField = (row.c[2]?.v || "").trim();
@@ -416,29 +415,36 @@ function loadComboDetails(clickedItemName) {
         return;
       }
 
-      // 依 D欄（組合名）分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
-        const comboGroupName = (row.c[3]?.v || "").trim(); // D欄
+        const comboGroupName = (row.c[3]?.v || "").trim();
         if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
         groupedByCombo[comboGroupName].push(row);
       });
 
       const groupNames = Object.keys(groupedByCombo);
-
-      // 把圖片數是2的組合挑出來，用兩組並排
       const twoImgCombos = groupNames.filter(g => groupedByCombo[g].length === 2);
-      // 其他組合
       const otherCombos = groupNames.filter(g => groupedByCombo[g].length !== 2);
 
       let html = "";
 
-      // 兩張圖片組合兩組並排（左右排列）
-      for(let i = 0; i < twoImgCombos.length; i += 2) {
-        const groupA = twoImgCombos[i];
-        const groupB = twoImgCombos[i + 1];
+      // 合併兩組兩張圖的組合跟其他組合
+      const pairedGroups = [];
+      for (let i = 0; i < twoImgCombos.length; i += 2) {
+        pairedGroups.push([twoImgCombos[i], twoImgCombos[i + 1]]);
+      }
+      // 其它組合獨立放成陣列，方便後面一起輸出
+      const singleGroups = otherCombos;
 
-        // 若第二組不存在，改成靠左排列並加空白佔位
+      // 總共要顯示的區塊數量
+      const totalBlocks = pairedGroups.length + singleGroups.length;
+      let currentIndex = 0;
+
+      // 輸出兩組並排的區塊
+      for (const pair of pairedGroups) {
+        const [groupA, groupB] = pair;
+        currentIndex++;
+
         if (!groupB) {
           const items = groupedByCombo[groupA];
           const price = items[0].c[4]?.v || "";
@@ -452,41 +458,43 @@ function loadComboDetails(clickedItemName) {
                 <div style="font-weight:bold; font-size:16px;">${groupA}</div>
                 <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
               </div>
-              <div style="width:160px;"></div> <!-- 空白佔位 -->
+              <div style="width:160px;"></div>
             </div>
-            <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
           `;
-          continue;
+        } else {
+          const itemsA = groupedByCombo[groupA];
+          const priceA = itemsA[0].c[4]?.v || "";
+          const imgListA = itemsA.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+
+          const itemsB = groupedByCombo[groupB];
+          const priceB = itemsB[0].c[4]?.v || "";
+          const imgListB = itemsB.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupB}">`).join("");
+
+          html += `
+            <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
+              <div style="text-align:center; width:160px;">
+                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
+                <div style="font-weight:bold; font-size:16px;">${groupA}</div>
+                <div style="font-size:14px; color:#888;">${formatPrice(priceA)}</div>
+              </div>
+              <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
+                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
+                <div style="font-weight:bold; font-size:16px;">${groupB}</div>
+                <div style="font-size:14px; color:#888;">${formatPrice(priceB)}</div>
+              </div>
+            </div>
+          `;
         }
 
-        // 兩組並排的 HTML，左右排列，中間垂直分隔線 + 下方水平分隔線
-        const itemsA = groupedByCombo[groupA];
-        const priceA = itemsA[0].c[4]?.v || "";
-        const imgListA = itemsA.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
-
-        const itemsB = groupedByCombo[groupB];
-        const priceB = itemsB[0].c[4]?.v || "";
-        const imgListB = itemsB.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupB}">`).join("");
-
-        html += `
-          <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
-            <div style="text-align:center; width:160px;">
-              <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
-              <div style="font-weight:bold; font-size:16px;">${groupA}</div>
-              <div style="font-size:14px; color:#888;">${formatPrice(priceA)}</div>
-            </div>
-            <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
-              <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
-              <div style="font-weight:bold; font-size:16px;">${groupB}</div>
-              <div style="font-size:14px; color:#888;">${formatPrice(priceB)}</div>
-            </div>
-          </div>
-          <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
-        `;
+        // 不是最後一個區塊才加分隔線
+        if (currentIndex < totalBlocks) {
+          html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
+        }
       }
 
-      // 其他組合單組排版
-      otherCombos.forEach(group => {
+      // 輸出其他單組區塊
+      for (const group of singleGroups) {
+        currentIndex++;
         const items = groupedByCombo[group];
         const price = items[0].c[4]?.v || "";
         const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
@@ -498,9 +506,12 @@ function loadComboDetails(clickedItemName) {
             <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
             <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
           </div>
-          <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
         `;
-      });
+
+        if (currentIndex < totalBlocks) {
+          html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
+        }
+      }
 
       body.innerHTML = html;
     })
