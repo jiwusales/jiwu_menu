@@ -125,9 +125,9 @@ body {
   background-color: #FDD1D2;
 }
 
-/* -------- Modal 樣式 -------- */
+/* Modal 基本樣式 */
 .modal {
-  display: none;
+  display: none; 
   position: fixed;
   z-index: 9999;
   left: 0;
@@ -137,6 +137,7 @@ body {
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
 }
+
 .modal-content {
   background-color: #fff;
   margin: 10% auto;
@@ -147,6 +148,7 @@ body {
   border-radius: 8px;
   text-align: left;
 }
+
 .close-btn {
   color: #aaa;
   float: right;
@@ -154,32 +156,68 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
+
 .close-btn:hover {
   color: #333;
 }
+
 .img-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0px;
   margin-bottom: 8px;
-  justify-items: center;
 }
 
 .img-container img {
-  width: 100%;
-  max-width: 150px;
-  border-radius: 8px;
-  object-fit: cover;
+  width: 140px;
+  height: auto;
+  border-radius: 0px;
+  object-fit: contain;
 }
 
-.img-row-2 img { width: 50%; }
-.img-row-3 img { width: calc(100% / 3); }
-.img-row-4 img { width: calc(100% / 4); }
-@media (min-width: 768px) {
-  .img-row-6 img { width: calc(100% / 6); }
+.modal-content .combo-name,
+.modal-content .combo-price {
+  color: #4E4F50;
 }
+    
+/* 手機 2張2組一排 */
+.img-row-2 img {
+  width: 50%;  /* 兩張圖片平分寬度 */
+  margin: 0;
+  object-fit: contain;
+}
+    
+/* 手機 4張一排 */
+.img-row-4 img {
+  width: calc(100% / 4);
+  margin: 0;
+}
+
+/* 手機 3張一排 */
+.img-row-3 img {
+  width: calc(100% / 3);
+  margin: 0;
+}
+
+/* 平板+電腦 6張一排 */
+@media (min-width: 768px) {
+  .img-row-6 img {
+    width: calc(100% / 6);
+    margin: 0;
+  }
+} 
+    
+/* 響應式備用 */
 @media (max-width: 480px) {
-  .modal-content { width: 80% !important; max-width: none; }
+  /* 強制手機使用 img-row-3 或 img-row-4 不用這裡改 */
+}
+    
+@media (max-width: 480px) {
+  .modal-content {
+    width: 80% !important;
+    max-width: none;
+  }
 }
 </style>
 </head>
@@ -191,14 +229,15 @@ body {
   </div>
   <div id="card-container"></div>
 
-  <!-- Modal 組合內容 -->
+   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
-      <h2 id="comboTitle" style="margin-top:0;"></h2>
+      <h2 id="comboTitle">組合內容</h2>
       <div id="comboBody">載入中...</div>
     </div>
   </div>
+</body>
 
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
@@ -356,10 +395,11 @@ function renderCards(items) {
   });
 }
 
+// ================ Modal 組合內容 ================
 function loadComboDetails(clickedItemName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
-  document.getElementById("comboTitle").textContent = clickedItemName;
+  document.getElementById("comboTitle").textContent = clickedItemName; // Modal 標題
   body.innerHTML = "載入中...";
   modal.style.display = "block";
 
@@ -368,36 +408,142 @@ function loadComboDetails(clickedItemName) {
     .then(t => JSON.parse(t.substr(47).slice(0, -2)))
     .then(data => {
       const rows = data.table.rows || [];
+
+      const currentRole = roleMap[getRoleFromURL()] || "";
+      const targetItem = clickedItemName.trim();
+
+      let lastRole = "", lastItem = "";
       const filteredRows = rows.filter(row => {
-        const itemField = (row.c[2]?.v || "").trim();
-        return itemField === clickedItemName.trim();
+        const roleField = (row.c[1]?.v || lastRole).trim();
+        const itemField = (row.c[2]?.v || lastItem).trim();
+        if (row.c[1]?.v) lastRole = row.c[1].v; // 更新角色
+        if (row.c[2]?.v) lastItem = row.c[2].v; // 更新組合名稱
+        return roleField === currentRole && itemField === targetItem;
       });
 
       if (!filteredRows.length) {
-        body.innerHTML = "🚀 組合內容整理中…<br>可以先私訊花花詢問！";
+        body.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟдﾟ)/<br>可以先私訊花花詢問！";
         return;
       }
 
-      let html = "";
+      const groupedByCombo = {};
       filteredRows.forEach(row => {
-        const img = row.c[8]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-        const price = row.c[4]?.v || "";
-        const remark = row.c[9]?.v || "";
-        html += `
-          <div class="img-container img-row-3">
-            <img src="${img}" alt="${clickedItemName}">
-          </div>
-          <div style="text-align:center; margin-top:8px;">
-            <strong>${clickedItemName}</strong><br>
-            <span>${formatPrice(price)}</span>
-          </div>
-          ${remark ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; margin-top:4px; display:inline-block;">${remark}</div>` : ""}
-        `;
+        const comboGroupName = (row.c[3]?.v || "").trim();
+        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
+        groupedByCombo[comboGroupName].push(row);
       });
+
+      const groupNames = Object.keys(groupedByCombo);
+      const twoImgCombos = groupNames.filter(g => groupedByCombo[g].length === 2);
+      const otherCombos = groupNames.filter(g => groupedByCombo[g].length !== 2);
+
+      let html = "";
+
+      // 合併兩組兩張圖的組合跟其他組合
+      const pairedGroups = [];
+      for (let i = 0; i < twoImgCombos.length; i += 2) {
+        pairedGroups.push([twoImgCombos[i], twoImgCombos[i + 1]]);
+      }
+      const singleGroups = otherCombos;
+
+      const totalBlocks = pairedGroups.length + singleGroups.length;
+      let currentIndex = 0;
+
+      // 輸出兩組並排的區塊
+      for (const pair of pairedGroups) {
+        const [groupA, groupB] = pair;
+        currentIndex++;
+
+        if (!groupB) {
+          const itemsC = groupedByCombo[groupA];
+          const priceC = itemsC[0].c[4]?.v || "";
+          const remarkC = itemsC[0].c[9]?.v || "";
+          const imgListC = itemsC.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+
+          html += `
+            <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
+              <div style="text-align:center; width:160px;">
+                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
+                  <div class="combo-name">${groupA}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceC)}</div>
+                </div>
+                ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
+              </div>
+              <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
+                <!-- 右側空白占位 -->
+              </div>
+            </div>
+          `;
+        } else {
+          const itemsA = groupedByCombo[groupA];
+          const priceA = itemsA[0].c[4]?.v || "";
+          const remarkA = itemsA[0].c[9]?.v || "";
+          const imgListA = itemsA.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+
+          const itemsB = groupedByCombo[groupB];
+          const priceB = itemsB[0].c[4]?.v || "";
+          const remarkB = itemsB[0].c[9]?.v || "";
+          const imgListB = itemsB.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupB}">`).join("");
+
+          html += `
+            <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
+              <div style="text-align:center; width:160px;">
+                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
+                  <div class="combo-name">${groupA}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceA)}</div>
+                </div>
+                ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
+              </div>
+              <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
+                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
+                <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
+                  <div class="combo-name">${groupB}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceB)}</div>
+                </div>
+                ${remarkB ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkB}</div>` : ""}
+              </div>
+            </div>
+          `;
+        }
+
+        if (currentIndex < totalBlocks) {
+          html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
+        }
+      }
+
+      // 輸出其他單組區塊
+      for (const group of singleGroups) {
+        currentIndex++;
+        const items = groupedByCombo[group];
+        const price = items[0].c[4]?.v || "";
+        const remark = items[0].c[9]?.v || "";
+        const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
+        const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
+
+        html += `
+          <div style="text-align:center; margin-bottom:8px;">
+            <div class="img-container ${rowClass}">${imgList}</div>
+            <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline; margin-top:4px;">
+              <div class="combo-name">${group}</div>
+              <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
+            </div>
+${remark ? remark.split(/\r?\n/).map(r => 
+  `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`
+).join("") : ""}
+          </div>
+        `;
+
+        if (currentIndex < totalBlocks) {
+          html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
+        }
+      }
+
       body.innerHTML = html;
     })
     .catch(() => {
-      body.textContent = "🛠️ 無法載入組合內容";
+      body.textContent = "🛠️ 網站維修中 (´•̥×•̥`) 稍等再回來重新整理好咪 ";
     });
 }
 
