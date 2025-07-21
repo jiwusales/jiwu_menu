@@ -435,11 +435,20 @@ function loadComboDetails(comboName) {
             <div class="img-container ${imgClass}">
               ${imgList}
             </div>
-            <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;">
-              <span>${group}</span>
-              <span style="font-size:16px;">${formatPrice(price)}</span>
-            </div>
-          </div>
+            <div style="
+  font-size:16px; 
+  font-weight:bold; 
+  margin-bottom:2px; 
+  display:flex; 
+  justify-content:center; 
+  gap:1px; 
+  align-items:center;
+  text-align:center;
+  width: 100%;
+">
+  <span>${group}</span>
+  <span style="font-size:16px; white-space: nowrap;">${formatPrice(price)}</span>
+</div>
         `;
 
         if (index !== groupNames.length - 1) {
