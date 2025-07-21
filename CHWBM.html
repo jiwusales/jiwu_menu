@@ -446,21 +446,21 @@ function loadComboDetails(clickedItemName) {
         currentIndex++;
 
         if (!groupB) {
-  const items = groupedByCombo[groupA];
-  const price = items[0].c[4]?.v || "";
-  const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+          const items = groupedByCombo[groupA];
+          const price = items[0].c[4]?.v || "";
+          const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+          const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
 
-  html += `
-    <div style="display:flex; justify-content:flex-start; margin-bottom:8px; width: 320px;">
-      <div style="text-align:center; width:320px;">
-        <div class="img-container img-row-2" style="margin-bottom:4px;">${imgList}</div>
-        <div style="font-weight:bold; font-size:16px;">${groupA}</div>
-        <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
-      </div>
-    </div>
-  `;
-}
-
+          html += `
+            <div style="display:flex; justify-content:flex-start; margin-bottom:8px; width: 320px;">
+              <div style="text-align:center; width:160px;">
+                <div class="img-container ${rowClass}" style="margin-bottom:4px;">${imgList}</div>
+                <div style="font-weight:bold; font-size:16px;">${groupA}</div>
+                <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
+              </div>
+              <div style="width:160px;"></div>
+            </div>
+          `;
         } else {
           const itemsA = groupedByCombo[groupA];
           const priceA = itemsA[0].c[4]?.v || "";
