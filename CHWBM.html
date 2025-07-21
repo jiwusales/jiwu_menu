@@ -343,43 +343,50 @@ function renderCards(items,roleName){
 
 // ================ Modal 組合內容 ================
 function loadComboDetails(comboName){
-  const modal=document.getElementById("comboModal");
-  const body=document.getElementById("comboBody");
-  document.getElementById("comboTitle").textContent=comboName;
-  body.innerHTML="載入中...";
-  modal.style.display="block";
+  const modal = document.getElementById("comboModal");
+  const body = document.getElementById("comboBody");
+  document.getElementById("comboTitle").textContent = comboName;
+  body.innerHTML = "載入中...";
+  modal.style.display = "block";
 
   fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售區`)
-    .then(r=>r.text())
-    .then(t=>JSON.parse(t.substr(47).slice(0,-2)))
-    .then(data=>{
-      const rows=data.table.rows||[];
-      const comboItems=rows.filter(row=>(row.c[0]?.v||"")===comboName);
-      if(!comboItems.length){
-        body.innerHTML="找不到組合內容";
+    .then(r => r.text())
+    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
+    .then(data => {
+      const rows = data.table.rows || [];
+      // 這裡改成 row.c[1] 是組合名稱欄
+      const comboItems = rows.filter(row => (row.c[1]?.v || "").trim() === comboName.trim());
+
+      if (!comboItems.length) {
+        body.innerHTML = "找不到組合內容";
         return;
       }
-      const grid=document.createElement("div");
-      grid.className="group-grid";
-      comboItems.forEach(row=>{
-        const img=row.c[2]?.v||"https://i.postimg.cc/bv5xRs04/image.png";
-        const name=row.c[1]?.v||"未命名";
-        const price=row.c[3]?.v||"";
-        const statusText=row.c[4]?.v||"";
-        const card=document.createElement("div");
-        card.className="card";
-        card.innerHTML=`
+
+      const grid = document.createElement("div");
+      grid.className = "group-grid";
+
+      comboItems.forEach(row => {
+        const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 依你的欄位調整
+        const name = row.c[4]?.v || "未命名";
+        const price = row.c[5]?.v || "";
+        const statusText = ""; // 你可以自己決定是否要額外顯示狀態
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
           <img src="${img}" alt="${name}">
-          <div class="status-badge" style="background:#E7F2F8;color:#333">${statusText}</div>
           <div class="name">${formatName(name)}</div>
           <div class="price">${formatPrice(price)}</div>
         `;
         grid.appendChild(card);
       });
-      body.innerHTML="";
+
+      body.innerHTML = "";
       body.appendChild(grid);
     })
-    .catch(()=>body.textContent="載入組合內容失敗");
+    .catch(() => {
+      body.textContent = "載入組合內容失敗";
+    });
 }
 document.querySelector(".close-btn").onclick=()=>document.getElementById("comboModal").style.display="none";
 window.onclick=e=>{if(e.target===document.getElementById("comboModal"))document.getElementById("comboModal").style.display="none";};
