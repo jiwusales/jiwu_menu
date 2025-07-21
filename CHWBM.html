@@ -379,6 +379,8 @@ function renderCards(items,roleName){
 function loadComboDetails(roleName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
+  // 這裡左上角顯示角色名稱（B欄傳進來的 roleName）
+  document.getElementById("comboTitle").textContent = roleName;
   body.innerHTML = "載入中...";
   modal.style.display = "block";
 
@@ -443,7 +445,7 @@ function loadComboDetails(roleName) {
               text-align:center;
               width:100%;
             ">
-              <span>${group}</span>
+              <span style="font-weight:bold;">${group}</span>
               <span style="font-size:16px; white-space:nowrap;">${formatPrice(price)}</span>
             </div>
           </div>
