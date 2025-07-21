@@ -170,6 +170,7 @@ body {
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
 }
+
 .modal-content {
   background-color: #fff;
   margin: 10% auto;
@@ -180,6 +181,7 @@ body {
   border-radius: 8px;
   text-align: left;
 }
+
 .close-btn {
   color: #aaa;
   float: right;
@@ -187,10 +189,12 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
+
 .close-btn:hover {
   color: #333;
 }
-    .img-container {
+
+.img-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -203,6 +207,11 @@ body {
   height: auto;
   border-radius: 0px;
   object-fit: contain;
+}
+
+.modal-content .combo-name,
+.modal-content .combo-price {
+  color: #fff;
 }
     
 /* 手機 2張2組一排 */
@@ -235,6 +244,13 @@ body {
 /* 響應式備用 */
 @media (max-width: 480px) {
   /* 強制手機使用 img-row-3 或 img-row-4 不用這裡改 */
+}
+    
+@media (max-width: 480px) {
+  .modal-content {
+    width: 80% !important;
+    max-width: none;
+  }
 }
 
   </style>
@@ -457,8 +473,8 @@ function loadComboDetails(clickedItemName) {
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                  <div>${groupA}</div>
-                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceC)}</div>
+                  <div class="combo-name">${groupA}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceC)}</div>
                 </div>
                 ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
               </div>
@@ -483,16 +499,16 @@ function loadComboDetails(clickedItemName) {
               <div style="text-align:center; width:160px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                  <div>${groupA}</div>
-                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceA)}</div>
+                  <div class="combo-name">${groupA}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceA)}</div>
                 </div>
                 ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                  <div>${groupB}</div>
-                  <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceB)}</div>
+                  <div class="combo-name">${groupB}</div>
+                  <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceB)}</div>
                 </div>
                 ${remarkB ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkB}</div>` : ""}
               </div>
@@ -518,8 +534,8 @@ function loadComboDetails(clickedItemName) {
           <div style="text-align:center; margin-bottom:8px;">
             <div class="img-container ${rowClass}">${imgList}</div>
             <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline; margin-top:4px;">
-              <div>${group}</div>
-              <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
+              <div class="combo-name">${group}</div>
+              <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
             </div>
 ${remark ? remark.split(/\r?\n/).map(r => 
   `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`
