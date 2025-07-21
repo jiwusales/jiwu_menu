@@ -158,18 +158,20 @@ body {
   color: #333;
 }
 .img-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
   margin-bottom: 8px;
+  justify-items: center;
 }
+
 .img-container img {
-  width: 140px;
-  height: auto;
-  border-radius: 0px;
-  object-fit: contain;
+  width: 100%;
+  max-width: 150px;
+  border-radius: 8px;
+  object-fit: cover;
 }
+
 .img-row-2 img { width: 50%; }
 .img-row-3 img { width: calc(100% / 3); }
 .img-row-4 img { width: calc(100% / 4); }
