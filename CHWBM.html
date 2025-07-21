@@ -305,20 +305,19 @@ function renderCards(items,roleName){
         const ch=item.role.match(/[\u4e00-\u9fff]/g)||[];
         const rtxt=(ch.length===1&&single.includes(ch[0]))?ch[0]:"綜";
         const isCombo = item.price === "組合出售";
-const needLineLink = (!item.price || item.price === "-");
+        const needLineLink = (!item.price || item.price === "-");
 
-const card = document.createElement(isCombo ? "div" : (needLineLink ? "a" : "div"));
-card.className = "card";
-card.style.borderColor = colors[roleName] || "#ccc";
+        const card = document.createElement(isCombo ? "div" : (needLineLink ? "a" : "div"));
+        card.className = "card";
+        card.style.borderColor = colors[roleName] || "#ccc";
 
-if(isCombo){
-  // 組合出售 → 開 modal
-  card.onclick = () => loadComboDetails(item.name);
-}else if(needLineLink){
-  // 私訊花花 → 跳 LINE
-  card.href = "https://lin.ee/X6FUFI9";
-  card.target = "_blank";
-}
+        if(isCombo){
+          card.onclick = () => loadComboDetails(item.name);
+        }else if(needLineLink){
+          card.href = "https://lin.ee/X6FUFI9";
+          card.target = "_blank";
+        }
+
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
           <img src="${item.img}" alt="${item.name}">
@@ -388,8 +387,8 @@ function formatName(name){
   return cleanName.slice(0,maxLengthBeforeWrap)+"<br>"+cleanName.slice(maxLengthBeforeWrap);
 }
 function formatPrice(price){
-  if(!price || price === "-") return "私訊花花";
-  if(price === "組合出售") return "組合出售";
+  if(price === "" || price === null || price === undefined) return "私訊花花";
+  if(price === "-") return "組合出售";
   return price;
 }
 function getStatus(item){
