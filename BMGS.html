@@ -50,13 +50,15 @@ body {
 
 /* 商品卡片容器 */
 #card-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 60px 2px 6px 2px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
   gap: 12px;
-  margin: 0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -159,12 +161,9 @@ body {
   .card.two-images .images-container {
     gap: 4px; /* 縮小圖片間距 */
   }
-}
-
-@media (max-width: 480px) {
   .card.two-images .images-container img {
     max-height: 100px;
-    max-width: calc((100% - 40px) / 4); /* 扣掉左右邊距 */
+    max-width: calc((100% - 40px) / 4);
     margin-left: 5px;
     margin-right: 5px;
   }
