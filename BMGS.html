@@ -389,14 +389,14 @@ function loadComboDetails(comboName) {
         }).join("");
 
         html += `
-          <div style="text-align:center; margin-bottom: 8px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-bottom:4px;">
-              ${imgList}
-            </div>
-            <div style="font-size:16px; font-weight:bold; margin-bottom:2px;">${group}</div>
-            <div style="font-size:14px;">組合價：${formatPrice(price)}</div>
-          </div>
-        `;
+  <div style="text-align:center; margin-bottom: 8px;">
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-bottom:4px;">
+      ${imgList}
+    </div>
+    <div style="font-size:16px; font-weight:bold; margin-bottom:2px; text-align:center;">${group}</div>
+    <div style="font-size:14px; text-align:center;">組合價：${formatPrice(price)}</div>
+  </div>
+`;
 
         // 不是最後一組時加分隔線
         if (index !== groupNames.length - 1) {
