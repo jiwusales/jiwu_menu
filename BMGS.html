@@ -387,17 +387,15 @@ function loadComboDetails(comboName) {
           return `<img src="${img}" alt="${group.trim()}" style="width:80px; height:auto; border-radius:6px; margin: 0 4px 6px 4px;">`;
         }).join("");
 
-        html += `
-          <div style="text-align:center; font-size:16px; font-weight:bold; margin-bottom:4px;">
-            ${group.trim()}
-          </div>
-          <div style="display:flex; justify-content:center; flex-wrap: wrap; margin-bottom: 6px;">
-            ${imgList}
-          </div>
-          <div style="text-align:center; font-size:14px; color:#444; margin-bottom: 10px;">
-            組合價：${formatPrice(price)}
-          </div>
-        `;
+     html += `
+  <div style="display:flex; justify-content:center; gap:3px; font-size:16px; font-weight:bold; margin-bottom:10px;">
+    <div>${group.trim()}</div>
+    <div style="font-weight:normal; color:#444;">組合價：${formatPrice(price)}</div>
+  </div>
+  <div style="display:flex; justify-content:center; flex-wrap: wrap; margin-bottom: 10px;">
+    ${imgList}
+  </div>
+`;
 
         if (index !== groupNames.length - 1) {
           html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
