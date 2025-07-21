@@ -388,15 +388,15 @@ function loadComboDetails(comboName) {
         }).join("");
 
   html += `
-  <div style="max-width: 300px; margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; gap: 20px;">
-    <div style="display: flex; flex-direction: column; align-items: center; font-size: 16px; font-weight: bold; min-width: 120px;">
-      <div>${group.trim()}</div>
-      <div style="margin-top: 4px; font-weight: normal; color: #444;">${formatPrice(price)}</div>
-    </div>
-    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;">
-      ${imgList}
-    </div>
+ <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+  <div style="display: flex; flex-direction: column; align-items: center; font-size: 16px; font-weight: bold; min-width: 120px;">
+    <div>${group.trim()}</div>
+    <div style="margin-top: 4px; font-weight: normal; color: #444;">${formatPrice(price)}</div>
   </div>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
+    ${imgList}
+  </div>
+</div>
 `;
 
         if (index !== groupNames.length - 1) {
