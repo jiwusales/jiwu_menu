@@ -155,6 +155,14 @@ body {
   }
 }
 
+    @media (max-width: 480px) {
+  .card.two-images .images-container img {
+    max-width: calc(50% - 4px); /* 兩張各佔一半，減掉間距 */
+    max-height: 100px;
+    gap: 4px; /* 原本 8px */
+  }
+}
+
 /* 平板及以上（大螢幕） */
 @media (min-width: 768px) {
   .images-container img {
@@ -214,7 +222,9 @@ function renderCards(items) {
 
   items.forEach(item => {
     const card = document.createElement("div");
-    card.className = "card";
+    const cardClass = item.imgs.length === 2 ? "card two-images" : "card";
+card.className = cardClass;
+
     card.style.borderColor = "#ccc";
 
     const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
