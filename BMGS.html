@@ -388,10 +388,10 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 先找出所有包含 comboName 字串的列 (第二欄是組合欄)
+      // 角色欄（B欄）索引是1，抓B欄值做比對
       const filteredRows = rows.filter(row => {
-        const comboField = (row.c[1]?.v || "").trim();
-        return comboField.includes(comboName.trim());
+        const roleField = (row.c[1]?.v || "").trim();
+        return roleField === comboName.trim();
       });
 
       if (!filteredRows.length) {
@@ -399,53 +399,49 @@ function loadComboDetails(comboName) {
         return;
       }
 
-      // 將資料依「組合」欄位（第二欄）分組
-      const groupedByCombo = {};
+      // 依角色欄分組（或依組合名分組都行，這裡假設依角色名）
+      const groupedByRole = {};
       filteredRows.forEach(row => {
-        const comboGroupName = (row.c[1]?.v || "").trim();
-        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
-        groupedByCombo[comboGroupName].push(row);
+        const roleGroupName = (row.c[1]?.v || "").trim();
+        if (!groupedByRole[roleGroupName]) groupedByRole[roleGroupName] = [];
+        groupedByRole[roleGroupName].push(row);
       });
 
-      // 組合 HTML，顯示圖片、組合名、組合價，組與組之間加分隔線
       let html = "";
-      const groupNames = Object.keys(groupedByCombo);
+      const groupNames = Object.keys(groupedByRole);
 
       groupNames.forEach((group, index) => {
-        const items = groupedByCombo[group];
-        const price = items[0].c[2]?.v || ""; // 組合價（假設同組價錢相同）
+        const items = groupedByRole[group];
+        const price = items[0].c[2]?.v || ""; // 組合價（C欄）
 
         // 圖片列表
-       const imgCount = items.length;
-let imgClass = "";
+        const imgCount = items.length;
+        let imgClass = "";
 
-if (window.innerWidth <= 480) {
-  // 手機
-  if (imgCount <= 4) imgClass = "img-row-4";  // 一排4張
-  else imgClass = "img-row-3";                // 一排3張
-} else {
-  // 平板+桌機
-  imgClass = "img-row-6";                     // 一排6張
-}
+        if (window.innerWidth <= 480) {
+          if (imgCount <= 4) imgClass = "img-row-4";
+          else imgClass = "img-row-3";
+        } else {
+          imgClass = "img-row-6";
+        }
 
-const imgList = items.map(row => {
-  const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-  return `<img src="${img}" alt="${group}" />`;
-}).join("");
+        const imgList = items.map(row => {
+          const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          return `<img src="${img}" alt="${group}" />`;
+        }).join("");
 
-html += `
-  <div style="text-align:center; margin-bottom: 8px;">
-    <div class="img-container ${imgClass}">
-      ${imgList}
-    </div>
-    <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;">
-      <span>${group}</span>
-      <span style="font-size:16px;">${formatPrice(price)}</span>
-    </div>
-  </div>
-`;
+        html += `
+          <div style="text-align:center; margin-bottom: 8px;">
+            <div class="img-container ${imgClass}">
+              ${imgList}
+            </div>
+           <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:center; gap: 10px; align-items:center;">
+  <span>${group}</span>
+  <span>${formatPrice(price)}</span>
+</div>
+          </div>
+        `;
 
-        // 不是最後一組時加分隔線
         if (index !== groupNames.length - 1) {
           html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
         }
