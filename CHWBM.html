@@ -446,21 +446,19 @@ function loadComboDetails(clickedItemName) {
         currentIndex++;
 
 if (!groupB) {
-  const items = groupedByCombo[groupA] || [];
-  if (items.length === 0) {
-    // 沒資料時要怎麼處理？至少跳過或顯示提示
-    return; // 或 continue，視你迴圈而定
-  }
-  const price = items[0].c[4]?.v || "";
-  const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
-  const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
+  const itemsC = groupedByCombo[groupA];
+  const priceC = itemsC[0].c[4]?.v || "";
+  const imgListC = itemsC.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
 
   html += `
-    <div style="display:flex; justify-content:center; margin-bottom:8px; width: 320px;">
-      <div style="text-align:center; width:320px;">
-        <div class="img-container ${rowClass}" style="margin-bottom:4px;">${imgList}</div>
+    <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
+      <div style="text-align:center; width:160px;">
+        <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
         <div style="font-weight:bold; font-size:16px;">${groupA}</div>
-        <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
+        <div style="font-size:14px; color:#888;">${formatPrice(priceC)}</div>
+      </div>
+      <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
+        <!-- 右側空白占位 -->
       </div>
     </div>
   `;
