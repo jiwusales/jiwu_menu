@@ -417,16 +417,17 @@ function loadComboDetails(clickedItemName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      const currentRole = roleMap[getRoleFromURL()] || "";
+      const currentRoleFull = getRoleFromURL();      // 例如 "吉伊"
+      const currentRole = roleMap[currentRoleFull] || ""; // 例如 "吉"
       const targetItem = clickedItemName.trim();
 
       let lastRole = "", lastItem = "";
       const filteredRows = rows.filter(row => {
         const roleField = (row.c[1]?.v || lastRole).trim();
         const itemField = (row.c[2]?.v || lastItem).trim();
-        if (row.c[1]?.v) lastRole = row.c[1].v; // 更新角色
-        if (row.c[2]?.v) lastItem = row.c[2].v; // 更新組合名稱
-        return roleField === currentRole && itemField === targetItem;
+        if (row.c[1]?.v) lastRole = row.c[1].v;
+        if (row.c[2]?.v) lastItem = row.c[2].v;
+        return roleField.includes(currentRole) && itemField === targetItem;
       });
 
       if (!filteredRows.length) {
@@ -434,6 +435,7 @@ function loadComboDetails(clickedItemName) {
         return;
       }
 
+      // 將同組合名稱分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
         const comboGroupName = (row.c[3]?.v || "").trim();
@@ -442,12 +444,14 @@ function loadComboDetails(clickedItemName) {
       });
 
       const groupNames = Object.keys(groupedByCombo);
+
+      // 將兩張圖的組合找出來，方便做兩組並排顯示
       const twoImgCombos = groupNames.filter(g => groupedByCombo[g].length === 2);
       const otherCombos = groupNames.filter(g => groupedByCombo[g].length !== 2);
 
       let html = "";
 
-      // 合併兩組兩張圖的組合跟其他組合
+      // 兩組兩張圖並排輸出
       const pairedGroups = [];
       for (let i = 0; i < twoImgCombos.length; i += 2) {
         pairedGroups.push([twoImgCombos[i], twoImgCombos[i + 1]]);
@@ -457,12 +461,13 @@ function loadComboDetails(clickedItemName) {
       const totalBlocks = pairedGroups.length + singleGroups.length;
       let currentIndex = 0;
 
-      // 輸出兩組並排的區塊
+      // 輸出兩組並排區塊
       for (const pair of pairedGroups) {
         const [groupA, groupB] = pair;
         currentIndex++;
 
         if (!groupB) {
+          // 若為單組，右側空白佔位
           const itemsC = groupedByCombo[groupA];
           const priceC = itemsC[0].c[4]?.v || "";
           const remarkC = itemsC[0].c[9]?.v || "";
@@ -484,6 +489,7 @@ function loadComboDetails(clickedItemName) {
             </div>
           `;
         } else {
+          // 兩組並排
           const itemsA = groupedByCombo[groupA];
           const priceA = itemsA[0].c[4]?.v || "";
           const remarkA = itemsA[0].c[9]?.v || "";
@@ -521,7 +527,7 @@ function loadComboDetails(clickedItemName) {
         }
       }
 
-      // 輸出其他單組區塊
+      // 輸出其他非兩張圖的單組區塊
       for (const group of singleGroups) {
         currentIndex++;
         const items = groupedByCombo[group];
@@ -537,9 +543,9 @@ function loadComboDetails(clickedItemName) {
               <div class="combo-name">${group}</div>
               <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
             </div>
-${remark ? remark.split(/\r?\n/).map(r => 
-  `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`
-).join("") : ""}
+            ${remark ? remark.split(/\r?\n/).map(r => 
+              `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`
+            ).join("") : ""}
           </div>
         `;
 
