@@ -438,27 +438,28 @@ function loadComboDetails(clickedItemName) {
         const groupA = twoImgCombos[i];
         const groupB = twoImgCombos[i + 1];
 
-        // 若第二組不存在，單獨顯示第一組
+        // 若第二組不存在，改成靠左排列並加空白佔位
         if (!groupB) {
-  const items = groupedByCombo[groupA];
-  const price = items[0].c[4]?.v || "";
-  const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
-  const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
+          const items = groupedByCombo[groupA];
+          const price = items[0].c[4]?.v || "";
+          const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
+          const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
 
-  html += `
-    <div style="display:flex; justify-content:flex-start; margin-bottom:8px; width: 320px;">
-      <div style="text-align:center; width:160px;">
-        <div class="img-container img-row-2" style="margin-bottom:4px;">${imgList}</div>
-        <div style="font-weight:bold; font-size:16px;">${groupA}</div>
-        <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
-      </div>
-      <div style="width:160px;"></div> <!-- 空白占位，保持左右結構 -->
-    </div>
-  `;
-  continue;
-}
+          html += `
+            <div style="display:flex; justify-content:flex-start; margin-bottom:8px; width: 320px;">
+              <div style="text-align:center; width:160px;">
+                <div class="img-container ${rowClass}" style="margin-bottom:4px;">${imgList}</div>
+                <div style="font-weight:bold; font-size:16px;">${groupA}</div>
+                <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
+              </div>
+              <div style="width:160px;"></div> <!-- 空白佔位 -->
+            </div>
+            <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
+          `;
+          continue;
+        }
 
-        // 兩組並排的 HTML
+        // 兩組並排的 HTML，左右排列，中間垂直分隔線 + 下方水平分隔線
         const itemsA = groupedByCombo[groupA];
         const priceA = itemsA[0].c[4]?.v || "";
         const imgListA = itemsA.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
@@ -480,24 +481,26 @@ function loadComboDetails(clickedItemName) {
               <div style="font-size:14px; color:#888;">${formatPrice(priceB)}</div>
             </div>
           </div>
+          <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
         `;
       }
 
       // 其他組合單組排版
       otherCombos.forEach(group => {
-  const items = groupedByCombo[group];
-  const price = items[0].c[4]?.v || "";
-  const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
-  const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
+        const items = groupedByCombo[group];
+        const price = items[0].c[4]?.v || "";
+        const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
+        const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
 
-  html += `
-    <div style="text-align:center; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #ccc;">
-      <div class="img-container ${rowClass}">${imgList}</div>
-      <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
-      <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
-    </div>
-  `;
-});
+        html += `
+          <div style="text-align:center; margin-bottom:8px;">
+            <div class="img-container ${rowClass}">${imgList}</div>
+            <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
+            <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
+          </div>
+          <hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">
+        `;
+      });
 
       body.innerHTML = html;
     })
