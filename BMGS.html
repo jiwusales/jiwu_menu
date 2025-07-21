@@ -65,8 +65,7 @@ body {
 
 /* 商品卡片 */
 .card {
-  flex: 0 1 auto;
-  min-width: 140px;
+  flex: 0 1 140px;
   border: 2px solid #ccc;
   border-radius: 8px;
   background-color: #fff;
@@ -83,9 +82,9 @@ body {
 /* 名稱與價格同一行容器 */
 .title-row {
   display: flex;
-  justify-content: center; /* 水平置中整行 */
+  justify-content: center;
   align-items: center;
-  gap: 8px; /* 名稱與價格間距 */
+  gap: 8px;
   margin: 12px 0 4px;
   padding: 0 6px;
   width: 100%;
@@ -146,51 +145,16 @@ body {
 @media (max-width: 480px) {
   .images-container img {
     max-height: 100px;
-    max-width: calc((100% - 24px) / 4); /* 預設4張一排 */
+    max-width: calc((100% - 24px) / 4);
   }
 }
 
 /* 手機版超過4張改成3張一排 */
 @media (max-width: 480px) {
   .images-container.three-per-row img {
-    max-width: calc((100% - 16px) / 3); /* 3張一排 */
+    max-width: calc((100% - 16px) / 3);
   }
 }
-    
-/* 兩張圖片組卡片，桌機版一排兩張 */
-.card.two-images {
-  flex: 0 1 calc(50% - 12px);
-  max-width: calc(50% - 12px);
-  min-width: unset;
-  box-sizing: border-box;
-}
-
-/* 兩張圖片組圖片尺寸，桌機版 */
-@media (min-width: 481px) {
-  .card.two-images .images-container img {
-    max-height: 100px;
-    max-width: calc((100% - 10px) / 2);
-    margin-left: 5px;
-    margin-right: 5px;
-  }
-}
-
-/* 手機版調整為單欄，卡片寬度變寬 */
-@media (max-width: 480px) {
-  .card.two-images {
-    flex: 0 1 90vw;
-    max-width: 90vw;
-  }
-
-  /* 兩張圖片組圖片尺寸，手機版 */
-  .card.two-images .images-container img {
-    max-height: 100px;
-    max-width: calc((100% - 40px) / 4);
-    margin-left: 5px;
-    margin-right: 5px;
-  }
-}
-
 
 /* 平板及以上（大螢幕） */
 @media (min-width: 768px) {
@@ -201,7 +165,7 @@ body {
   </style>
 </head>
 <body>
-    <div class="top-bar">
+  <div class="top-bar">
     <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: none;">
       <span class="pulse-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</span>
     </a>
@@ -251,14 +215,12 @@ function renderCards(items) {
 
   items.forEach(item => {
     const card = document.createElement("div");
-    const cardClass = item.imgs.length === 2 ? "card two-images" : "card";
-card.className = cardClass;
+    card.className = "card";  // 不分兩張圖片組，都用同一樣式
 
     card.style.borderColor = "#ccc";
 
     const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
 
-    // **改成直接生成img，不包div**
     const imgsHtml = item.imgs.map(imgObj => `<img src="${imgObj.src}" alt="${item.combo}">`).join("");
 
     card.innerHTML = `
