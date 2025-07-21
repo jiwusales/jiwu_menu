@@ -133,7 +133,7 @@ body {
 .images-container img {
   height: auto;
   max-height: 150px;
-  max-width: none;     /* 不限制寬度 */
+  max-width: none;
   width: auto;
   object-fit: contain;
   border-radius: 4px;
@@ -215,17 +215,12 @@ function renderCards(items) {
   items.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-    card.style.borderColor = "#ccc";  // 可以自己調顏色
+    card.style.borderColor = "#ccc";
 
-    // 判斷圖片數量，超過4張就加三張一排 class
     const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
 
-    // 生成圖片 HTML，**不帶標籤**
-    const imgsHtml = item.imgs.map(imgObj => `
-      <div class="image-wrapper">
-        <img src="${imgObj.src}" alt="${item.combo}">
-      </div>
-    `).join("");
+    // **改成直接生成img，不包div**
+    const imgsHtml = item.imgs.map(imgObj => `<img src="${imgObj.src}" alt="${item.combo}">`).join("");
 
     card.innerHTML = `
       <div class="${imagesContainerClass}">${imgsHtml}</div>
