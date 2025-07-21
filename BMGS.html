@@ -160,11 +160,10 @@ body {
     gap: 4px; /* 縮小圖片間距 */
   }
 
- @media (max-width: 480px) {
+@media (max-width: 480px) {
   .card.two-images .images-container img {
-    max-width: calc(50% - 4px); /* 兩張各佔一半，減掉間距 */
     max-height: 100px;
-    gap: 4px; /* 原本 8px */
+    max-width: calc((100% - 24px) / 4);
   }
 }
 
