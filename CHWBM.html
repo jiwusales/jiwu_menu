@@ -355,10 +355,10 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 找出所有組合名稱相同的項目
+      // 改成只要欄位二包含 comboName 就算符合
       const comboItems = rows.filter(row => {
-        const nameField = (row.c[1]?.v || "").trim(); // 欄位 2 = 組合
-        return nameField === comboName.trim();
+        const nameField = (row.c[1]?.v || "").trim();
+        return nameField.includes(comboName.trim());
       });
 
       if (!comboItems.length) {
@@ -366,11 +366,10 @@ function loadComboDetails(comboName) {
         return;
       }
 
-      const price = comboItems[0].c[2]?.v || ""; // 欄位 3 = 組合價
+      const price = comboItems[0].c[2]?.v || "";
 
-      // 圖片橫向排列
       const imgList = comboItems.map(row => {
-        const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 欄位 7 = 圖片
+        const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
         return `<img src="${img}" alt="${comboName}" style="width:80px;height:auto;margin:5px;border-radius:6px;">`;
       }).join("");
 
