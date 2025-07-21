@@ -388,7 +388,7 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 角色欄（B欄）索引是1，抓B欄值做比對
+      // 篩選出「B欄（角色）」跟 comboName 一致的資料
       const filteredRows = rows.filter(row => {
         const roleField = (row.c[1]?.v || "").trim();
         return roleField === comboName.trim();
@@ -399,52 +399,48 @@ function loadComboDetails(comboName) {
         return;
       }
 
-      // 依角色欄分組（或依組合名分組都行，這裡假設依角色名）
-      const groupedByRole = {};
+      // 依 C欄（組合名）分組
+      const groupedByCombo = {};
       filteredRows.forEach(row => {
-        const roleGroupName = (row.c[2]?.v || "").trim();
-        if (!groupedByRole[roleGroupName]) groupedByRole[roleGroupName] = [];
-        groupedByRole[roleGroupName].push(row);
+        const comboGroupName = (row.c[2]?.v || "").trim();
+        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
+        groupedByCombo[comboGroupName].push(row);
       });
 
       let html = "";
-      const groupNames = Object.keys(groupedByRole);
+      const comboGroups = Object.keys(groupedByCombo);
 
-      groupNames.forEach((group, index) => {
-        const items = groupedByRole[group];
-        const price = items[0].c[3]?.v || ""; // 組合價（C欄）
+      comboGroups.forEach((group, index) => {
+        const items = groupedByCombo[group];
+        // 組合價（D欄）
+        const price = items[0].c[3]?.v || "";
 
-        // 圖片列表
+        // 圖片列表（H欄）
         const imgCount = items.length;
         let imgClass = "";
-
         if (window.innerWidth <= 480) {
           if (imgCount <= 4) imgClass = "img-row-4";
           else imgClass = "img-row-3";
         } else {
           imgClass = "img-row-6";
         }
-
         const imgList = items.map(row => {
           const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
         html += `
-         <div style="
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-  white-space: nowrap;
-">
-  <span>${group}</span>
-  <span>${formatPrice(price)}</span>
-</div>
+          <div class="img-container ${imgClass}" style="margin-bottom:8px;">
+            ${imgList}
+          </div>
+
+          <div style="display:flex; justify-content:center; gap:12px; align-items:center; font-weight:bold; font-size:16px; margin-bottom:12px; white-space: nowrap;">
+            <span>${group}</span>
+            <span>${price}</span>
           </div>
         `;
 
-        if (index !== groupNames.length - 1) {
+        if (index !== comboGroups.length - 1) {
           html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
         }
       });
