@@ -404,11 +404,14 @@ function loadComboDetails(clickedItemName) {
       const currentRole = roleMap[getRoleFromURL()] || "";
       const targetItem = clickedItemName.trim();
 
-      const filteredRows = rows.filter(row => {
-        const roleField = (row.c[1]?.v || "").trim();
-        const itemField = (row.c[2]?.v || "").trim();
-        return roleField === currentRole && itemField === targetItem;
-      });
+      let lastRole = "", lastItem = "";
+const filteredRows = rows.filter(row => {
+  const roleField = (row.c[1]?.v || lastRole).trim();
+  const itemField = (row.c[2]?.v || lastItem).trim();
+  if (row.c[1]?.v) lastRole = row.c[1].v; // 更新角色
+  if (row.c[2]?.v) lastItem = row.c[2].v; // 更新組合名稱
+  return roleField === currentRole && itemField === targetItem;
+});
 
       if (!filteredRows.length) {
         body.innerHTML = "組合內容整理中(๑´ㅂ`๑)";
