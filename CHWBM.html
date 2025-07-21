@@ -376,11 +376,10 @@ function renderCards(items,roleName){
 }
 
 // ================ Modal 組合內容 ================
-function loadComboDetails(roleName) {
+function loadComboDetails(clickedItemName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
-  // 這裡左上角顯示角色名稱（B欄傳進來的 roleName）
-  document.getElementById("comboTitle").textContent = roleName;
+  document.getElementById("comboTitle").textContent = clickedItemName; // Modal 標題維持原樣
   body.innerHTML = "載入中...";
   modal.style.display = "block";
 
@@ -390,10 +389,15 @@ function loadComboDetails(roleName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 找出所有角色欄（B欄）符合 roleName 的列
+      // 抓取目前角色
+      const currentRole = roleMap[getRoleFromURL()] || "";
+      const targetItem = clickedItemName.trim();
+
+      // 過濾出 B欄=角色 且 C欄=商品名 的資料
       const filteredRows = rows.filter(row => {
         const roleField = (row.c[1]?.v || "").trim();
-        return roleField === roleName.trim();
+        const itemField = (row.c[2]?.v || "").trim();
+        return roleField === currentRole && itemField === targetItem;
       });
 
       if (!filteredRows.length) {
@@ -401,53 +405,32 @@ function loadComboDetails(roleName) {
         return;
       }
 
-      // 依組合欄（C欄）分組
+      // 依 D欄（組合名）分組
       const groupedByCombo = {};
       filteredRows.forEach(row => {
-        const comboGroupName = (row.c[2]?.v || "").trim();
+        const comboGroupName = (row.c[3]?.v || "").trim(); // D欄
         if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
         groupedByCombo[comboGroupName].push(row);
       });
 
+      // 繪製組合內容
       let html = "";
       const groupNames = Object.keys(groupedByCombo);
 
       groupNames.forEach((group, index) => {
         const items = groupedByCombo[group];
-        const price = items[0].c[3]?.v || ""; // D欄 組合價
-
-        const imgCount = items.length;
-        let imgClass = "";
-
-        if (window.innerWidth <= 480) {
-          imgClass = (imgCount <= 4) ? "img-row-4" : "img-row-3";
-        } else {
-          imgClass = "img-row-6";
-        }
+        const price = items[0].c[4]?.v || ""; // E欄 組合價
 
         const imgList = items.map(row => {
-          const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // H欄 圖片
+          const img = row.c[8]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // I欄 圖片
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
         html += `
-          <div style="text-align:center; margin-bottom: 8px;">
-            <div class="img-container ${imgClass}">
-              ${imgList}
-            </div>
-            <div style="
-              font-size:16px;
-              margin-bottom:2px;
-              display:flex;
-              justify-content:center;
-              gap:5px;
-              align-items:center;
-              text-align:center;
-              width:100%;
-            ">
-              <span style="font-weight:bold;">${group}</span>
-              <span style="font-size:16px; white-space:nowrap;">${formatPrice(price)}</span>
-            </div>
+          <div style="text-align:center; margin-bottom:8px;">
+            <div class="img-container">${imgList}</div>
+            <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
+            <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
           </div>
         `;
 
