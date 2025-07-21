@@ -189,25 +189,218 @@ body {
   </div>
   <div id="card-container"></div>
 
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物寶寶目錄</title>
+  
+  <!-- 分頁小圖（favicon）-->
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+
+  <style>
+    /* 頁面基礎樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      background-image: url('https://i.postimg.cc/Kj8V5YMg/2.png');
+      background-repeat: repeat;
+      background-size: 135px;
+      margin: 0;
+      padding: 0;
+      color: #333333;
+      text-align: center;
+    }
+
+    /* 頂部通知條 */
+    .top-bar {
+      background: #738FA7;
+      color: #ffffff;
+      padding: 10px 0;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 999;
+      user-select: none;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .top-bar .pulse-text {
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* 商品卡片容器 */
+    #card-container {
+      padding: 60px 2px 6px 2px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* 商品卡片 */
+    .card {
+      flex: 0 1 auto;
+      min-width: 140px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 6px 12px 12px;
+      box-sizing: border-box;
+      text-align: center;
+      color: #333333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    /* 名稱與價格同一行容器，置中對齊 */
+    .title-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 12px 0 4px;
+      padding: 0 6px;
+      width: 100%;
+      box-sizing: border-box;
+      gap: 12px;
+    }
+
+    .name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #333333;
+      word-break: break-word;
+      margin: 0;
+      text-align: center;
+    }
+
+    .price {
+      font-size: 16px;
+      font-weight: 400;
+      color: #333333;
+      margin: 0;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .remark {
+      font-size: 12px;
+      color: #666666;
+      margin: 0 6px 6px;
+      text-align: left;
+      min-height: 1.2em;
+    }
+
+    .images-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .images-container img {
+      height: auto;
+      max-height: 150px;
+      max-width: none;
+      width: auto;
+      object-fit: contain;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* 標籤樣式 */
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 140px;
+      margin: 0 auto;
+    }
+
+    .overlay-tag {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ECA4B1;
+      color: #ffffff;
+      padding: 2px 6px;
+      font-size: 11px;
+      border-radius: 0 0 4px 4px;
+      pointer-events: none;
+      text-align: center;
+      max-width: 90%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 手機版 */
+    @media (max-width: 480px) {
+      .card {
+        max-width: 370px;
+        width: 90vw;
+      }
+      .images-container img {
+        max-height: 100px;
+        max-width: calc((100% - 24px) / 4);
+      }
+      .images-container.three-per-row img {
+        max-width: calc((100% - 16px) / 3);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .images-container img {
+        max-height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: none;">
+      <span class="pulse-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</span>
+    </a>
+  </div>
+  <div id="card-container"></div>
+
 <script>
 const SHEET_ID  = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "組合出售區";
 
-function loadSheetData(){
+function loadSheetData() {
   fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`)
   .then(r => r.text())
-  .then(t => JSON.parse(t.substr(47).slice(0,-2)))
-  .then(data=>{
+  .then(t => JSON.parse(t.substr(47).slice(0, -2)))
+  .then(data => {
     const rows = data.table.rows || [];
     const items = rows.slice(1).map(row => ({
       ip: row.c[0]?.v || "",
       combo: row.c[1]?.v || "",
       comboPrice: row.c[2]?.v || "",
       img: row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png",
-      remark: row.c[7]?.v || "",
+      tag: row.c[7]?.v || "",
+      remark: row.c[8]?.v || ""
     }));
 
-    // 合併同組合，備註只取第一個非空
     const groupedByCombo = items.reduce((acc, item) => {
       if (!item.combo) return acc;
       const key = item.combo;
@@ -216,21 +409,17 @@ function loadSheetData(){
           combo: item.combo,
           comboPrice: item.comboPrice,
           imgs: [],
-          remark: "",
+          remark: ""
         };
       }
-      acc[key].imgs.push(item.img);
-
-      // 備註只取第一個非空白
+      acc[key].imgs.push({ src: item.img, tag: item.tag });
       if (!acc[key].remark && item.remark.trim() !== "") {
         acc[key].remark = item.remark.trim();
       }
-
       return acc;
     }, {});
 
-    const groupedArray = Object.values(groupedByCombo);
-    renderCards(groupedArray);
+    renderCards(Object.values(groupedByCombo));
   })
   .catch(() => {
     document.getElementById("card-container").textContent = "載入資料失敗";
@@ -244,20 +433,22 @@ function renderCards(items) {
   items.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-    card.style.borderColor = "#ccc";
 
-    const imgsHtml = item.imgs.map(src => `<img src="${src}" alt="${item.combo}">`).join("");
-    const imagesContainerClass = item.imgs.length > 4 ? "images-container three-per-row" : "images-container";
+    const imgsHtml = item.imgs.map(imgObj => `
+      <div class="image-wrapper">
+        <img src="${imgObj.src}" alt="${item.combo}">
+        ${imgObj.tag ? `<div class="overlay-tag">${imgObj.tag}</div>` : ""}
+      </div>
+    `).join("");
 
     card.innerHTML = `
-      <div class="${imagesContainerClass}">${imgsHtml}</div>
+      <div class="images-container">${imgsHtml}</div>
       <div class="title-row">
         <div class="name">${formatName(item.combo)}</div>
         <div class="price">${item.comboPrice}</div>
       </div>
       ${item.remark ? `<div class="remark">${item.remark}</div>` : ""}
     `;
-
     container.appendChild(card);
   });
 }
@@ -265,11 +456,13 @@ function renderCards(items) {
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
-  if (cleanName.length <= 9) return cleanName;
-  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
+  return cleanName.length <= 9 ? cleanName : cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
 }
 
 loadSheetData();
 </script>
+</body>
+</html>
+
 </body>
 </html>
