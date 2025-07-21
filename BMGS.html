@@ -156,11 +156,32 @@ body {
     max-width: calc((100% - 16px) / 3); /* 3張一排 */
   }
 }
+    
+/* 兩張圖片組卡片，桌機版一排兩張 */
+.card.two-images {
+  flex: 0 1 calc(50% - 12px);
+  max-width: calc(50% - 12px);
+  box-sizing: border-box;
+}
 
-@media (max-width: 480px) {
-  .card.two-images .images-container {
-    gap: 4px; /* 縮小圖片間距 */
+/* 兩張圖片組圖片尺寸，桌機版 */
+@media (min-width: 481px) {
+  .card.two-images .images-container img {
+    max-height: 100px;
+    max-width: calc((100% - 10px) / 2);
+    margin-left: 5px;
+    margin-right: 5px;
   }
+}
+
+/* 手機版調整為單欄，卡片寬度變寬 */
+@media (max-width: 480px) {
+  .card.two-images {
+    flex: 0 1 90vw;
+    max-width: 90vw;
+  }
+
+  /* 兩張圖片組圖片尺寸，手機版 */
   .card.two-images .images-container img {
     max-height: 100px;
     max-width: calc((100% - 40px) / 4);
@@ -168,6 +189,7 @@ body {
     margin-right: 5px;
   }
 }
+
 
 /* 平板及以上（大螢幕） */
 @media (min-width: 768px) {
