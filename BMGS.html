@@ -304,81 +304,11 @@ function loadSheetData(){
 }
 
 // ================ 畫面渲染 ================
-function renderCards(items,roleName){
-  const container = document.getElementById("card-container");
-  container.innerHTML = "";
-  const styleOrder = [];
-  items.forEach(it=>{if(!styleOrder.includes(it.style))styleOrder.push(it.style);});
-  const grouped={};
-  items.forEach(it=>{
-    const cat=it.category;
-    (grouped[cat]=grouped[cat]||[]).push(it);
-    if(cat==="吊娃、娃"){
-      const tgt=extraStyleCategoryMap[it.style];
-      if(tgt)(grouped[tgt]=grouped[tgt]||[]).push({...it});
-    }
-  });
-  categoryOrder.forEach(cat=>{
-    const list=grouped[cat];
-    if(!list||!list.length)return;
-    const div=document.createElement("div");
-    div.className="type-divider";
-    div.textContent=cat;
-    container.appendChild(div);
-    const gdiv=document.createElement("div");
-    gdiv.className="group-grid";
-    const byStyle={};
-    list.forEach(it=>(byStyle[it.style]=byStyle[it.style]||[]).push(it));
-    styleOrder.forEach(sty=>{
-      const arr=byStyle[sty];
-      if(!arr)return;
-      arr.sort((a,b)=>a.index-b.index).forEach(item=>{
-        const status=getStatus(item);
-        if(!status)return;
-        const single="吉八兔桃獺栗獅古其";
-        const ch=item.role.match(/[\u4e00-\u9fff]/g)||[];
-        const rtxt=(ch.length===1&&single.includes(ch[0]))?ch[0]:"綜";
-
-        const isCombo = item.price === "-";
-        const needLineLink = item.price === "" || item.price === null || item.price === undefined;
-
-        const cardTag = (needLineLink ? "a" : "div");
-        const card = document.createElement(cardTag);
-        card.className = "card";
-        card.style.borderColor = colors[roleName] || "#ccc";
-
-        if (isCombo) {
-          card.onclick = () => {
-            console.log("點擊組合商品卡:", item.name);
-            loadComboDetails(item.name);
-          };
-          card.style.cursor = "pointer";
-        } else if (needLineLink && card.tagName === "A") {
-          card.href = "https://lin.ee/X6FUFI9";
-          card.target = "_blank";
-          card.style.textDecoration = "none";
-          card.style.color = "inherit";
-        }
-
-        card.innerHTML=`
-          ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
-          <img src="${item.img}" alt="${item.name}">
-          <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-          <div class="name">${formatName(item.name)}</div>
-          <div class="price">${formatPrice(item.price)}</div>
-        `;
-        gdiv.appendChild(card);
-      });
-    });
-    container.appendChild(gdiv);
-  });
-}
-
 // ================ Modal 組合內容 ================
-function loadComboDetails(comboName) {
+function loadComboDetails(comboRoleName) {
   const modal = document.getElementById("comboModal");
   const body = document.getElementById("comboBody");
-  document.getElementById("comboTitle").textContent = comboName;
+  document.getElementById("comboTitle").textContent = comboRoleName;
   body.innerHTML = "載入中...";
   modal.style.display = "block";
 
@@ -388,60 +318,55 @@ function loadComboDetails(comboName) {
     .then(data => {
       const rows = data.table.rows || [];
 
-      // 篩選出「B欄（角色）」跟 comboName 一致的資料
+      // 篩選出B欄（角色）符合 comboRoleName 的所有資料
       const filteredRows = rows.filter(row => {
         const roleField = (row.c[1]?.v || "").trim();
-        return roleField === comboName.trim();
+        return roleField === comboRoleName.trim();
       });
 
-      if (!filteredRows.length) {
+      if (filteredRows.length === 0) {
         body.innerHTML = "組合內容整理中(๑´ㅂ`๑)";
         return;
       }
 
-      // 依 C欄（組合名）分組
-      const groupedByCombo = {};
+      // 以 C欄（組合名）分組
+      const groupedByComboName = {};
       filteredRows.forEach(row => {
-        const comboGroupName = (row.c[2]?.v || "").trim();
-        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
-        groupedByCombo[comboGroupName].push(row);
+        const comboName = (row.c[2]?.v || "").trim();
+        if (!groupedByComboName[comboName]) groupedByComboName[comboName] = [];
+        groupedByComboName[comboName].push(row);
       });
 
       let html = "";
-      const comboGroups = Object.keys(groupedByCombo);
+      const comboNames = Object.keys(groupedByComboName);
 
-      comboGroups.forEach((group, index) => {
-        const items = groupedByCombo[group];
-        // 組合價（D欄）
-        const price = items[0].c[3]?.v || "";
+      comboNames.forEach((comboName, idx) => {
+        const items = groupedByComboName[comboName];
 
-        // 圖片列表（H欄）
-        const imgCount = items.length;
-        let imgClass = "";
-        if (window.innerWidth <= 480) {
-          if (imgCount <= 4) imgClass = "img-row-4";
-          else imgClass = "img-row-3";
-        } else {
-          imgClass = "img-row-6";
-        }
-        const imgList = items.map(row => {
-          const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
-          return `<img src="${img}" alt="${group}" />`;
+        // 取 D欄組合價（只顯示數字）
+        const comboPriceRaw = items[0].c[3]?.v || "";
+        const comboPrice = (typeof comboPriceRaw === "number" || /^\d+$/.test(comboPriceRaw)) ? comboPriceRaw : "";
+
+        // 圖片排水平放置，取 H欄圖片
+        const imagesHtml = items.map(row => {
+          const imgSrc = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          return `<img src="${imgSrc}" alt="${comboName}" style="height:70px; margin:0 4px; object-fit:contain; border-radius:6px;">`;
         }).join("");
 
         html += `
-          <div class="img-container ${imgClass}" style="margin-bottom:8px;">
-            ${imgList}
-          </div>
-
-          <div style="display:flex; justify-content:center; gap:12px; align-items:center; font-weight:bold; font-size:16px; margin-bottom:12px; white-space: nowrap;">
-            <span>${group}</span>
-            <span>${price}</span>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:center; gap:8px; margin-bottom:6px;">
+              ${imagesHtml}
+            </div>
+            <div style="display:flex; justify-content:center; gap:16px; font-weight:bold; font-size:18px; align-items:center;">
+              <span>${comboName}</span>
+              <span>${comboPrice !== "" ? comboPrice : ""}</span>
+            </div>
           </div>
         `;
 
-        if (index !== comboGroups.length - 1) {
-          html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
+        if (idx !== comboNames.length - 1) {
+          html += `<hr style="border:1px solid #ccc; margin:12px 0;">`;
         }
       });
 
@@ -452,8 +377,15 @@ function loadComboDetails(comboName) {
     });
 }
 
-document.querySelector(".close-btn").onclick=()=>document.getElementById("comboModal").style.display="none";
-window.onclick=e=>{if(e.target===document.getElementById("comboModal"))document.getElementById("comboModal").style.display="none";};
+// Modal 關閉事件
+document.querySelector(".close-btn").onclick = () => {
+  document.getElementById("comboModal").style.display = "none";
+};
+window.onclick = e => {
+  if (e.target === document.getElementById("comboModal")) {
+    document.getElementById("comboModal").style.display = "none";
+  }
+};
 
 // ================ 輔助函式 ================
 function formatName(name){
