@@ -191,19 +191,6 @@ body {
   color: #333;
 }
 
-.card .name,
-.card .price {
-  display: block;
-  text-align: center;
-  margin: 1px auto 5px;
-}
-
-.card .text-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-    
   </style>
 </head>
 <body>
@@ -405,10 +392,10 @@ function loadComboDetails(comboName) {
       <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-bottom:4px;">
         ${imgList}
       </div>
-      <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:center;">
+      <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:flex-end;">
         ${group}
       </div>
-      <div style="font-size:14px; display:flex; justify-content:center;">
+      <div style="font-size:14px; display:flex; justify-content:flex-start;">
         組合價：${formatPrice(price)}
       </div>
     </div>
