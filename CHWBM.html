@@ -207,17 +207,21 @@ body {
 
 /* 手機 4張一排 */
 .img-row-4 img {
-  width: calc((100% - 15px) / 4); /* 四張，間距5*3=15 */
+  width: calc(100% / 4);
+  margin: 0;
 }
 
 /* 手機 3張一排 */
 .img-row-3 img {
-  width: calc((100% - 10px) / 3); /* 三張，間距5*2=10 */
+  width: calc(100% / 3);
+  margin: 0;
 }
 
 /* 平板+電腦 6張一排 */
-.img-row-6 img {
-  width: calc((100% - 0px) / 6); /* 間距已經是0，所以減0 */
+@media (min-width: 768px) {
+  .img-row-6 img {
+    width: calc(100% / 6);
+    margin: 0;
 }
 
 /* 響應式備用 */
@@ -426,13 +430,22 @@ function loadComboDetails(clickedItemName) {
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
-       html += `
-  <div style="text-align:center; margin-bottom:8px;">
-    <div class="img-container img-row-4">${imgList}</div>
-    <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
-    <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
-  </div>
-`;
+        // 決定圖片行數 class
+        let rowClass = "img-row-3"; // 預設三張一排（手機）
+        if (items.length <= 4) {
+          rowClass = "img-row-4";
+        }
+        if (window.innerWidth >= 768 && items.length > 6) {
+          rowClass = "img-row-6"; // 平板/電腦用六張一排
+        }
+
+        html += `
+          <div style="text-align:center; margin-bottom:8px;">
+            <div class="img-container ${rowClass}">${imgList}</div>
+            <div style="font-weight:bold; font-size:16px; margin-top:4px;">${group}</div>
+            <div style="font-size:14px; color:#888;">${formatPrice(price)}</div>
+          </div>
+        `;
 
         if (index !== groupNames.length - 1) {
           html += `<hr style="border:1px solid #ccc; margin:10px 0;">`;
