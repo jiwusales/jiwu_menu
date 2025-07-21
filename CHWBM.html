@@ -445,8 +445,12 @@ function loadComboDetails(clickedItemName) {
         const [groupA, groupB] = pair;
         currentIndex++;
 
-        if (!groupB) {
-  const items = groupedByCombo[groupA];
+if (!groupB) {
+  const items = groupedByCombo[groupA] || [];
+  if (items.length === 0) {
+    // 沒資料時要怎麼處理？至少跳過或顯示提示
+    return; // 或 continue，視你迴圈而定
+  }
   const price = items[0].c[4]?.v || "";
   const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
   const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
@@ -460,8 +464,6 @@ function loadComboDetails(clickedItemName) {
       </div>
     </div>
   `;
-}
-
         } else {
           const itemsA = groupedByCombo[groupA];
           const priceA = itemsA[0].c[4]?.v || "";
