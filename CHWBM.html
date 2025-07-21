@@ -373,12 +373,13 @@ function loadComboDetails(comboName) {
         return `<img src="${img}" alt="${comboName}" style="width:80px;height:auto;margin:5px;border-radius:6px;">`;
       }).join("");
 
-      body.innerHTML = `
-        <div style="text-align:center;">
-          <div style="font-size:18px;font-weight:bold;margin-bottom:8px;">組合價：${formatPrice(price)}</div>
-          <div style="display:flex;flex-wrap:wrap;justify-content:center;">${imgList}</div>
-        </div>
-      `;
+     body.innerHTML = `
+  <div style="text-align:center; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 8px;">
+    ${imgList}
+  </div>
+  <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">${comboName}</div>
+  <div style="font-size: 14px;">組合價：${formatPrice(price)}</div>
+`;
     })
     .catch(() => {
       body.textContent = "載入組合內容失敗";
