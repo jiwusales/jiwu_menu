@@ -306,15 +306,19 @@ function renderCards(items,roleName){
         const ch=item.role.match(/[\u4e00-\u9fff]/g)||[];
         const rtxt=(ch.length===1&&single.includes(ch[0]))?ch[0]:"綜";
 
-        const isCombo = item.price === "組合出售";
-        const needLineLink = item.price === "私訊花花";
+        // 【改這裡】判斷組合商品用 "-"
+        const isCombo = item.price === "-";
+        const needLineLink = item.price === "" || item.price === null || item.price === undefined;
 
         const card = document.createElement(isCombo ? "div" : (needLineLink ? "a" : "div"));
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
         if(isCombo){
-          card.onclick = () => loadComboDetails(item.name);
+          card.onclick = () => {
+            console.log("點擊組合商品卡:", item.name);
+            loadComboDetails(item.name);
+          };
           card.style.cursor = "pointer";
         }else if(needLineLink){
           card.href = "https://lin.ee/X6FUFI9";
