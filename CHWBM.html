@@ -521,7 +521,9 @@ function loadComboDetails(clickedItemName) {
               <div>${group}</div>
               <div style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
             </div>
-            ${remark ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remark}</div>` : ""}
+${remark ? remark.split(/\r?\n/).map(r => 
+  `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`
+).join("") : ""}
           </div>
         `;
 
