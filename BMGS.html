@@ -402,7 +402,7 @@ function loadComboDetails(comboName) {
       // 依角色欄分組（或依組合名分組都行，這裡假設依角色名）
       const groupedByRole = {};
       filteredRows.forEach(row => {
-        const roleGroupName = (row.c[1]?.v || "").trim();
+        const roleGroupName = (row.c[2]?.v || "").trim();
         if (!groupedByRole[roleGroupName]) groupedByRole[roleGroupName] = [];
         groupedByRole[roleGroupName].push(row);
       });
@@ -412,7 +412,7 @@ function loadComboDetails(comboName) {
 
       groupNames.forEach((group, index) => {
         const items = groupedByRole[group];
-        const price = items[0].c[2]?.v || ""; // 組合價（C欄）
+        const price = items[0].c[3]?.v || ""; // 組合價（C欄）
 
         // 圖片列表
         const imgCount = items.length;
@@ -426,16 +426,18 @@ function loadComboDetails(comboName) {
         }
 
         const imgList = items.map(row => {
-          const img = row.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+          const img = row.c[7]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
           return `<img src="${img}" alt="${group}" />`;
         }).join("");
 
         html += `
-          <div style="text-align:center; margin-bottom: 8px;">
-            <div class="img-container ${imgClass}">
-              ${imgList}
-            </div>
-           <div style="font-size:16px; font-weight:bold; margin-bottom:2px; display:flex; justify-content:center; gap: 10px; align-items:center;">
+         <div style="
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  white-space: nowrap;
+">
   <span>${group}</span>
   <span>${formatPrice(price)}</span>
 </div>
