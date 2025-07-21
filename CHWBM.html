@@ -360,17 +360,17 @@ function loadComboDetails(comboName){
       });
 
       if (!comboItem) {
-        body.innerHTML = "組合內容整理中(๑´ㅂ`๑) ";
+        body.innerHTML = "組合內容整理中(๑´ㅂ`๑)";
         return;
       }
 
-      const img = comboItem.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 組合圖片
-      const price = comboItem.c[5]?.v || "未標價"; // 組合價
+      const img = comboItem.c[6]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+      const price = comboItem.c[5]?.v || "";
 
       body.innerHTML = `
         <div style="text-align:center;">
-          <img src="${img}" alt="${comboName}" style="width: 160px; border-radius: 8px; margin-bottom: 10px;">
-          <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">組合價：${formatPrice(price)}</div>
+          <img src="${img}" alt="${comboName}" style="width:200px;border-radius:8px;margin-bottom:10px;">
+          <div style="font-size:18px;font-weight:bold;margin-top:8px;">組合價：${formatPrice(price)}</div>
         </div>
       `;
     })
