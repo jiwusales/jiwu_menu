@@ -196,14 +196,7 @@
 .modal-content .combo-price {
   color: #4E4F50;
 }
-    
-/* 手機 2張2組一排 */
-.img-row-2 img {
-  width: 50%;  /* 兩張圖片平分寬度 */
-  margin: 0;
-  object-fit: contain;
-}
-    
+       
 /* 手機 4張一排 */
 .img-row-4 img {
   width: calc(100% / 4);
@@ -614,7 +607,7 @@ function loadComboDetails(clickedItemName) {
           html += `
             <div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
               <div style="text-align:center; width:160px;">
-                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
+                <div class="img-container" style="margin-bottom:4px;">${imgListA}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div class="combo-name">${groupA}</div>
                   <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceA)}</div>
@@ -622,7 +615,7 @@ function loadComboDetails(clickedItemName) {
                 ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
-                <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
+                <div class="img-container" style="margin-bottom:4px;">${imgListB}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div class="combo-name">${groupB}</div>
                   <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceB)}</div>
