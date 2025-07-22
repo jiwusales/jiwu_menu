@@ -4,13 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物寶寶目錄</title>
-  
-  <!-- 分頁小圖（favicon）-->
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
-
   <style>
-    /* 你原本的CSS... */
-    /* 保持不動，下面modal內部樣式會用inline style，不會影響現有 */
+    /* 基本頁面 */
     body {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
@@ -22,29 +18,160 @@
       color: #333;
       text-align: center;
     }
-    /* 省略其餘CSS */
+    .top-bar {
+      background-color: #d77485;
+      padding: 12px 0;
+      font-weight: bold;
+    }
+    .pulse-text {
+      animation: pulse 2s infinite;
+      color: #fff;
+      font-size: 18px;
+    }
+    @keyframes pulse {
+      0%, 100% {opacity: 1;}
+      50% {opacity: 0.6;}
+    }
+    #card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 16px auto;
+      max-width: 1200px;
+      gap: 12px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      width: 160px;
+      cursor: default;
+      text-align: center;
+      padding: 8px;
+      user-select: none;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 12px rgba(215, 117, 133, 0.6);
+    }
+    .card img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .name {
+      font-weight: bold;
+      margin: 6px 0 4px 0;
+      font-size: 14px;
+      min-height: 38px;
+      line-height: 1.2em;
+      color: #d77485;
+    }
+    .price {
+      font-weight: normal;
+      color: #a74e5b;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    /* modal */
+    #comboModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    #comboModal .modal-content {
+      background: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      width: 90%;
+      max-width: 700px;
+      border-radius: 8px;
+      text-align: left;
+      position: relative;
+      font-family: Arial, sans-serif;
+    }
+    #comboModalClose {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #comboTitle {
+      margin-top: 0;
+      color: #d77485;
+    }
+    #comboBody {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #333;
+    }
+    #comboBody hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 12px 0;
+    }
+    #comboBody img {
+      max-width: 140px;
+      height: auto;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    #comboBody > div {
+      margin-bottom: 8px;
+    }
+    .combo-group {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+    .combo-item {
+      text-align: center;
+      width: 160px;
+    }
+    .combo-item.border-left {
+      border-left: 1px solid #ccc;
+      padding-left: 16px;
+    }
+    .remark {
+      background: #647C90;
+      color: #fff;
+      border-radius: 12px;
+      padding: 2px 6px;
+      font-size: 12px;
+      display: inline-block;
+      margin: 2px 4px 4px 0;
+    }
   </style>
 </head>
 <body>
+
   <div class="top-bar">
     <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: none;">
       <span class="pulse-text">訂購這邊找花花 (৹˙꒳ ˙ฅ)</span>
     </a>
   </div>
+
   <div id="card-container"></div>
 
-  <!-- modal HTML（放這裡，不影響原功能） -->
-  <div id="comboModal" class="modal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.4);">
-    <div class="modal-content" style="background:#fff;margin:10% auto;padding:20px;border:2px solid #ccc;width:90%;max-width:700px;border-radius:8px;text-align:left;position:relative;">
-      <span id="comboModalClose" style="color:#aaa;float:right;font-size:28px;font-weight:bold;cursor:pointer;">&times;</span>
+  <div id="comboModal">
+    <div class="modal-content">
+      <span id="comboModalClose">&times;</span>
       <h2 id="comboTitle">組合內容</h2>
-      <div id="comboBody" style="margin-top:8px;">載入中...</div>
+      <div id="comboBody">載入中...</div>
     </div>
   </div>
 
 <script>
-  // 你的原本JS維持不動，我把modal功能跟組合商品點擊整合放這：
-
   const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
   const sheetName = "ちいかわ";
 
@@ -60,16 +187,63 @@
     "生活居家": "#98D7C2", "餐廚用品": "#F1A17E"
   };
 
-  // ... 你原本的typeKeywordMap、rolePriority、bagStyles、stickerGroups、categoriesOrder 省略，保持你原本的定義不變
+  const roleMap = {
+    "吉伊":"吉","小八":"八","兔兔":"兔","小桃":"桃","師傅":"獺",
+    "栗子":"栗","獅薩":"獅","古本":"古","其他角色":"其"
+  };
 
-  // *** 新增：角色縮寫對應（抓組合用） ***
-  const roleMap = { "吉伊":"吉","小八":"八","兔兔":"兔","小桃":"桃","師傅":"獺",
-                    "栗子":"栗","獅薩":"獅","古本":"古","其他角色":"其" };
+  const typeKeywordMap = {
+    "貼紙膠帶": ["貼紙", "膠帶"],
+    "文具磁鐵": ["文具", "磁鐵"],
+    "立牌徽章": ["立牌", "徽章"],
+    "鑰匙圈御守": ["鑰匙圈", "御守"],
+    "玩具盲抽": ["玩具", "盲抽"],
+    "服飾包袋": ["服飾", "包袋"],
+    "生活居家": ["生活", "居家"],
+    "餐廚用品": ["餐廚"]
+  };
 
-  // *** 原有函式略過，保持不動 ***
+  const rolePriority = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
-  // ========== Modal 功能 ==========
+  // 取得URL的type，預設貼紙膠帶
+  function getTypeFromURL() {
+    const p = new URLSearchParams(location.search).get("type");
+    return (p && colors[p]) ? p : "貼紙膠帶";
+  }
 
+  // 取得角色字首 (ex: 吉伊 => 吉)
+  function getRoleChar(role) {
+    if(!role) return "";
+    if(role.length === 1) return role;
+    return role[0];
+  }
+
+  // 格式化價格
+  function formatPrice(price) {
+    if(price === "" || price === null || price === undefined) return "私訊花花";
+    if(price === "-") return "組合出售";
+    return price;
+  }
+
+  // 建立商品卡
+  function renderCards(items, typeName) {
+    const container = document.getElementById("card-container");
+    container.innerHTML = "";
+    items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <img src="${item.img}" alt="${item.name}" />
+        <div class="name">${item.name}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  // Modal 元件
   const modal = document.getElementById("comboModal");
   const modalCloseBtn = document.getElementById("comboModalClose");
   const comboTitleEl = document.getElementById("comboTitle");
@@ -78,159 +252,142 @@
   modalCloseBtn.onclick = () => { modal.style.display = "none"; };
   window.onclick = (e) => { if(e.target === modal) modal.style.display = "none"; };
 
-  // 取得網址角色對應的單字
+  // 從URL取得角色字串，預設吉伊
   function getRoleFromURL() {
     const p = new URLSearchParams(location.search).get("role");
     return roleMap[p] ? p : "吉伊";
   }
 
-  // 價格格式化
-  function formatPrice(price) {
-    if(price === "" || price === null || price === undefined) return "私訊花花";
-    if(price === "-") return "組合出售";
-    return price;
-  }
-
-  // 點擊組合商品時載入組合詳細資料（抓「組合出售區」分頁）
+  // 載入組合詳細資料
   function loadComboDetails(itemName) {
     comboTitleEl.textContent = itemName;
     comboBodyEl.innerHTML = "載入中...";
     modal.style.display = "block";
 
     fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售區`)
-    .then(r => r.text())
-    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
-    .then(data => {
-      const rows = data.table.rows || [];
+      .then(r => r.text())
+      .then(t => JSON.parse(t.substr(47).slice(0, -2)))
+      .then(data => {
+        const rows = data.table.rows || [];
 
-      const currentRoleFull = getRoleFromURL();
-      const currentRole = roleMap[currentRoleFull] || "";
-      let lastRole = "", lastItem = "";
+        const currentRoleFull = getRoleFromURL();
+        const currentRole = roleMap[currentRoleFull] || "";
+        let lastRole = "", lastItem = "";
 
-      // 過濾組合資料，角色欄包含當前角色，且商品名與點擊商品名相符
-      const filteredRows = rows.filter(row => {
-        const roleField = (row.c[1]?.v || lastRole).trim();
-        const itemField = (row.c[2]?.v || lastItem).trim();
-        if(row.c[1]?.v) lastRole = row.c[1].v;
-        if(row.c[2]?.v) lastItem = row.c[2].v;
-        return roleField.includes(currentRole) && itemField === itemName.trim();
-      });
+        const filteredRows = rows.filter(row => {
+          const roleField = (row.c[1]?.v || lastRole).trim();
+          const itemField = (row.c[2]?.v || lastItem).trim();
+          if(row.c[1]?.v) lastRole = row.c[1].v;
+          if(row.c[2]?.v) lastItem = row.c[2].v;
+          return roleField.includes(currentRole) && itemField === itemName.trim();
+        });
 
-      if(filteredRows.length === 0) {
-        comboBodyEl.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟдﾟ)/<br>可以先私訊花花詢問！";
-        return;
-      }
+        if(filteredRows.length === 0) {
+          comboBodyEl.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟдﾟ)/<br>可以先私訊花花詢問！";
+          return;
+        }
 
-      // 按組合名稱分組
-      const groupedByCombo = {};
-      filteredRows.forEach(row => {
-        const comboGroupName = (row.c[3]?.v || "").trim();
-        if(!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
-        groupedByCombo[comboGroupName].push(row);
-      });
+        const groupedByCombo = {};
+        filteredRows.forEach(row => {
+          const comboGroupName = (row.c[3]?.v || "").trim();
+          if(!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
+          groupedByCombo[comboGroupName].push(row);
+        });
 
-      // 兩張圖組合的群組(圖片數量2) 與 其他群組
-      const twoImgGroups = [];
-      const otherGroups = [];
-      for(const groupName in groupedByCombo){
-        const imgsCount = groupedByCombo[groupName].length;
-        if(imgsCount === 2) twoImgGroups.push(groupName);
-        else otherGroups.push(groupName);
-      }
+        const twoImgGroups = [];
+        const otherGroups = [];
+        for(const groupName in groupedByCombo){
+          const imgsCount = groupedByCombo[groupName].length;
+          if(imgsCount === 2) twoImgGroups.push(groupName);
+          else otherGroups.push(groupName);
+        }
 
-      let html = "";
-      let pairCount = 0;
-      // 配對兩組兩張圖組合並排
-      for(let i=0; i<twoImgGroups.length; i+=2){
-        pairCount++;
-        const g1 = twoImgGroups[i];
-        const g2 = twoImgGroups[i+1];
-        if(!g2){
-          // 單獨一組兩張圖組合
-          const items = groupedByCombo[g1];
+        let html = "";
+        let pairCount = 0;
+
+        for(let i=0; i<twoImgGroups.length; i+=2){
+          pairCount++;
+          const g1 = twoImgGroups[i];
+          const g2 = twoImgGroups[i+1];
+          if(!g2){
+            const items = groupedByCombo[g1];
+            const price = items[0].c[4]?.v || "";
+            const remark = items[0].c[9]?.v || "";
+            const imgs = items.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g1}">`).join("");
+            html += `<div class="combo-group">
+                      <div class="combo-item">
+                        <div>${imgs}</div>
+                        <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:center;margin-top:4px;">
+                          <div>${g1}</div>
+                          <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price)}</div>
+                        </div>
+                        ${remark? `<div class="remark">${remark}</div>` : ""}
+                      </div>
+                      <div class="combo-item border-left" style="opacity:0;"></div>
+                     </div>`;
+          } else {
+            const items1 = groupedByCombo[g1];
+            const price1 = items1[0].c[4]?.v || "";
+            const remark1 = items1[0].c[9]?.v || "";
+            const imgs1 = items1.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g1}">`).join("");
+            const items2 = groupedByCombo[g2];
+            const price2 = items2[0].c[4]?.v || "";
+            const remark2 = items2[0].c[9]?.v || "";
+            const imgs2 = items2.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g2}">`).join("");
+            html += `<div class="combo-group">
+                      <div class="combo-item">
+                        <div>${imgs1}</div>
+                        <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:center;margin-top:4px;">
+                          <div>${g1}</div>
+                          <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price1)}</div>
+                        </div>
+                        ${remark1? `<div class="remark">${remark1}</div>` : ""}
+                      </div>
+                      <div class="combo-item border-left">
+                        <div>${imgs2}</div>
+                        <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:center;margin-top:4px;">
+                          <div>${g2}</div>
+                          <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price2)}</div>
+                        </div>
+                        ${remark2? `<div class="remark">${remark2}</div>` : ""}
+                      </div>
+                    </div>`;
+          }
+          if(pairCount < twoImgGroups.length/2 + otherGroups.length){
+            html += `<hr>`;
+          }
+        }
+
+        let countOther = 0;
+        for(const group of otherGroups){
+          countOther++;
+          const items = groupedByCombo[group];
           const price = items[0].c[4]?.v || "";
           const remark = items[0].c[9]?.v || "";
-          const imgs = items.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g1}">`).join("");
-          html += `<div style="display:flex;justify-content:center;gap:24px;margin-bottom:8px;align-items:flex-start;">
-                    <div style="text-align:center;width:160px;">
-                      <div style="margin-bottom:4px;">${imgs}</div>
-                      <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:baseline;">
-                        <div>${g1}</div>
-                        <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price)}</div>
-                      </div>
-                      ${remark? `<div style="background:#647C90;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;display:inline-block;margin-top:4px;">${remark}</div>` : ""}
+          const imgs = items.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
+          html += `<div style="text-align:center;margin-bottom:8px;">
+                    <div>${imgs}</div>
+                    <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:center;margin-top:4px;">
+                      <div>${group}</div>
+                      <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price)}</div>
                     </div>
-                    <div style="text-align:center;width:160px;border-left:1px solid #ccc;padding-left:16px;opacity:0;"></div>
-                   </div>`;
-        } else {
-          // 兩組兩張圖組合並排
-          const items1 = groupedByCombo[g1];
-          const price1 = items1[0].c[4]?.v || "";
-          const remark1 = items1[0].c[9]?.v || "";
-          const imgs1 = items1.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g1}">`).join("");
-          const items2 = groupedByCombo[g2];
-          const price2 = items2[0].c[4]?.v || "";
-          const remark2 = items2[0].c[9]?.v || "";
-          const imgs2 = items2.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${g2}">`).join("");
-          html += `<div style="display:flex;justify-content:center;gap:24px;margin-bottom:8px;align-items:flex-start;">
-                    <div style="text-align:center;width:160px;">
-                      <div style="margin-bottom:4px;">${imgs1}</div>
-                      <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:baseline;">
-                        <div>${g1}</div>
-                        <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price1)}</div>
-                      </div>
-                      ${remark1? `<div style="background:#647C90;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;display:inline-block;margin-top:4px;">${remark1}</div>` : ""}
-                    </div>
-                    <div style="text-align:center;width:160px;border-left:1px solid #ccc;padding-left:16px;">
-                      <div style="margin-bottom:4px;">${imgs2}</div>
-                      <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:baseline;">
-                        <div>${g2}</div>
-                        <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price2)}</div>
-                      </div>
-                      ${remark2? `<div style="background:#647C90;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;display:inline-block;margin-top:4px;">${remark2}</div>` : ""}
-                    </div>
+                    ${remark ? remark.split(/\r?\n/).map(r => 
+                      `<div class="remark">${r}</div>`
+                      ).join("") : ""}
                   </div>`;
+          if(countOther < otherGroups.length){
+            html += `<hr>`;
+          }
         }
-        if(pairCount < twoImgGroups.length/2 + otherGroups.length){
-          html += `<hr style="border:none;border-top:1px solid #ccc;margin:12px 0;">`;
-        }
-      }
 
-      // 其餘組合
-      let countOther = 0;
-      for(const group of otherGroups){
-        countOther++;
-        const items = groupedByCombo[group];
-        const price = items[0].c[4]?.v || "";
-        const remark = items[0].c[9]?.v || "";
-        const imgs = items.map(r=>`<img src="${r.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
-        html += `<div style="text-align:center;margin-bottom:8px;">
-                  <div>${imgs}</div>
-                  <div style="display:flex;justify-content:center;gap:6px;font-weight:bold;font-size:16px;align-items:baseline;margin-top:4px;">
-                    <div>${group}</div>
-                    <div style="font-weight:normal;position:relative;top:1px;">${formatPrice(price)}</div>
-                  </div>
-                  ${remark ? remark.split(/\r?\n/).map(r => 
-                    `<div style="background:#647C90;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;display:inline-block;margin:2px;">${r}</div>`
-                    ).join("") : ""}
-                </div>`;
-        if(countOther < otherGroups.length){
-          html += `<hr style="border:none;border-top:1px solid #ccc;margin:12px 0;">`;
-        }
-      }
-
-      comboBodyEl.innerHTML = html;
-    })
-    .catch(() => {
-      comboBodyEl.innerHTML = "🛠️ 網站維修中 (´•̥×•̥`) 稍等再回來重新整理好咪 ";
-    });
+        comboBodyEl.innerHTML = html;
+      })
+      .catch(() => {
+        comboBodyEl.innerHTML = "🛠️ 網站維修中 (´•̥×•̥`) 稍等再回來重新整理好咪 ";
+      });
   }
 
-  // *** 你原本 loadSheetData、renderCards 保持不動 ***
-
-  // --- 只要price === "-"的商品卡，加上點擊開modal事件 ---
-  // 修改 renderCards 最後一段，加這段：
-
+  // 把「組合出售」商品卡加上點擊開modal事件
   function addModalEventToComboCards() {
     const cards = document.querySelectorAll("#card-container .card");
     cards.forEach(card => {
@@ -245,17 +402,13 @@
     });
   }
 
-  // 呼叫原本函式，最後加上：
+  // 包裝 renderCards，順便加modal事件
   function renderCardsWithModal(items, typeName) {
     renderCards(items, typeName);
     addModalEventToComboCards();
   }
 
-  // 原本 loadSheetData 裡面呼叫 renderCards 改成 renderCardsWithModal
-  // 修改 loadSheetData 最後那行為：
-  // renderCardsWithModal(items, currentType);
-
-  // 完整重寫 loadSheetData 最後段：
+  // 載入Google Sheet資料，篩選並排序後渲染
   function loadSheetData() {
     const currentType = getTypeFromURL();
     document.documentElement.style.setProperty('--tab-color', colors[currentType]);
@@ -297,7 +450,6 @@
             !((item.type === "娃" || item.type === "吊娃") && item.style === "")
           );
         })
-
         .sort((a, b) => {
           const typeCompare = a.type.localeCompare(b.type, "zh-Hant");
           if (typeCompare !== 0) return typeCompare;
@@ -323,9 +475,7 @@
       });
   }
 
-  // 你原本呼叫 loadSheetData() 開始頁面資料讀取
   loadSheetData();
-
 </script>
 </body>
 </html>
