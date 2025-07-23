@@ -45,14 +45,6 @@ body {
   100% { transform: scale(1); }
 }
 
-    #category-nav {
-  position: sticky;
-  top: 40px; /* top-bar 高度 */
-  z-index: 998;
-  background: #f9f9f9; /* 背景色 */
-  padding: 6px 0;
-}
-
 /* 商品卡片容器 */
 #card-container {
   padding: 60px 10px 6px 7px;
@@ -70,7 +62,6 @@ body {
   margin: 8px 0;
   color: #333333;
   font-weight: bold;
-  scroll-margin-top: 100px
 }
 .type-divider::before,
 .type-divider::after {
@@ -262,32 +253,6 @@ body {
   }
 }
 
-/* 分類轉跳按鈕樣式 */
-#category-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 40px 0 10px 0;
-}
-#category-nav a {
-  display: inline-block;
-  padding: 6px 12px;
-  background-color: #ccc; /* 淺灰 */
-  color: #333;
-  border-radius: 20px; /* 橢圓形 */
-  text-decoration: none;
-  font-size: 13px;
-  transition: background-color 0.3s, transform 0.2s;
-}
-#category-nav a:hover,
-#category-nav a:focus,
-#category-nav a.active {
-  background-color: var(--tab-color);
-  color: #fff;
-  transform: scale(1.05);
-}
-    
   </style>
 </head>
 <body>
@@ -296,9 +261,8 @@ body {
       <span class="pulse-text">組合內容點擊卡片會跳出噢！訂購這邊找花花 (৹˙꒳˙ฅ)</span>
     </a>
   </div>
-   <div id="category-nav"></div> 
   <div id="card-container"></div>
-  
+
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
     <div class="modal-content">
@@ -333,7 +297,7 @@ const categoryMap = {
   "衣服":"服飾配件","飾品":"服飾配件","餐廚":"餐廚"
 };
 const categoryOrder = [
-  "包袋","證件套","鑰匙圈","御守繪馬","文具磁鐵","貼紙",
+  "吊娃、娃","包袋","證件套","鑰匙圈","御守繪馬","文具磁鐵","貼紙",
   "立牌徽章","玩具盲抽","3C配件","生活居家","服飾配件","餐廚","未分類"
 ];
 const extraStyleCategoryMap = {
@@ -387,9 +351,8 @@ function renderCards(items,roleName){
     const list=grouped[cat];
     if(!list||!list.length)return;
     const div=document.createElement("div");
-div.className="type-divider";
-div.id = cat; // 加 id 讓按鈕可以跳轉
-div.textContent=cat;
+    div.className="type-divider";
+    div.textContent=cat;
     container.appendChild(div);
     const gdiv=document.createElement("div");
     gdiv.className="group-grid";
@@ -634,19 +597,6 @@ function getStatus(item){
 
 // ================ 啟動 =====================
 loadSheetData();
-
-function renderCategoryNav() {
-  const nav = document.getElementById("category-nav");
-  nav.innerHTML = "";
-  categoryOrder.forEach(cat => {
-    const link = document.createElement("a");
-    link.href = `#${encodeURIComponent(cat)}`;
-    link.textContent = cat;
-    nav.appendChild(link);
-  });
-}
-renderCategoryNav();
-  
 </script>
 </body>
 </html>
