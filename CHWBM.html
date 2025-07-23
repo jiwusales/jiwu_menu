@@ -253,6 +253,29 @@ body {
   }
 }
 
+/* 分類轉跳按鈕樣式 */
+#category-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 60px 0 10px 0;
+}
+#category-nav a {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--tab-color);
+  color: #fff;
+  border-radius: 20px; /* 橢圓形 */
+  text-decoration: none;
+  font-size: 13px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+#category-nav a:hover {
+  background-color: #333;
+  transform: scale(1.05);
+}
+    
   </style>
 </head>
 <body>
@@ -263,6 +286,8 @@ body {
   </div>
   <div id="card-container"></div>
 
+<div id="category-nav"></div>
+  
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
     <div class="modal-content">
@@ -351,8 +376,9 @@ function renderCards(items,roleName){
     const list=grouped[cat];
     if(!list||!list.length)return;
     const div=document.createElement("div");
-    div.className="type-divider";
-    div.textContent=cat;
+div.className="type-divider";
+div.id = cat; // 加 id 讓按鈕可以跳轉
+div.textContent=cat;
     container.appendChild(div);
     const gdiv=document.createElement("div");
     gdiv.className="group-grid";
@@ -597,6 +623,19 @@ function getStatus(item){
 
 // ================ 啟動 =====================
 loadSheetData();
+
+function renderCategoryNav() {
+  const nav = document.getElementById("category-nav");
+  nav.innerHTML = "";
+  categoryOrder.forEach(cat => {
+    const link = document.createElement("a");
+    link.href = `#${encodeURIComponent(cat)}`;
+    link.textContent = cat;
+    nav.appendChild(link);
+  });
+}
+renderCategoryNav();
+  
 </script>
 </body>
 </html>
