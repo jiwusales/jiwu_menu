@@ -45,6 +45,14 @@ body {
   100% { transform: scale(1); }
 }
 
+    #category-nav {
+  position: sticky;
+  top: 40px; /* top-bar 高度 */
+  z-index: 998;
+  background: #f9f9f9; /* 背景色 */
+  padding: 6px 0;
+}
+
 /* 商品卡片容器 */
 #card-container {
   padding: 60px 10px 6px 7px;
@@ -284,9 +292,8 @@ body {
       <span class="pulse-text">組合內容點擊卡片會跳出噢！訂購這邊找花花 (৹˙꒳˙ฅ)</span>
     </a>
   </div>
+   <div id="category-nav"></div> 
   <div id="card-container"></div>
-
-<div id="category-nav"></div>
   
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
