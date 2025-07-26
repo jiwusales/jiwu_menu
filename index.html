@@ -347,13 +347,21 @@
       const text = row.c[2]?.v || '';
 
       if (imgUrl) {
-        const img = document.createElement('img');
-        img.src = imgUrl;
-        img.alt = text || '輪播圖片';
-        img.classList.add('carousel-dynamic');
-        img.style.display = 'none';
-        carousel.appendChild(img);
-        images.push(img);
+        const a = document.createElement('a');
+a.href = 'https://lin.ee/X6FUFI9'; // ✅ 點圖跳轉的網址
+a.target = '_blank';
+a.rel = 'noopener noreferrer';
+
+const img = document.createElement('img');
+img.src = imgUrl;
+img.alt = text || '輪播圖片';
+img.classList.add('carousel-dynamic');
+img.style.display = 'none';
+
+a.appendChild(img);
+carousel.appendChild(a);
+images.push(img);
+
         captions.push(text);
       }
     });
