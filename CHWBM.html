@@ -42,71 +42,76 @@ body {
   100% { transform: scale(1); }
 }
 
+    .nav-bar-wrapper {
+      position: fixed;
+      top: 40px;
+      width: 100%;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      z-index: 998;
+      padding: 0 10px;
+      box-sizing: border-box;
+      height: 40px;
+    }
+    .nav-bar-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-bar-scroll::-webkit-scrollbar {
+      display: none;
+    }
     .nav-bar {
-  background-color: #f9f9f9;
-  color: #333333;
-  font-size: 10pt;
-  padding: 8px 0px;
-  position: fixed;
-  top: 40px; /* 放在 top-bar 下方 */
-  width: 100%;
-  z-index: 998;
-  text-align: center;
-  white-space: nowrap;
-  overflow-x: auto;
-  }
-.nav-bar a {
-  color: #333;
-  text-decoration: none;
-  margin: 0 4px;
-  font-weight: normal;
-}
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 10pt;
+      color: #333;
+    }
+    .nav-bar a {
+      color: #333;
+      text-decoration: none;
+      margin: 0 4px;
+      font-weight: normal;
+    }
     .nav-bar a:hover {
-  font-weight: bold;
-  color: var(--tab-color, #333);
-}
+      font-weight: bold;
+      color: var(--tab-color, #333);
+    }
+    .nav-link.active {
+      font-weight: bold;
+      color: var(--tab-color, #333333);
+      text-decoration: none;
+    }
 
-.nav-link.active {
-  font-weight: bold;
-  color: var(--tab-color, #333333); /* 使用目前分頁顏色 */
-  text-decoration: none; /* ✅ 確保不會出現底線 */
-}
-
- .nav-bar-wrapper {
-  position: fixed;
-  top: 40px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  background: #f9f9f9;
-  z-index: 998;
-  padding: 0px;
-}
-
-.nav-bar-scroll {
-  overflow-x: auto;
-  flex: 1;
-  scroll-behavior: smooth;
-}
-
-.nav-bar {
-  display: inline-flex;
-  gap: 4px;
-  padding: 8px 16px;
-  white-space: nowrap;
-}
-
-.nav-arrow {
-  font-size: 18px;
-  padding: 8px;
-  cursor: pointer;
-  user-select: none;
-  color: #888;
-}
-
-.nav-arrow:hover {
-  color: #333;
-}   
+    .nav-arrow {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+      user-select: none;
+      position: relative;
+    }
+    .nav-arrow.nav-left {
+      margin-right: 8px;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-right: 10px solid #333;
+    }
+    .nav-arrow.nav-right {
+      margin-left: 8px;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 10px solid #333;
+    }
+    .nav-arrow:hover.nav-left {
+      border-right-color: #dac7b7;
+    }
+    .nav-arrow:hover.nav-right {
+      border-left-color: #dac7b7;
+    }
 
 /* 商品卡片容器 */
 #card-container {
@@ -325,28 +330,28 @@ body {
     </a>
   </div>
   <div id="card-container"></div>
-
-<div class="nav-bar-wrapper">
-  <div class="nav-arrow nav-left">❮</div>
-  <div class="nav-bar-scroll">
-    <div class="nav-bar">
-      <a class="nav-link" href="#吊娃、娃">吊娃．娃｜</a>
-      <a class="nav-link" href="#包袋">包袋｜</a>
-      <a class="nav-link" href="#證件套">證件套｜</a>
-      <a class="nav-link" href="#鑰匙圈">鑰匙圈｜</a>
-      <a class="nav-link" href="#御守繪馬">御守繪馬｜</a>
-      <a class="nav-link" href="#文具磁鐵">文具磁鐵｜</a>
-      <a class="nav-link" href="#貼紙">貼紙｜</a>
-      <a class="nav-link" href="#立牌徽章">立牌徽章｜</a>
-      <a class="nav-link" href="#玩具盲抽">玩具盲抽｜</a>
-      <a class="nav-link" href="#3C配件">3C配件｜</a>
-      <a class="nav-link" href="#生活居家">生活居家｜</a>
-      <a class="nav-link" href="#服飾配件">服飾配件｜</a>
-      <a class="nav-link" href="#餐廚">餐廚</a>
+  
+  <div class="nav-bar-wrapper">
+    <div class="nav-arrow nav-left"></div>
+    <div class="nav-bar-scroll">
+      <div class="nav-bar">
+        <a class="nav-link" href="#吊娃、娃">吊娃．娃｜</a>
+        <a class="nav-link" href="#包袋">包袋｜</a>
+        <a class="nav-link" href="#證件套">證件套｜</a>
+        <a class="nav-link" href="#鑰匙圈">鑰匙圈｜</a>
+        <a class="nav-link" href="#御守繪馬">御守繪馬｜</a>
+        <a class="nav-link" href="#文具磁鐵">文具磁鐵｜</a>
+        <a class="nav-link" href="#貼紙">貼紙｜</a>
+        <a class="nav-link" href="#立牌徽章">立牌徽章｜</a>
+        <a class="nav-link" href="#玩具盲抽">玩具盲抽｜</a>
+        <a class="nav-link" href="#3C配件">3C配件｜</a>
+        <a class="nav-link" href="#生活居家">生活居家｜</a>
+        <a class="nav-link" href="#服飾配件">服飾配件｜</a>
+        <a class="nav-link" href="#餐廚">餐廚</a>
+      </div>
     </div>
+    <div class="nav-arrow nav-right"></div>
   </div>
-  <div class="nav-arrow nav-right">❯</div>
-</div>
   
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
@@ -438,7 +443,7 @@ function renderCards(items,roleName){
     const div=document.createElement("div");
     div.className = "type-divider";
     div.id = cat;
-    div.style.scrollMarginTop = "100px";
+    div.style.scrollMarginTop = "90px";
     div.textContent = cat;
     container.appendChild(div);
     const gdiv=document.createElement("div");
@@ -685,14 +690,18 @@ function getStatus(item){
 // ================ 啟動 =====================
 loadSheetData();
 
-  // nav-bar 左右滑動箭頭控制
-const scrollContainer = document.querySelector(".nav-bar-scroll");
-document.querySelector(".nav-left").onclick = () => {
-  scrollContainer.scrollBy({ left: -100, behavior: "smooth" });
-};
-document.querySelector(".nav-right").onclick = () => {
-  scrollContainer.scrollBy({ left: 100, behavior: "smooth" });
-};
+const navBarScroll = document.querySelector(".nav-bar-scroll");
+const leftArrow = document.querySelector(".nav-arrow.nav-left");
+const rightArrow = document.querySelector(".nav-arrow.nav-right");
+
+leftArrow.addEventListener("click", () => {
+  navBarScroll.scrollBy({ left: -100, behavior: "smooth" });
+});
+
+rightArrow.addEventListener("click", () => {
+  navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
+});
+  
 </script>
 </body>
 </html>
