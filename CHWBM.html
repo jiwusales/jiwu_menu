@@ -86,14 +86,14 @@ body {
       text-decoration: none;
     }
 
-   .nav-arrow {
+.nav-arrow {
   width: 28px;
   height: 28px;
   line-height: 28px;
   font-size: 18px;
   color: #333;
-  background-color: #f0f0f0;
-  border-radius: 50%;
+  background-color: transparent; /* 取消灰底 */
+  border-radius: 0;              /* 取消圓形 */
   text-align: center;
   user-select: none;
   cursor: pointer;
@@ -103,8 +103,8 @@ body {
 }
 
 .nav-arrow:hover {
-  background-color: #dac7b7;
-  color: #fff;
+  background-color: transparent; /* 取消 hover 時背景 */
+  color: var(--tab-color, #dac7b7); /* 或你想要的 hover 顏色 */
 }
 
 /* 商品卡片容器 */
