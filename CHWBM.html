@@ -79,6 +79,18 @@ body {
       display: inline-block;
       font-weight: normal;
     }
+
+    .nav-bar a::after {
+      content: "｜";
+      margin: 0 4px;
+      color: #aaa;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    .nav-bar a:last-child::after {
+      content: "";
+    }
+    
     .nav-bar a:hover {
       font-weight: bold;
       color: var(--tab-color, #333);
