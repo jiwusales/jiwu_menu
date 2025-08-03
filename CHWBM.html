@@ -87,31 +87,25 @@ body {
     }
 
     .nav-arrow {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      flex-shrink: 0;
-      user-select: none;
-      position: relative;
-    }
-    .nav-arrow.nav-left {
-      margin-right: 8px;
-      border-top: 7px solid transparent;
-      border-bottom: 7px solid transparent;
-      border-right: 10px solid #333;
-    }
-    .nav-arrow.nav-right {
-      margin-left: 8px;
-      border-top: 7px solid transparent;
-      border-bottom: 7px solid transparent;
-      border-left: 10px solid #333;
-    }
-    .nav-arrow:hover.nav-left {
-      border-right-color: #dac7b7;
-    }
-    .nav-arrow:hover.nav-right {
-      border-left-color: #dac7b7;
-    }
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  position: relative;
+}
+.nav-arrow.nav-left {
+  margin-right: 8px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 10px solid #333;
+}
+.nav-arrow.nav-right {
+  margin-left: 8px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid #333;
+}
 
 /* 商品卡片容器 */
 #card-container {
@@ -331,9 +325,9 @@ body {
   </div>
   <div id="card-container"></div>
   
-  <div class="nav-bar-wrapper">
-    <div class="nav-arrow nav-left"></div>
-    <div class="nav-bar-scroll">
+<div class="nav-arrow nav-left">❮</div>
+<div class="nav-bar-scroll">
+  <div class="nav-bar">
       <div class="nav-bar">
         <a class="nav-link" href="#吊娃、娃">吊娃．娃｜</a>
         <a class="nav-link" href="#包袋">包袋｜</a>
@@ -350,7 +344,7 @@ body {
         <a class="nav-link" href="#餐廚">餐廚</a>
       </div>
     </div>
-    <div class="nav-arrow nav-right"></div>
+   <div class="nav-arrow nav-right">❯</div>
   </div>
   
   <!-- 🚀 Modal 組合內容 -->
