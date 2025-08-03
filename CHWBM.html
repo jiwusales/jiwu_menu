@@ -86,26 +86,27 @@ body {
       text-decoration: none;
     }
 
-    .nav-arrow {
-  width: 20px;
-  height: 20px;
+   .nav-arrow {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 18px;
+  color: #333;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  text-align: center;
+  user-select: none;
   cursor: pointer;
   flex-shrink: 0;
-  user-select: none;
-  position: relative;
+  margin: 0 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.nav-arrow.nav-left {
-  margin-right: 8px;
-  border-top: 7px solid transparent;
-  border-bottom: 7px solid transparent;
-  border-right: 10px solid #333;
+
+.nav-arrow:hover {
+  background-color: #dac7b7;
+  color: #fff;
 }
-.nav-arrow.nav-right {
-  margin-left: 8px;
-  border-top: 7px solid transparent;
-  border-bottom: 7px solid transparent;
-  border-left: 10px solid #333;
-}
+
 
 /* 商品卡片容器 */
 #card-container {
