@@ -52,13 +52,18 @@ body {
   width: 100%;
   z-index: 998;
   text-align: center;
-  user-select: none;
+  white-space: nowrap;
+  overflow-x: auto;
   }
-.nav-bar a,
-.nav-link.active {
-  color: #333333;
+.nav-bar a {
+  color: #333;
   text-decoration: none;
   margin: 0 4px;
+  font-weight: normal;
+}
+    .nav-bar a:hover {
+  font-weight: bold;
+  color: var(--tab-color, #333);
 }
 
 .nav-link.active {
