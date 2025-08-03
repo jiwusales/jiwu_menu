@@ -92,19 +92,26 @@ body {
   line-height: 28px;
   font-size: 18px;
   color: #333;
-  background-color: transparent; /* 取消灰底 */
-  border-radius: 0;              /* 取消圓形 */
+  background-color: transparent;
+  border-radius: 0;
   text-align: center;
   user-select: none;
   cursor: pointer;
   flex-shrink: 0;
-  margin: 0 6px;
+  margin: 10px 6px 0 6px;
   transition: background-color 0.2s ease, color 0.2s ease;
+  outline: none;
 }
 
 .nav-arrow:hover {
-  background-color: transparent; /* 取消 hover 時背景 */
-  color: var(--tab-color, #dac7b7); /* 或你想要的 hover 顏色 */
+  background-color: transparent;
+  color: var(--tab-color, #dac7b7);
+}
+.nav-arrow:focus,
+.nav-arrow:active {
+  outline: none;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 /* 商品卡片容器 */
