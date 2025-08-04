@@ -327,6 +327,11 @@ const categoryOrder = [
   "餐廚"
 ];
   
+const roleColors = {
+  "熊": "#E6C2BF", "狗": "#999999", "餅": "#F3BC50",
+  "馬來": "#25C0C0", "水族": "#88B2CC", "其": "#D4BBDD", "綜": "#dac7b7"
+};
+
 let roleOrder = [];
 
 function loadSheetData() {
@@ -380,26 +385,13 @@ function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
-// 排序：先照 categoryOrder，分類內將同 kind+style 聚在一起，其餘依原順序
-const categoryIndex = cat => categoryOrder.indexOf(cat);
-
-items = items.map((item, index) => ({ ...item, _originalIndex: index }));
-
+ // 依種類順序，保留原始資料順序
 items.sort((a, b) => {
-  const catA = categoryIndex(a.category);
-  const catB = categoryIndex(b.category);
-  if (catA !== catB) return catA - catB;
-
-  // 同一分類內，按 style 排序（字典順）
-  if (a.style !== b.style) return a.style.localeCompare(b.style);
-
-  // style 一樣再看 role（角色）
-  if (a.role !== b.role) return a.role.localeCompare(b.role);
-
-  // 最後用原始順序補排序
-  return a._originalIndex - b._originalIndex;
+  const catA = categoryOrder.indexOf(a.category);
+  const catB = categoryOrder.indexOf(b.category);
+  return catA - catB;
 });
-  
+
   let currentCategory = "";
   let groupDiv;
 
