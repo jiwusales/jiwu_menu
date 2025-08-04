@@ -390,13 +390,16 @@ items.sort((a, b) => {
   const catB = categoryIndex(b.category);
   if (catA !== catB) return catA - catB;
 
-  const aGroup = a.style + "|" + a.category;
-  const bGroup = b.style + "|" + b.category;
-  if (aGroup === bGroup) return a._originalIndex - b._originalIndex;
+  // 同一分類內，按 style 排序（字典順）
+  if (a.style !== b.style) return a.style.localeCompare(b.style);
 
+  // style 一樣再看 role（角色）
+  if (a.role !== b.role) return a.role.localeCompare(b.role);
+
+  // 最後用原始順序補排序
   return a._originalIndex - b._originalIndex;
 });
-
+  
   let currentCategory = "";
   let groupDiv;
 
