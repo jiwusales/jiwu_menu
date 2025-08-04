@@ -398,17 +398,19 @@ items.sort((a, b) => {
   let groupDiv;
 
   items.forEach(item => {
-    if (item.category !== currentCategory) {
-      currentCategory = item.category;
-      const divider = document.createElement("div");
-      divider.className = "type-divider";
-      divider.textContent = currentCategory;
-      container.appendChild(divider);
+if (item.category !== currentCategory) {
+  currentCategory = item.category;
+  const divider = document.createElement("div");
+  divider.className = "type-divider";
+  divider.textContent = currentCategory;
+  // 這裡加一行：
+  divider.id = currentCategory;
+  container.appendChild(divider);
 
-      groupDiv = document.createElement("div");
-      groupDiv.className = "group-grid";
-      container.appendChild(groupDiv);
-    }
+  groupDiv = document.createElement("div");
+  groupDiv.className = "group-grid";
+  container.appendChild(groupDiv);
+}
 
     const status = getStatus(item);
     if (!status) return;
