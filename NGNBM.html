@@ -29,6 +29,94 @@
   50% { transform: scale(1.05); } /* 改成1.05，放大5% */
   100% { transform: scale(1); }
 }
+.nav-bar-wrapper {
+      position: fixed;
+      top: 40px;
+      width: 100%;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      z-index: 998;
+      padding: 0 5px;
+      box-sizing: border-box;
+      height: 40px;
+    }
+    .nav-bar-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-bar-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-bar {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 10px 0;
+      font-size: 10pt;
+      color: #333;
+    }
+    .nav-bar a {
+      color: #333;
+      text-decoration: none;
+      margin: 0px;
+      padding-top: 6px;
+      display: inline-block;
+      font-weight: normal;
+    }
+
+    .nav-bar a::after {
+      content: "｜";
+      margin: 0px;
+      color: #aaa;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    .nav-bar a:last-child::after {
+      content: "";
+    }
+    
+    .nav-bar a:hover {
+      font-weight: bold;
+      color: var(--tab-color, #333);
+    }
+    .nav-link.active {
+      font-weight: bold;
+      color: var(--tab-color, #333333);
+      text-decoration: none;
+    }
+
+.nav-arrow {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 18px;
+  color: #333;
+  background-color: transparent;
+  border-radius: 0;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0 6px;
+  padding-top: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  outline: none;
+}
+
+.nav-arrow:hover {
+  background-color: transparent;
+  color: var(--tab-color, #dac7b7);
+}
+.nav-arrow:focus,
+.nav-arrow:active {
+  outline: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+    
     #card-container {
       padding: 60px 10px 6px 7px;
       display: flex;
@@ -193,6 +281,28 @@
     </a>
   </div>
   <div id="card-container"></div>
+
+<div class="nav-bar-wrapper">
+  <div class="nav-arrow nav-left">❮</div>
+  <div class="nav-bar-scroll">
+    <div class="nav-bar">
+      <a class="nav-link" href="#吊娃、娃">吊娃．娃</a>
+      <a class="nav-link" href="#包袋">包袋</a>
+      <a class="nav-link" href="#證件套">證件套</a>
+      <a class="nav-link" href="#鑰匙圈">鑰匙圈</a>
+      <a class="nav-link" href="#御守繪馬">御守繪馬</a>
+      <a class="nav-link" href="#文具磁鐵">文具磁鐵</a>
+      <a class="nav-link" href="#貼紙">貼紙</a>
+      <a class="nav-link" href="#立牌徽章">立牌徽章</a>
+      <a class="nav-link" href="#玩具盲抽">玩具盲抽</a>
+      <a class="nav-link" href="#3C配件">3C配件</a>
+      <a class="nav-link" href="#生活居家">生活居家</a>
+      <a class="nav-link" href="#服飾配件">服飾配件</a>
+      <a class="nav-link" href="#餐廚">餐廚</a>
+    </div>
+  </div>
+   <div class="nav-arrow nav-right">❯</div>
+</div>
   
 <!-- Modal for 組合內容 -->
 <div id="comboModal" class="modal">
