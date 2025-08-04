@@ -163,18 +163,17 @@
       padding: 0 10px;
     }
 
-    .role-buttons .row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px; /* 間距改成 8px */
-      margin-bottom: 10px;
-    }
+.role-buttons .row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 每排 5 欄 */
+  gap: 12px; /* 可自由調整間距 */
+  justify-content: center;
+  margin-bottom: 10px;
+}
 
-    .role-buttons .item {
-      width: 80px;
-      text-align: center;
-    }
+.role-buttons .item {
+  width: 100%; /* 撐滿 grid 欄位 */
+}
 
     /* 日本IP角色放大1.5倍 */
     .role-buttons.japan-ip .item {
