@@ -29,95 +29,6 @@
   50% { transform: scale(1.05); } /* 改成1.05，放大5% */
   100% { transform: scale(1); }
 }
-    
-.nav-bar-wrapper {
-      position: fixed;
-      top: 40px;
-      width: 100%;
-      background: #f9f9f9;
-      display: flex;
-      align-items: center;
-      z-index: 998;
-      padding: 0 5px;
-      box-sizing: border-box;
-      height: 40px;
-    }
-    .nav-bar-scroll {
-      flex: 1;
-      overflow-x: auto;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .nav-bar-scroll::-webkit-scrollbar {
-      display: none;
-    }
-    .nav-bar {
-      display: inline-block;
-      white-space: nowrap;
-      padding: 10px 0;
-      font-size: 10pt;
-      color: #333;
-    }
-    .nav-bar a {
-      color: #333;
-      text-decoration: none;
-      margin: 0px;
-      padding-top: 6px;
-      display: inline-block;
-      font-weight: normal;
-    }
-
-    .nav-bar a::after {
-      content: "｜";
-      margin: 0px;
-      color: #aaa;
-      font-weight: normal;
-      pointer-events: none;
-    }
-    .nav-bar a:last-child::after {
-      content: "";
-    }
-    
-    .nav-bar a:hover {
-      font-weight: bold;
-      color: var(--tab-color, #333);
-    }
-    .nav-link.active {
-      font-weight: bold;
-      color: var(--tab-color, #333333);
-      text-decoration: none;
-    }
-
-.nav-arrow {
-  width: 28px;
-  height: 28px;
-  line-height: 28px;
-  font-size: 18px;
-  color: #333;
-  background-color: transparent;
-  border-radius: 0;
-  text-align: center;
-  user-select: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin: 0 6px;
-  padding-top: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  outline: none;
-}
-
-.nav-arrow:hover {
-  background-color: transparent;
-  color: #68aad6;
-}
-.nav-arrow:focus,
-.nav-arrow:active {
-  outline: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
     #card-container {
       padding: 60px 10px 6px 7px;
       display: flex;
@@ -282,14 +193,6 @@
     </a>
   </div>
   <div id="card-container"></div>
-
-<div class="nav-bar-wrapper">
-  <div class="nav-arrow nav-left">❮</div>
-  <div class="nav-bar-scroll">
-    <div id="navBar" class="nav-bar"></div>
-  </div>
-  <div class="nav-arrow nav-right">❯</div>
-</div>
   
 <!-- Modal for 組合內容 -->
 <div id="comboModal" class="modal">
@@ -305,12 +208,12 @@ const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ナガノ";
 
 const categoryMap = {
-  "吊娃": "吊娃．娃", "娃": "吊娃、娃", "娃 抱枕": "生活居家",
-  "包包": "包袋", "背包": "包袋", "鑰匙圈": "鑰匙圈．御守", "御守": "鑰匙圈．御守",
-  "立牌": "立牌徽章", "徽章": "立牌徽章", "玩具": "玩玩具盲抽", "盲": "玩具盲抽", "盲抽": "玩具盲抽",
-  "文具": "文具磁鐵", "磁鐵": "文具磁鐵", "貼紙": "貼紙",
-  "3C": "居家、毛巾", "居家": "生活居家", "毛巾": "生活居家",
-  "飾品": "服飾配件", "衣服": "服飾配件", "餐廚": "餐廚"
+  "吊娃": "吊娃、娃", "娃": "吊娃、娃", "娃 抱枕": "居家、毛巾",
+  "包包": "包袋", "背包": "包袋", "鑰匙圈": "鑰匙圈、御守", "御守": "鑰匙圈、御守",
+  "立牌": "立牌、徽章", "徽章": "立牌、徽章", "玩具": "玩具、盲抽", "盲": "玩具、盲抽", "盲抽": "玩具、盲抽",
+  "文具": "文具、磁鐵", "磁鐵": "文具、磁鐵", "貼紙": "貼紙",
+  "3C": "居家、毛巾", "居家": "居家、毛巾", "毛巾": "居家、毛巾",
+  "飾品": "飾品、衣服", "衣服": "飾品、衣服", "餐廚": "餐廚"
 };
 
 const categoryOrder = [
@@ -366,49 +269,12 @@ function loadSheetData() {
       });
 
       renderCards(items);
-renderNavBar();
-
     })
     .catch(err => {
       document.getElementById("card-container").innerHTML = "載入資料失敗，請稍後再試。";
       console.error(err);
     });
 }
-
-  function renderNavBar() {
-  const navBar = document.getElementById("navBar");
-  navBar.innerHTML = "";
-
-  const allButton = document.createElement("button");
-  allButton.textContent = "全部";
-  allButton.classList.add("active");
-  allButton.onclick = () => filterByCategory(null);
-  navBar.appendChild(allButton);
-
-  categoryOrder.forEach(cat => {
-    const btn = document.createElement("button");
-    btn.textContent = cat;
-    btn.onclick = () => filterByCategory(cat);
-    navBar.appendChild(btn);
-  });
-}
-
-function filterByCategory(targetCategory) {
-  const allCards = document.querySelectorAll(".card");
-  const dividers = document.querySelectorAll(".type-divider");
-  const grids = document.querySelectorAll(".group-grid");
-
-  document.querySelectorAll(".nav-bar button").forEach(btn => btn.classList.remove("active"));
-  const clickedBtn = Array.from(document.querySelectorAll(".nav-bar button")).find(b => b.textContent === (targetCategory || "全部"));
-  if (clickedBtn) clickedBtn.classList.add("active");
-
-  dividers.forEach((divider, idx) => {
-    const match = divider.textContent === targetCategory || !targetCategory;
-    divider.style.display = match ? "flex" : "none";
-    grids[idx].style.display = match ? "grid" : "none";
-  });
-}
-
 
 function renderCards(items) {
   const container = document.getElementById("card-container");
