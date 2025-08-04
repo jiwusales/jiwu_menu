@@ -173,15 +173,7 @@
       .card img { width: 116px; }
       .card .name, .card .price { font-size: 12px; }
     }
-    .role-badge {
-      position: absolute; top: 3px; right: 3px;
-      height: 16px; padding: 0 6px;
-      border-radius: 8px; font-size: 10px; font-weight: bold;
-      line-height: 16px; color: #fff;
-      user-select: none; white-space: nowrap;
-      background-color: #FDD1D2;
-    }
-
+    
 /* Modal 基本樣式 */
 .modal {
   display: none; 
@@ -432,25 +424,6 @@ if (isCombo) {
   wrapper.href = link;
   wrapper.target = "_blank";
 }
-
-    const roleKey = item.role.trim();
-    const badgeColor = roleColors[roleKey] || roleColors["綜"];
-    const badgeText = roleKey || "綜";
-
-    const roleBadge = document.createElement("div");
-    roleBadge.className = "role-badge";
-    roleBadge.style.backgroundColor = badgeColor;
-    roleBadge.textContent = badgeText;
-
-    if (badgeText.length === 1) {
-      roleBadge.style.width = "16px";
-      roleBadge.style.height = "16px";
-      roleBadge.style.padding = "0";
-      roleBadge.style.borderRadius = "50%";
-      roleBadge.style.textAlign = "center";
-    }
-
-    wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
     img.src = item.img;
