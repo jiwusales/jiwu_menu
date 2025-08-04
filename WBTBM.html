@@ -386,10 +386,26 @@ function renderCards(items) {
   container.innerHTML = "";
 
  // 依種類順序，保留原始資料順序
+// 根據 categoryOrder 排序，再在每個分類內 group by style，保留原始順序
+const categoryIndex = cat => categoryOrder.indexOf(cat);
+
+// 排序：先照 categoryOrder，分類內將同 kind+style 聚在一起，其餘依原順序
+const categoryIndex = cat => categoryOrder.indexOf(cat);
+
+items = items.map((item, index) => ({ ...item, _originalIndex: index }));
+
 items.sort((a, b) => {
-  const catA = categoryOrder.indexOf(a.category);
-  const catB = categoryOrder.indexOf(b.category);
-  return catA - catB;
+  const catA = categoryIndex(a.category);
+  const catB = categoryIndex(b.category);
+  if (catA !== catB) return catA - catB;
+
+  // 同分類下，kind+style 相同的聚在一起
+  const aGroup = `${a.kind}__${a.style}`;
+  const bGroup = `${b.kind}__${b.style}`;
+  if (aGroup === bGroup) return a._originalIndex - b._originalIndex;
+
+  // 不同 group 就用第一出現的順序排
+  return a._originalIndex - b._originalIndex;
 });
 
   let currentCategory = "";
