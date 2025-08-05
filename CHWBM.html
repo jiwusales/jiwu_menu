@@ -337,7 +337,11 @@ body {
     max-width: none;
   }
 }
-
+.card.enlarged {
+  transform: scale(1.6);
+  z-index: 1000;
+  position: relative;
+}
   </style>
 </head>
 <body>
@@ -707,6 +711,25 @@ function getStatus(item){
 // ================ 啟動 =====================
 loadSheetData();
 
+  document.querySelectorAll('.role-buttons .item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    const text = item.textContent.trim();
+    if (text.includes("私訊花花") || text.includes("組合出售")) return;
+
+    e.preventDefault();
+
+    if (item.classList.contains('enlarged')) {
+      item.classList.remove('enlarged');
+      return;
+    }
+
+    document.querySelectorAll('.card.enlarged')
+            .forEach(el => el.classList.remove('enlarged'));
+
+    item.classList.add('enlarged');
+  });
+});
+
 const navBarScroll = document.querySelector(".nav-bar-scroll");
 const leftArrow = document.querySelector(".nav-arrow.nav-left");
 const rightArrow = document.querySelector(".nav-arrow.nav-right");
@@ -718,7 +741,7 @@ leftArrow.addEventListener("click", () => {
 rightArrow.addEventListener("click", () => {
   navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
 });
-  
+ 
 </script>
 </body>
 </html>
