@@ -335,6 +335,7 @@
     <div id="singleItemPrice" style="font-size: 14px;"></div>
   </div>
 </div>
+  <div id="cardOverlay" class="card-overlay"></div>
 </body>
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
@@ -581,21 +582,20 @@ function renderCards(items, typeName) {
     });
     groupDiv.appendChild(div);
 
-  } else {
-  // 點擊打開 Modal
+ } else {
+  // 用 overlay 放大卡片
   const div = document.createElement("div");
   div.className = "card";
   div.style.borderColor = colors[typeName] || "#ccc";
   div.innerHTML = cardHTML;
   div.style.cursor = "pointer";
-  div.onclick = () => {
-    document.getElementById("singleItemImg").src = item.img;
-    document.getElementById("singleItemName").textContent = item.name;
-    document.getElementById("singleItemPrice").textContent = formatPrice(item.price);
-    document.getElementById("singleItemModal").style.display = "block";
-  };
+  div.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openCardOverlay(div.cloneNode(true));
+  });
   groupDiv.appendChild(div);
 }
+
 });
 
     container.appendChild(groupDiv);
