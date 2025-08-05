@@ -561,16 +561,17 @@ function renderCards(items, typeName) {
 
   } else {
     // 其他價格直接顯示，**改成可點擊放大**
-    const div = document.createElement("div");
-    div.className = "card";
-    div.style.borderColor = colors[typeName] || "#ccc";
-    div.innerHTML = cardHTML;
-    div.style.cursor = "pointer";
-    div.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openCardOverlay(div.cloneNode(true));
-    });
-    groupDiv.appendChild(div);
+const div = document.createElement("div");
+div.className = "card";
+div.style.borderColor = colors[typeName] || "#ccc";
+div.innerHTML = cardHTML;
+div.style.cursor = "pointer";
+div.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openCardOverlay(div.cloneNode(true));
+});
+groupDiv.appendChild(div);
+
   }
   // ================ Modal 組合內容 ================
 function loadComboDetails(clickedItemName) {
