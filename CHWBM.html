@@ -258,29 +258,31 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .card-overlay .card {
   position: relative;
-  width: auto !important;
-  max-width: 90vw !important;
-  max-height: 90vh;
-  transform: scale(1.0);
-  transition: none !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  /* 不改寬高，維持原設定 */
+  max-width: none !important;
+  width: 120px; /* 保持和原卡一樣寬度 */
+  transform-origin: center center;
+  /* 放大倍數 */
+  transform: scale(3);  /* 你可以調整放大倍數 */
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
   cursor: default;
+  border-radius: 8px;
+  border-width: 2px !important;
   z-index: 10001;
-  border-color: #4E4F50 !important;
-  background: white;
-  border-radius: 12px;
+  background-color: white;
 }
-
 .card-overlay .card img {
-  width: 100% !important;
+  width: 116px !important; /* 同原本img寬度 */
   height: auto !important;
-  margin-top: 8px !important;
+  margin-top: 5px !important;
+  user-select: none;
 }
-
+/* 文字等比放大，因為 transform 放大整張卡片，文字大小自然等比放大 */
   </style>
 </head>
 <body>
@@ -630,24 +632,17 @@ function getStatus(item){
 // ================ 啟動 =====================
 loadSheetData();
   function openCardOverlay(card) {
-  // 複製卡片 DOM 節點
   const clone = card.cloneNode(true);
-
-  // 建立遮罩容器
   const overlay = document.createElement("div");
   overlay.className = "card-overlay";
-
-  // 把複製卡片放進遮罩
   overlay.appendChild(clone);
 
-  // 點擊遮罩空白處關閉
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       document.body.removeChild(overlay);
     }
   });
 
-  // 按鍵 ESC 關閉
   function onEsc(e) {
     if (e.key === "Escape") {
       if (document.body.contains(overlay)) {
@@ -658,10 +653,8 @@ loadSheetData();
   }
   document.addEventListener("keydown", onEsc);
 
-  // 加到 body
   document.body.appendChild(overlay);
 }
-
 </script>
 </body>
 </html>
