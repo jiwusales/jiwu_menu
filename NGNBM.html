@@ -272,26 +272,28 @@
     max-width: none;
   }
 }
-    /* 放大遮罩背景 */
+/* 放大遮罩背景 */
 #cardOverlay {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.8); /* 加深遮罩 */
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 10000;
+  overflow: auto; /* 防止超出可滾動 */
 }
 
 /* 放大卡片容器 */
 #cardOverlay .card {
   position: relative;
   width: auto !important;
-  max-width: 90vw !important;
-  max-height: 90vh;
+  max-width: 95vw !important;  /* 放大到接近滿版 */
+  max-height: 95vh !important; /* 放大到接近滿版 */
+  object-fit: contain;
   transform: none !important;
   cursor: default !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
   border-width: 3px !important;
 }
 
@@ -305,16 +307,9 @@
 /* 卡片圖片放大 */
 #cardOverlay img {
   width: auto !important;
-  max-width: 80vw !important;
-  max-height: 60vh !important;
-}
-
-/* 放大時角色徽章也放大 */
-#cardOverlay .role-badge {
-  font-size: 1.8em !important;
-  height: auto !important;
-  padding: 6px 12px !important;
-  border-radius: 10px !important;
+  max-width: 90vw !important;
+  max-height: 70vh !important; /* 提高圖片高度限制 */
+  object-fit: contain !important;
 }
 
 /* 放大時狀態標籤 */
@@ -486,21 +481,6 @@ if (isCombo) {
     const roleKey = item.role.trim();
     const badgeColor = roleColors[roleKey] || roleColors["綜"];
     const badgeText = roleKey || "綜";
-
-    const roleBadge = document.createElement("div");
-    roleBadge.className = "role-badge";
-    roleBadge.style.backgroundColor = badgeColor;
-    roleBadge.textContent = badgeText;
-
-    if (badgeText.length === 1) {
-      roleBadge.style.width = "16px";
-      roleBadge.style.height = "16px";
-      roleBadge.style.padding = "0";
-      roleBadge.style.borderRadius = "50%";
-      roleBadge.style.textAlign = "center";
-    }
-
-    wrapper.appendChild(roleBadge);
 
     const img = document.createElement("img");
     img.src = item.img;
@@ -733,7 +713,7 @@ function formatName(name) {
 }
 
 loadSheetData();
-  function openCardOverlay(cardElement) {
+function openCardOverlay(cardElement) {
   const overlay = document.getElementById("cardOverlay");
   overlay.innerHTML = ""; // 清空裡面內容
   cardElement.classList.add("card"); // 確保樣式完整
@@ -747,7 +727,6 @@ loadSheetData();
     }
   };
 }
-
 </script>
 </body>
 </html>
