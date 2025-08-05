@@ -272,7 +272,58 @@
     max-width: none;
   }
 }
-    
+    /* 放大遮罩背景 */
+#cardOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* 放大卡片容器 */
+#cardOverlay .card {
+  position: relative;
+  width: auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh;
+  transform: none !important;
+  cursor: default !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  border-width: 3px !important;
+}
+
+/* 文字等比放大 */
+#cardOverlay .name,
+#cardOverlay .price {
+  font-size: 2.5em !important;
+  line-height: 1.2 !important;
+}
+
+/* 卡片圖片放大 */
+#cardOverlay img {
+  width: auto !important;
+  max-width: 80vw !important;
+  max-height: 60vh !important;
+}
+
+/* 放大時角色徽章也放大 */
+#cardOverlay .role-badge {
+  font-size: 1.8em !important;
+  height: auto !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+}
+
+/* 放大時狀態標籤 */
+#cardOverlay .status-badge {
+  font-size: 1.5em !important;
+  padding: 6px 12px !important;
+  margin-bottom: 10px !important;
+}
+
   </style>
 </head>
 <body>
@@ -310,6 +361,8 @@
     <div id="comboBody">載入中...</div>
   </div>
 </div>
+  
+<div id="cardOverlay"></div>
 
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
@@ -471,6 +524,14 @@ if (isCombo) {
     priceDiv.textContent = formatPrice(item.price);
     wrapper.appendChild(priceDiv);
 
+wrapper.style.cursor = "pointer";
+wrapper.addEventListener("click", (e) => {
+  e.stopPropagation();
+  // 如果是組合（price === "-"），就不要放大，避免衝突
+  if (item.price === "-") return;
+  openCardOverlay(wrapper.cloneNode(true));
+});
+    
     groupDiv.appendChild(wrapper);
   });
 }
@@ -672,6 +733,21 @@ function formatName(name) {
 }
 
 loadSheetData();
+  function openCardOverlay(cardElement) {
+  const overlay = document.getElementById("cardOverlay");
+  overlay.innerHTML = ""; // 清空裡面內容
+  cardElement.classList.add("card"); // 確保樣式完整
+  overlay.appendChild(cardElement);
+  overlay.style.display = "flex";
+
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+    }
+  };
+}
+
 </script>
 </body>
 </html>
