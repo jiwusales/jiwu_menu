@@ -252,6 +252,37 @@ body {
     max-width: none;
   }
 }
+/* 點擊放大卡片的遮罩和放大樣式 */
+.card-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-overlay .card {
+  position: relative;
+  width: auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh;
+  transform: scale(1.0);
+  transition: none !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  cursor: default;
+  z-index: 10001;
+  border-color: #4E4F50 !important;
+  background: white;
+  border-radius: 12px;
+}
+
+.card-overlay .card img {
+  width: 100% !important;
+  height: auto !important;
+  margin-top: 8px !important;
+}
 
   </style>
 </head>
@@ -376,18 +407,22 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-        if (isCombo) {
-          card.onclick = () => {
-            console.log("點擊組合商品卡:", item.name);
-            loadComboDetails(item.name);
-          };
-          card.style.cursor = "pointer";
-        } else if (needLineLink && card.tagName === "A") {
-          card.href = "https://lin.ee/X6FUFI9";
-          card.target = "_blank";
-          card.style.textDecoration = "none";
-          card.style.color = "inherit";
-        }
+       if (isCombo) {
+  card.onclick = () => {
+    console.log("點擊組合商品卡:", item.name);
+    loadComboDetails(item.name);
+  };
+  card.style.cursor = "pointer";
+} else if (needLineLink && card.tagName === "A") {
+  card.href = "https://lin.ee/X6FUFI9";
+  card.target = "_blank";
+  card.style.textDecoration = "none";
+  card.style.color = "inherit";
+} else if(item.price !== "-" && item.price !== "" && item.price !== null && item.price !== undefined) {
+  // 非組合，且不是私訊花花，點擊放大
+  card.style.cursor = "pointer";
+  card.onclick = () => openCardOverlay(card);
+}
 
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
@@ -597,6 +632,39 @@ function getStatus(item){
 
 // ================ 啟動 =====================
 loadSheetData();
+  function openCardOverlay(card) {
+  // 複製卡片 DOM 節點
+  const clone = card.cloneNode(true);
+
+  // 建立遮罩容器
+  const overlay = document.createElement("div");
+  overlay.className = "card-overlay";
+
+  // 把複製卡片放進遮罩
+  overlay.appendChild(clone);
+
+  // 點擊遮罩空白處關閉
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
+
+  // 按鍵 ESC 關閉
+  function onEsc(e) {
+    if (e.key === "Escape") {
+      if (document.body.contains(overlay)) {
+        document.body.removeChild(overlay);
+        document.removeEventListener("keydown", onEsc);
+      }
+    }
+  }
+  document.addEventListener("keydown", onEsc);
+
+  // 加到 body
+  document.body.appendChild(overlay);
+}
+
 </script>
 </body>
 </html>
