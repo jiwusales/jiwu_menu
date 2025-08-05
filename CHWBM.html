@@ -505,18 +505,28 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-       if (isCombo) {
+  if (isCombo) {
+  // 組合商品點擊行為
   card.onclick = () => {
     console.log("點擊組合商品卡:", item.name);
     loadComboDetails(item.name);
   };
-if (someCondition) {
-  // ✅ 點擊非組合商品：等比放大
+  card.style.cursor = "pointer";
+
+} else if (needLineLink && card.tagName === "A") {
+  // 需要 Line 連結的商品 (價格空或無)
+  card.href = "https://lin.ee/X6FUFI9";
+  card.target = "_blank";
+  card.style.textDecoration = "none";
+  card.style.color = "inherit";
+  card.style.cursor = "pointer";
+
+} else {
+  // 非組合且有價格的商品 點擊放大
   card.onclick = () => {
     document.querySelectorAll(".card.enlarged").forEach(c => c.classList.remove("enlarged"));
     card.classList.add("enlarged");
     document.body.style.overflow = "hidden"; // 禁止背景滾動
-    // 點擊放大後再次點擊收回
     card.addEventListener("click", e => {
       e.stopPropagation();
       card.classList.remove("enlarged");
@@ -524,19 +534,8 @@ if (someCondition) {
     }, { once: true });
   };
   card.style.cursor = "pointer";
-
-} else if (needLineLink && card.tagName === "A") {
-  card.href = "https://lin.ee/X6FUFI9";
-  card.target = "_blank";
-  card.style.textDecoration = "none";
-  card.style.color = "inherit";
-
-} else {
-  card.style.cursor = "pointer";
-  card.onclick = () => {
-    enlargeCard(card);
-  };
 }
+
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
           <img src="${item.img}" alt="${item.name}">
