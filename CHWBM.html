@@ -209,18 +209,14 @@ body {
 }
 
 .card.enlarged {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) scale(2) !important;
-  width: 120px !important;
-  height: auto !important;
-  z-index: 9999 !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  border-width: 3px !important;
-  background-color: #fff !important;
-  cursor: default !important;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(2); /* ✅ 整體等比放大 */
+  transform-origin: center;
+  z-index: 9999;
   transition: transform 0.3s ease;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
 }
 
 /* 貨況狀態標籤 */
@@ -514,6 +510,21 @@ function renderCards(items,roleName){
     console.log("點擊組合商品卡:", item.name);
     loadComboDetails(item.name);
   };
+ // ✅ 點擊非組合商品：等比放大
+} else {
+  card.onclick = () => {
+    document.querySelectorAll(".card.enlarged").forEach(c => c.classList.remove("enlarged"));
+    card.classList.add("enlarged");
+    document.body.style.overflow = "hidden"; // 禁止背景滾動
+    // 點擊放大後再次點擊收回
+    card.addEventListener("click", e => {
+      e.stopPropagation();
+      card.classList.remove("enlarged");
+      document.body.style.overflow = "auto";
+    }, { once: true });
+  };
+}
+
   card.style.cursor = "pointer";
 } else if (needLineLink && card.tagName === "A") {
   card.href = "https://lin.ee/X6FUFI9";
