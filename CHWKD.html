@@ -232,77 +232,7 @@
     max-width: none;
   }
 }
-/* 放大卡片容器 */
-/* 點擊放大卡片的遮罩和放大樣式 */
-#cardOverlay .card {
-  position: relative;
-  width: auto !important;
-  max-width: 90vw !important;
-  max-height: 90vh;
-  transform: none !important;
-  cursor: default !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.7);
-  border-width: 5px !important;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 12px;
-}
-
-#cardOverlay img {
-  width: auto !important;
-  max-width: 80vw !important;
-  max-height: 60vh !important;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-}
-
-#cardOverlay .name {
-  font-size: 2.4em !important;
-  line-height: 1.3 !important;
-  font-weight: bold;
-  margin: 12px auto;
-  text-align: center;
-}
-
-#cardOverlay .price {
-  font-size: 2em !important;
-  margin-bottom: 12px;
-  color: #333;
-  text-align: center;
-}
-
-#cardOverlay .status-badge {
-  font-size: 1.5em !important;
-  padding: 8px 18px !important;
-  margin-bottom: 10px !important;
-  border-radius: 999px !important;
-  display: inline-block;
-  text-align: center;
-  line-height: 1;
-}
-
-#cardOverlay .role-badge {
-  font-size: 1.6em !important;
-  height: auto !important;
-  padding: 6px 12px !important;
-  border-radius: 10px !important;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  color: #fff;
-}
-    .card-overlay .card {
-  width: auto !important;
-  max-width: 90vw !important;
-  max-height: 90vh;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-  transform: none !important;
-  cursor: zoom-out;
-  transition: none !important;
-  border-width: 3px !important;
-}
-   
+    
   </style>
 </head>
 <body>
@@ -526,31 +456,55 @@ function renderCards(items, typeName) {
       else return roleA.localeCompare(roleB, "zh-Hant");
     });
 
-grouped[category].forEach(item => {
-  const roleText = getRoleChar(item.role);
-  const hasCombo = (item.price === "-" || item.price === "組合出售");
+    grouped[category].forEach(item => {
+  const status = getStatus(item);
+  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+  const badgeColor = roleColors[roleText] || "#ccc";
+
+  // 判斷私訊花花(跳連結) 和 組合出售(跳modal)
+  const needLink = (item.price === undefined || item.price === null || item.price === ""); // 私訊花花跳連結
+  const needModal = (item.price === "-"); // 組合出售跳modal
 
   const cardHTML = `
-    <div class="role-badge" style="background-color:${roleColors[roleText] || "#ccc"}">${roleText}</div>
+    <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
     <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${getStatus(item).bg};color:${getStatus(item).color}">${getStatus(item).text}</div>
+    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
     <div class="name">${formatName(item.name)}</div>
     <div class="price">${formatPrice(item.price)}</div>
   `;
-  const cardElement = document.createElement("div");
-  cardElement.style.borderColor = colors[typeName] || "#ccc";
-  cardElement.className = "card";
-  cardElement.innerHTML = cardHTML;
 
-  if (hasCombo) {
-    cardElement.style.cursor = "pointer";
-    cardElement.addEventListener("click", () => loadComboDetails(item.name));
+  if (needLink) {
+    // 私訊花花 - 跳連結
+    const link = document.createElement("a");
+    link.className = "card";
+    link.style.borderColor = colors[typeName] || "#ccc";
+    link.innerHTML = cardHTML;
+    link.href = "https://lin.ee/X6FUFI9";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    groupDiv.appendChild(link);
+
+  } else if (needModal) {
+    // 組合出售 - 跳 modal
+    const div = document.createElement("div");
+    div.className = "card";
+    div.style.borderColor = colors[typeName] || "#ccc";
+    div.innerHTML = cardHTML;
+    div.style.cursor = "pointer";
+    div.addEventListener("click", () => {
+      loadComboDetails(item.name);
+    });
+    groupDiv.appendChild(div);
+
   } else {
-    cardElement.style.cursor = "zoom-in";
-    cardElement.addEventListener("click", () => openCardOverlay(cardElement.cloneNode(true)));
+    // 其他價格直接顯示，不可點擊
+    const div = document.createElement("div");
+    div.className = "card";
+    div.style.borderColor = colors[typeName] || "#ccc";
+    div.innerHTML = cardHTML;
+    groupDiv.appendChild(div);
   }
-
-  groupDiv.appendChild(cardElement);
 });
 
     container.appendChild(groupDiv);
@@ -748,22 +702,6 @@ function formatName(name) {
 }
 
 loadSheetData();
-  function openCardOverlay(cardClone) {
-  const overlay = document.createElement("div");
-  overlay.className = "card-overlay";
-  overlay.appendChild(cardClone);
-
-  overlay.addEventListener("click", () => {
-    document.body.removeChild(overlay);
-  });
-
-  cardClone.addEventListener("click", e => {
-    e.stopPropagation();
-  });
-
-  document.body.appendChild(overlay);
-}
-
 </script>
 </body>
 </html>
