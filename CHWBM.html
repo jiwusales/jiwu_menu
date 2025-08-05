@@ -337,6 +337,82 @@ body {
     max-width: none;
   }
 }
+/* 放大遮罩背景 */
+#cardOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* 深灰遮罩 */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* 放大卡片容器 */
+/* 點擊放大卡片的遮罩和放大樣式 */
+#cardOverlay .card {
+  position: relative;
+  width: auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh;
+  transform: none !important;
+  cursor: default !important;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  border-width: 5px !important;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+#cardOverlay img {
+  width: auto !important;
+  max-width: 80vw !important;
+  max-height: 60vh !important;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+#cardOverlay .name {
+  font-size: 2.4em !important;
+  line-height: 1.3 !important;
+  font-weight: bold;
+  margin: 12px auto;
+  text-align: center;
+}
+
+#cardOverlay .price {
+  font-size: 2em !important;
+  margin-bottom: 12px;
+  color: #333;
+  text-align: center;
+}
+
+#cardOverlay .status-badge {
+  font-size: 1.5em !important;
+  padding: 8px 18px !important;
+  margin-bottom: 10px !important;
+  border-radius: 999px !important;
+  display: inline-block;
+  text-align: center;
+  line-height: 1;
+}
+
+#cardOverlay .role-badge {
+  font-size: 1.6em !important;
+  height: auto !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #fff;
+}
 
   </style>
 </head>
@@ -378,6 +454,8 @@ body {
       <div id="comboBody">載入中...</div>
     </div>
   </div>
+  <div id="cardOverlay"></div>
+
 </body>
 
 <script>
@@ -485,19 +563,24 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-        if (isCombo) {
-          card.onclick = () => {
-            console.log("點擊組合商品卡:", item.name);
-            loadComboDetails(item.name);
-          };
-          card.style.cursor = "pointer";
-        } else if (needLineLink && card.tagName === "A") {
-          card.href = "https://lin.ee/X6FUFI9";
-          card.target = "_blank";
-          card.style.textDecoration = "none";
-          card.style.color = "inherit";
-        }
-
+      if (isCombo) {
+  card.onclick = () => {
+    console.log("點擊組合商品卡:", item.name);
+    loadComboDetails(item.name);
+  };
+  card.style.cursor = "pointer";
+} else if (needLineLink && card.tagName === "A") {
+  card.href = "https://lin.ee/X6FUFI9";
+  card.target = "_blank";
+  card.style.textDecoration = "none";
+  card.style.color = "inherit";
+} else {
+  card.style.cursor = "pointer";
+  card.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openCardOverlay(card.cloneNode(true));
+  });
+}
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
           <img src="${item.img}" alt="${item.name}">
@@ -718,6 +801,20 @@ leftArrow.addEventListener("click", () => {
 rightArrow.addEventListener("click", () => {
   navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
 });
+function openCardOverlay(cardElement) {
+  const overlay = document.getElementById("cardOverlay");
+  overlay.innerHTML = ""; // 清空內容
+  cardElement.classList.add("card"); // 確保卡片樣式完整
+  overlay.appendChild(cardElement);
+  overlay.style.display = "flex";
+
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+    }
+  };
+}
   
 </script>
 </body>
