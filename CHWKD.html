@@ -232,22 +232,6 @@
     max-width: none;
   }
 }
-/* 放大遮罩背景 */
-#cardOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 深灰遮罩 */
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
 /* 放大卡片容器 */
 /* 點擊放大卡片的遮罩和放大樣式 */
 #cardOverlay .card {
@@ -326,16 +310,9 @@
       <div id="comboBody">載入中...</div>
     </div>
   </div>
-    <!-- 🚀 Modal 單一商品 -->
-<div id="singleItemModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <img id="singleItemImg" src="" alt="" style="max-width: 100%; height: auto; margin-bottom: 10px;">
-    <div id="singleItemName" style="font-weight:bold; font-size: 16px; margin-bottom: 6px;"></div>
-    <div id="singleItemPrice" style="font-size: 14px;"></div>
-  </div>
-</div>
-  <div id="cardOverlay" class="card-overlay"></div>
+  <!-- 卡片放大遮罩層 -->
+<div id="cardOverlay" class="card-overlay" style="display:none;"></div>
+
 </body>
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
@@ -582,26 +559,19 @@ function renderCards(items, typeName) {
     });
     groupDiv.appendChild(div);
 
- } else {
-  // 用 overlay 放大卡片
-  const div = document.createElement("div");
-  div.className = "card";
-  div.style.borderColor = colors[typeName] || "#ccc";
-  div.innerHTML = cardHTML;
-  div.style.cursor = "pointer";
-  div.addEventListener("click", (e) => {
-    e.stopPropagation();
-    openCardOverlay(div.cloneNode(true));
-  });
-  groupDiv.appendChild(div);
-}
-
-});
-
-    container.appendChild(groupDiv);
-  });
-}
-
+  } else {
+    // 其他價格直接顯示，**改成可點擊放大**
+    const div = document.createElement("div");
+    div.className = "card";
+    div.style.borderColor = colors[typeName] || "#ccc";
+    div.innerHTML = cardHTML;
+    div.style.cursor = "pointer";
+    div.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openCardOverlay(div.cloneNode(true));
+    });
+    groupDiv.appendChild(div);
+  }
   // ================ Modal 組合內容 ================
 function loadComboDetails(clickedItemName) {
   const modal = document.getElementById("comboModal");
@@ -760,19 +730,9 @@ function loadComboDetails(clickedItemName) {
     });
 }
 
-// 關閉 Modal 功能
-document.querySelectorAll(".close-btn").forEach(btn => {
-  btn.onclick = () => {
-    document.getElementById("comboModal").style.display = "none";
-    document.getElementById("singleItemModal").style.display = "none";
-  };
-});
-
+document.querySelector(".close-btn").onclick = () => document.getElementById("comboModal").style.display = "none";
 window.onclick = e => {
-  if (e.target === document.getElementById("comboModal"))
-    document.getElementById("comboModal").style.display = "none";
-  if (e.target === document.getElementById("singleItemModal"))
-    document.getElementById("singleItemModal").style.display = "none";
+  if (e.target === document.getElementById("comboModal")) document.getElementById("comboModal").style.display = "none";
 };
 
 function formatPrice(price) {
@@ -803,7 +763,20 @@ function formatName(name) {
 }
 
 loadSheetData();
+  function openCardOverlay(cardElement) {
+  const overlay = document.getElementById("cardOverlay");
+  overlay.innerHTML = ""; // 清空內容
+  cardElement.classList.add("card"); // 確保卡片樣式完整
+  overlay.appendChild(cardElement);
+  overlay.style.display = "flex";
 
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      overlay.style.display = "none";
+      overlay.innerHTML = "";
+    }
+  };
+}
 </script>
 </body>
 </html>
