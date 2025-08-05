@@ -337,28 +337,6 @@ body {
     max-width: none;
   }
 }
-#singleItemModal {
-  display: none;
-  position: fixed;
-  z-index: 9998;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4);
-}
-
-#singleItemModal .modal-content {
-  background-color: #fff;
-  margin: 10% auto;
-  padding: 20px;
-  border: 2px solid #ccc;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 8px;
-  text-align: center;
-}
 
   </style>
 </head>
@@ -400,15 +378,6 @@ body {
       <div id="comboBody">載入中...</div>
     </div>
   </div>
-  <!-- 🚀 Modal 單一商品 -->
-<div id="singleItemModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <img id="singleItemImg" src="" alt="" style="max-width: 100%; height: auto; margin-bottom: 10px;">
-    <div id="singleItemName" style="font-weight:bold; font-size: 16px; margin-bottom: 6px;"></div>
-    <div id="singleItemPrice" style="font-size: 14px;"></div>
-  </div>
-</div>
 </body>
 
 <script>
@@ -523,19 +492,11 @@ function renderCards(items,roleName){
           };
           card.style.cursor = "pointer";
         } else if (needLineLink && card.tagName === "A") {
-  card.href = "https://lin.ee/X6FUFI9";
-  card.target = "_blank";
-  card.style.textDecoration = "none";
-  card.style.color = "inherit";
-} else {
-  card.onclick = () => {
-    document.getElementById("singleItemImg").src = item.img;
-    document.getElementById("singleItemName").textContent = item.name;
-    document.getElementById("singleItemPrice").textContent = formatPrice(item.price);
-    document.getElementById("singleItemModal").style.display = "block";
-  };
-  card.style.cursor = "pointer";
-}
+          card.href = "https://lin.ee/X6FUFI9";
+          card.target = "_blank";
+          card.style.textDecoration = "none";
+          card.style.color = "inherit";
+        }
 
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
@@ -577,16 +538,6 @@ function loadComboDetails(clickedItemName) {
         if (row.c[2]?.v) lastItem = row.c[2].v;
         return roleField.includes(currentRole) && itemField === targetItem;
       });
-// 單品 modal 關閉功能
-document.querySelector("#singleItemModal .close-btn").onclick = () => 
-  document.getElementById("singleItemModal").style.display = "none";
-
-window.addEventListener("click", e => {
-  if (e.target === document.getElementById("comboModal"))
-    document.getElementById("comboModal").style.display = "none";
-  if (e.target === document.getElementById("singleItemModal"))
-    document.getElementById("singleItemModal").style.display = "none";
-});
 
       if (!filteredRows.length) {
         body.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟдﾟ)/<br>可以先私訊花花詢問！";
