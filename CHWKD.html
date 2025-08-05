@@ -411,12 +411,11 @@
 </nav>
   
   <div id="card-container"></div>
-<!-- Nav-bar HTML -->
 <div class="nav-bar-wrapper">
   <button class="nav-arrow" id="navPrev">&#8249;</button>
   <div class="nav-bar-scroll">
     <nav class="nav-bar" id="menuNav">
-      <!-- 選單會由 JS 動態生成 -->
+      <!-- 這邊用 JS 動態塞連結 -->
     </nav>
   </div>
   <button class="nav-arrow" id="navNext">&#8250;</button>
@@ -783,8 +782,12 @@ function loadComboDetails(clickedItemName) {
       }
       const singleGroups = otherCombos;
 
+      const totalBlocks = pairedGroups.length + singleGroups.length;
+      let currentIndex = 0;
+
       for (const pair of pairedGroups) {
         const [groupA, groupB] = pair;
+        currentIndex++;
 
         if (!groupB) {
           const itemsC = groupedByCombo[groupA];
@@ -825,7 +828,7 @@ function loadComboDetails(clickedItemName) {
                 </div>
                 ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
               </div>
-              <div style="text-align:center; width:160px;">
+              <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
                 <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
                 <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
                   <div class="combo-name">${groupB}</div>
@@ -838,19 +841,21 @@ function loadComboDetails(clickedItemName) {
         }
       }
 
-      for (const gName of singleGroups) {
-        const itemsG = groupedByCombo[gName];
-        const priceG = itemsG[0].c[4]?.v || "";
-        const remarkG = itemsG[0].c[9]?.v || "";
-        const imgListG = itemsG.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${gName}">`).join("");
+      for (const groupName of singleGroups) {
+        currentIndex++;
+        const items = groupedByCombo[groupName];
+        const price = items[0].c[4]?.v || "";
+        const remark = items[0].c[9]?.v || "";
+        const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupName}">`).join("");
+
         html += `
-          <div style="text-align:center; width:160px; margin-bottom:8px;">
-            <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListG}</div>
+          <div style="text-align:center; margin-bottom:8px; width:160px; margin-left:auto; margin-right:auto;">
+            <div class="img-container img-row-2" style="margin-bottom:4px;">${imgList}</div>
             <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-              <div class="combo-name">${gName}</div>
-              <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceG)}</div>
+              <div class="combo-name">${groupName}</div>
+              <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(price)}</div>
             </div>
-            ${remarkG ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkG}</div>` : ""}
+            ${remark ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remark}</div>` : ""}
           </div>
         `;
       }
@@ -858,39 +863,51 @@ function loadComboDetails(clickedItemName) {
       body.innerHTML = html;
     })
     .catch(() => {
-      body.innerHTML = "載入組合資料失敗，請稍後再試。";
+      body.innerHTML = "載入組合資料失敗";
     });
 }
 
 function formatName(name) {
-  if (!name) return "";
-  let n = name.trim();
-  if (n.length > 8) n = n.slice(0, 8) + "...";
-  return n;
+  return name.replace(/\n/g, " ");
 }
 
 function formatPrice(price) {
-  if (!price || price === "0") return "";
-  if (price === "-") return "-";
-  return "NT$ " + price;
+  if (price === undefined || price === null || price === "") return "";
+  if (typeof price === "number" || !isNaN(price)) return price + " 元";
+  return price;
 }
 
 function getStatus(item) {
-  if (item.preorder === "v") return { text: "預購中", bg: "#eebf70", color: "#000" };
-  if (item.notStock === "v") return { text: "缺貨", bg: "#dd5566", color: "#fff" };
-  if (item.stock === "v") return { text: "有貨", bg: "#76be6a", color: "#000" };
-  return { text: "", bg: "transparent", color: "#000" };
+  if (item.preorder === "x") return { text: "預購中", color: "#fff", bg: "#e03e36" };
+  if (item.stock === "x") return { text: "缺貨中", color: "#ddd", bg: "#222" };
+  if (item.notStock === "x") return { text: "停售", color: "#aaa", bg: "#eee" };
+  if (item.up === "x") return { text: "下架", color: "#aaa", bg: "#eee" };
+  return { text: "現貨中", color: "#999", bg: "#d4f7e4" };
 }
 
-function openCardOverlay(cardElement) {
-  // 你的放大卡片邏輯（此處保持原本不動）
-  alert("點擊放大卡片功能 - 你可以自己實作");
+function openCardOverlay(cardDiv) {
+  const overlay = document.getElementById("cardOverlay");
+  if (!overlay) return;
+
+  const clone = cardDiv.cloneNode(true);
+  clone.style.width = "80vw";
+  clone.style.height = "auto";
+  clone.style.position = "relative";
+  clone.style.margin = "40px auto";
+  clone.style.cursor = "zoom-out";
+
+  overlay.innerHTML = "";
+  overlay.appendChild(clone);
+
+  overlay.style.display = "block";
+
+  overlay.addEventListener("click", () => {
+    overlay.style.display = "none";
+    overlay.innerHTML = "";
+  }, { once: true });
 }
 
-window.onload = () => {
-  loadSheetData();
-};
-
+loadSheetData();
 </script>
 </body>
 </html>
