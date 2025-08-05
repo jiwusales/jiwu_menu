@@ -248,7 +248,6 @@
   z-index: 10000;
 }
 
-/* 放大卡片容器 */
 /* 點擊放大卡片的遮罩和放大樣式 */
 #cardOverlay .card {
   position: relative;
@@ -257,7 +256,7 @@
   max-height: 90vh;
   transform: none !important;
   cursor: default !important;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: none !important;  /* 👈 取消陰影 */
   border-width: 5px !important;
   background-color: #fff;
   padding: 20px;
@@ -307,6 +306,7 @@
   top: 10px;
   right: 10px;
   color: #fff;
+  display: none !important;
 }  
     
   </style>
