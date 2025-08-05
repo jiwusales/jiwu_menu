@@ -484,8 +484,8 @@ function renderCards(items, typeName) {
 
 grouped[category].forEach(item => {
   const roleText = getRoleChar(item.role);
-  const needLink = false; // 你自己判斷要不要連結或彈窗的邏輯
-  const needModal = true; // 有組合內容用 modal，不然彈放大
+  // 這裡判斷：價格是 "-" 或 "組合出售" 就是組合內容，用 modal 彈窗
+  const hasCombo = (item.price === "-" || item.price === "組合出售");
 
   const cardHTML = `
     <div class="role-badge" style="background-color:${roleColors[roleText] || "#ccc"}">${roleText}</div>
@@ -495,33 +495,22 @@ grouped[category].forEach(item => {
     <div class="price">${formatPrice(item.price)}</div>
   `;
 
-  let cardElement;
+  const cardElement = document.createElement("div");
+  cardElement.style.borderColor = colors[typeName] || "#ccc";
+  cardElement.className = "card";
+  cardElement.innerHTML = cardHTML;
 
-  if (needLink) {
-    cardElement = document.createElement("a");
-    cardElement.href = "https://lin.ee/X6FUFI9";
-    cardElement.target = "_blank";
-    cardElement.rel = "noopener noreferrer";
-    cardElement.style.borderColor = colors[typeName] || "#ccc";
-    cardElement.className = "card";
-    cardElement.innerHTML = cardHTML;
+  if (hasCombo) {
+    cardElement.style.cursor = "pointer";
+    cardElement.addEventListener("click", () => loadComboDetails(item.name));
   } else {
-    cardElement = document.createElement("div");
-    cardElement.style.borderColor = colors[typeName] || "#ccc";
-    cardElement.className = "card";
-    cardElement.innerHTML = cardHTML;
-
-    if (needModal) {
-      cardElement.style.cursor = "pointer";
-      cardElement.addEventListener("click", () => loadComboDetails(item.name));
-    } else {
-      cardElement.style.cursor = "zoom-in";
-      cardElement.addEventListener("click", () => openCardOverlay(cardElement.cloneNode(true)));
-    }
+    cardElement.style.cursor = "zoom-in";
+    cardElement.addEventListener("click", () => openCardOverlay(cardElement.cloneNode(true)));
   }
 
   groupDiv.appendChild(cardElement);
 });
+
     container.appendChild(groupDiv);
   });
 }
