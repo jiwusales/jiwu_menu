@@ -510,8 +510,8 @@ function renderCards(items,roleName){
     console.log("點擊組合商品卡:", item.name);
     loadComboDetails(item.name);
   };
- // ✅ 點擊非組合商品：等比放大
-} else {
+if (someCondition) {
+  // ✅ 點擊非組合商品：等比放大
   card.onclick = () => {
     document.querySelectorAll(".card.enlarged").forEach(c => c.classList.remove("enlarged"));
     card.classList.add("enlarged");
@@ -523,14 +523,14 @@ function renderCards(items,roleName){
       document.body.style.overflow = "auto";
     }, { once: true });
   };
-}
-
   card.style.cursor = "pointer";
+
 } else if (needLineLink && card.tagName === "A") {
   card.href = "https://lin.ee/X6FUFI9";
   card.target = "_blank";
   card.style.textDecoration = "none";
   card.style.color = "inherit";
+
 } else {
   card.style.cursor = "pointer";
   card.onclick = () => {
