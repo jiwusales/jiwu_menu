@@ -42,9 +42,97 @@ body {
   100% { transform: scale(1); }
 }
 
+    .nav-bar-wrapper {
+      position: fixed;
+      top: 40px;
+      width: 100%;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      z-index: 998;
+      padding: 0 5px;
+      box-sizing: border-box;
+      height: 40px;
+    }
+    .nav-bar-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-bar-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-bar {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 10px 0;
+      font-size: 10pt;
+      color: #333;
+    }
+    .nav-bar a {
+      color: #333;
+      text-decoration: none;
+      margin: 0px;
+      padding-top: 6px;
+      display: inline-block;
+      font-weight: normal;
+    }
+
+    .nav-bar a::after {
+      content: "｜";
+      margin: 0px;
+      color: #aaa;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    .nav-bar a:last-child::after {
+      content: "";
+    }
+    
+    .nav-bar a:hover {
+      font-weight: bold;
+      color: var(--tab-color, #333);
+    }
+    .nav-link.active {
+      font-weight: bold;
+      color: var(--tab-color, #333333);
+      text-decoration: none;
+    }
+
+.nav-arrow {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 18px;
+  color: #333;
+  background-color: transparent;
+  border-radius: 0;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0 6px;
+  padding-top: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  outline: none;
+}
+
+.nav-arrow:hover {
+  background-color: transparent;
+  color: var(--tab-color, #dac7b7);
+}
+.nav-arrow:focus,
+.nav-arrow:active {
+  outline: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
 /* 商品卡片容器 */
 #card-container {
-  padding: 60px 10px 6px 7px;
+  padding: 80px 10px 6px 7px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -111,6 +199,24 @@ body {
 .card * {
   text-decoration: none;
   color: inherit;
+}
+#overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9998;
+  display: none;
+}
+
+.card.enlarged {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(2); /* ✅ 整體等比放大 */
+  transform-origin: center;
+  z-index: 9999;
+  transition: transform 0.3s ease;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
 }
 
 /* 貨況狀態標籤 */
@@ -249,40 +355,7 @@ body {
     max-width: none;
   }
 }
-/* 點擊放大卡片的遮罩和放大樣式 */
-.card-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 10000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
 
-.card-overlay .card {
-  position: relative;
-  /* 不改寬高，維持原設定 */
-  max-width: none !important;
-  width: 120px; /* 保持和原卡一樣寬度 */
-  transform-origin: center center;
-  /* 放大倍數 */
-  transform: scale(3);  /* 你可以調整放大倍數 */
-  box-shadow: 0 0 30px rgba(0,0,0,0.7);
-  cursor: default;
-  border-radius: 8px;
-  border-width: 2px !important;
-  z-index: 10001;
-  background-color: white;
-}
-.card-overlay .card img {
-  width: 116px !important; /* 同原本img寬度 */
-  height: auto !important;
-  margin-top: 5px !important;
-  user-select: none;
-}
-/* 文字等比放大，因為 transform 放大整張卡片，文字大小自然等比放大 */
   </style>
 </head>
 <body>
@@ -292,7 +365,31 @@ body {
     </a>
   </div>
   <div id="card-container"></div>
+  
+  <div id="overlay"></div>
 
+<div class="nav-bar-wrapper">
+  <div class="nav-arrow nav-left">❮</div>
+  <div class="nav-bar-scroll">
+    <div class="nav-bar">
+      <a class="nav-link" href="#吊娃、娃">吊娃．娃</a>
+      <a class="nav-link" href="#包袋">包袋</a>
+      <a class="nav-link" href="#證件套">證件套</a>
+      <a class="nav-link" href="#鑰匙圈">鑰匙圈</a>
+      <a class="nav-link" href="#御守繪馬">御守繪馬</a>
+      <a class="nav-link" href="#文具磁鐵">文具磁鐵</a>
+      <a class="nav-link" href="#貼紙">貼紙</a>
+      <a class="nav-link" href="#立牌徽章">立牌徽章</a>
+      <a class="nav-link" href="#玩具盲抽">玩具盲抽</a>
+      <a class="nav-link" href="#3C配件">3C配件</a>
+      <a class="nav-link" href="#生活居家">生活居家</a>
+      <a class="nav-link" href="#服飾配件">服飾配件</a>
+      <a class="nav-link" href="#餐廚">餐廚</a>
+    </div>
+  </div>
+   <div class="nav-arrow nav-right">❯</div>
+</div>
+  
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
     <div class="modal-content">
@@ -381,8 +478,10 @@ function renderCards(items,roleName){
     const list=grouped[cat];
     if(!list||!list.length)return;
     const div=document.createElement("div");
-    div.className="type-divider";
-    div.textContent=cat;
+    div.className = "type-divider";
+    div.id = cat;
+    div.style.scrollMarginTop = "90px";
+    div.textContent = cat;
     container.appendChild(div);
     const gdiv=document.createElement("div");
     gdiv.className="group-grid";
@@ -406,21 +505,35 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-       if (isCombo) {
+  if (isCombo) {
+  // 組合商品點擊行為
   card.onclick = () => {
     console.log("點擊組合商品卡:", item.name);
     loadComboDetails(item.name);
   };
   card.style.cursor = "pointer";
+
 } else if (needLineLink && card.tagName === "A") {
+  // 需要 Line 連結的商品 (價格空或無)
   card.href = "https://lin.ee/X6FUFI9";
   card.target = "_blank";
   card.style.textDecoration = "none";
   card.style.color = "inherit";
-} else if(item.price !== "-" && item.price !== "" && item.price !== null && item.price !== undefined) {
-  // 非組合，且不是私訊花花，點擊放大
   card.style.cursor = "pointer";
-  card.onclick = () => openCardOverlay(card);
+
+} else {
+  // 非組合且有價格的商品 點擊放大
+  card.onclick = () => {
+    document.querySelectorAll(".card.enlarged").forEach(c => c.classList.remove("enlarged"));
+    card.classList.add("enlarged");
+    document.body.style.overflow = "hidden"; // 禁止背景滾動
+    card.addEventListener("click", e => {
+      e.stopPropagation();
+      card.classList.remove("enlarged");
+      document.body.style.overflow = "auto";
+    }, { once: true });
+  };
+  card.style.cursor = "pointer";
 }
 
         card.innerHTML=`
@@ -631,30 +744,37 @@ function getStatus(item){
 
 // ================ 啟動 =====================
 loadSheetData();
-  function openCardOverlay(card) {
-  const clone = card.cloneNode(true);
-  const overlay = document.createElement("div");
-  overlay.className = "card-overlay";
-  overlay.appendChild(clone);
+const overlay = document.getElementById("overlay");
+let enlargedCard = null;
 
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) {
-      document.body.removeChild(overlay);
-    }
-  });
-
-  function onEsc(e) {
-    if (e.key === "Escape") {
-      if (document.body.contains(overlay)) {
-        document.body.removeChild(overlay);
-        document.removeEventListener("keydown", onEsc);
-      }
-    }
-  }
-  document.addEventListener("keydown", onEsc);
-
-  document.body.appendChild(overlay);
+function enlargeCard(card) {
+  if (enlargedCard) return;
+  enlargedCard = card;
+  card.classList.add("enlarged");
+  overlay.style.display = "block";
+  document.body.style.overflow = "hidden";
 }
+
+overlay.onclick = () => {
+  if (!enlargedCard) return;
+  enlargedCard.classList.remove("enlarged");
+  overlay.style.display = "none";
+  enlargedCard = null;
+  document.body.style.overflow = "";
+};
+
+const navBarScroll = document.querySelector(".nav-bar-scroll");
+const leftArrow = document.querySelector(".nav-arrow.nav-left");
+const rightArrow = document.querySelector(".nav-arrow.nav-right");
+
+leftArrow.addEventListener("click", () => {
+  navBarScroll.scrollBy({ left: -100, behavior: "smooth" });
+});
+
+rightArrow.addEventListener("click", () => {
+  navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
+});
+  
 </script>
 </body>
 </html>
