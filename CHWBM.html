@@ -337,19 +337,8 @@ body {
     max-width: none;
   }
 }
-  #zoomedCardWrapper .card {
-  transform: scale(1.8);
-  transition: transform 0.3s ease;
-  z-index: 10000;
-}
 
-@media (max-width: 768px) {
-  #zoomedCardWrapper .card {
-    transform: scale(1.4);
-  }
-}
-
-</style>
+  </style>
 </head>
 <body>
   <div class="top-bar">
@@ -389,14 +378,6 @@ body {
       <div id="comboBody">載入中...</div>
     </div>
   </div>
-
-  <!-- 🚀 卡片放大專用 Modal -->
-<div id="cardZoomModal" class="modal">
-  <div id="zoomedCardWrapper" style="height: 100%; display: flex; justify-content: center; align-items: center;">
-    <!-- 放大卡片會塞在這裡 -->
-  </div>
-</div>
-
 </body>
 
 <script>
@@ -504,18 +485,18 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-       if (isCombo) {
-  card.onclick = () => loadComboDetails(item.name);
-  card.style.cursor = "pointer";
-} else if (needLineLink && card.tagName === "A") {
-  card.href = "https://lin.ee/X6FUFI9";
-  card.target = "_blank";
-  card.style.textDecoration = "none";
-  card.style.color = "inherit";
-} else {
-  card.onclick = () => showItemModal(item); // ✅ 加這行讓一般商品彈窗
-  card.style.cursor = "pointer";
-}
+        if (isCombo) {
+          card.onclick = () => {
+            console.log("點擊組合商品卡:", item.name);
+            loadComboDetails(item.name);
+          };
+          card.style.cursor = "pointer";
+        } else if (needLineLink && card.tagName === "A") {
+          card.href = "https://lin.ee/X6FUFI9";
+          card.target = "_blank";
+          card.style.textDecoration = "none";
+          card.style.color = "inherit";
+        }
 
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
@@ -723,54 +704,6 @@ function getStatus(item){
   return{text:"點貨中",bg:"#E7F2F8",color:"#333"};
 }
 
-  function showItemModal(item) {
-  const modal = document.getElementById("comboModal");
-  const body = document.getElementById("comboBody");
-  const title = document.getElementById("comboTitle");
-
-  modal.style.display = "block";
-
-  title.textContent = item.name;
-  body.innerHTML = `
-    <div style="text-align:center;">
-      <img src="${item.img}" alt="${item.name}" style="max-width:80%; height:auto; margin-bottom:12px;">
-      <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">${item.name}</div>
-      <div style="font-size:14px; color:#666; margin-bottom:8px;">價格：${formatPrice(item.price)}</div>
-      <div style="display:inline-block; padding:4px 8px; background:${getStatus(item).bg}; color:${getStatus(item).color}; border-radius:12px; font-size:13px;">
-        ${getStatus(item).text}
-      </div>
-    </div>
-  `;
-}
-
-  function zoomCard(item) {
-  const modal = document.getElementById("cardZoomModal");
-  const wrapper = document.getElementById("zoomedCardWrapper");
-  wrapper.innerHTML = ""; // 先清空
-
-  // 計算狀態跟角色標籤（和 renderCards 同邏輯）
-  const status = getStatus(item);
-  const roleName = getRoleFromURL();
-  const single = "吉八兔桃獺栗獅古其";
-  const ch = item.role.match(/[\u4e00-\u9fff]/g) || [];
-  const rtxt = (ch.length === 1 && single.includes(ch[0])) ? ch[0] : "綜";
-
-  // 建立放大卡片 DOM
-  const card = document.createElement("div");
-  card.className = "card";
-  card.style.borderColor = colors[roleName] || "#ccc";
-  card.innerHTML = `
-    ${item.category !== "吊娃、娃" ? `<div class="role-badge" style="background-color:${rtxt === "綜" ? "#dac7b7" : colors[roleName] || "#ccc"}">${rtxt}</div>` : ""}
-    <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-    <div class="name">${formatName(item.name)}</div>
-    <div class="price">${formatPrice(item.price)}</div>
-  `;
-
-  wrapper.appendChild(card);
-  modal.style.display = "flex";
-}
-
 // ================ 啟動 =====================
 loadSheetData();
 
@@ -785,7 +718,7 @@ leftArrow.addEventListener("click", () => {
 rightArrow.addEventListener("click", () => {
   navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
 });
-
+  
 </script>
 </body>
 </html>
