@@ -528,7 +528,6 @@ function renderCards(items, typeName) {
 
 grouped[category].forEach(item => {
   const roleText = getRoleChar(item.role);
-  // 這裡判斷：價格是 "-" 或 "組合出售" 就是組合內容，用 modal 彈窗
   const hasCombo = (item.price === "-" || item.price === "組合出售");
 
   const cardHTML = `
@@ -538,7 +537,6 @@ grouped[category].forEach(item => {
     <div class="name">${formatName(item.name)}</div>
     <div class="price">${formatPrice(item.price)}</div>
   `;
-
   const cardElement = document.createElement("div");
   cardElement.style.borderColor = colors[typeName] || "#ccc";
   cardElement.className = "card";
