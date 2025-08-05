@@ -711,25 +711,20 @@ function getStatus(item){
 // ================ 啟動 =====================
 loadSheetData();
 
-  document.querySelectorAll('.role-buttons .item').forEach(item => {
-  item.addEventListener('click', (e) => {
-    const text = item.textContent.trim();
-    if (text.includes("私訊花花") || text.includes("組合出售")) return;
+document.addEventListener('click', function (e) {
+  const clickedCard = e.target.closest('.card');
+  if (!clickedCard) return;
 
-    e.preventDefault();
+  // 忽略特殊卡片（例如組合商品、私訊卡）
+  const isCombo = clickedCard.querySelector(".price")?.textContent === "組合出售";
+  const isPrivateMsg = clickedCard.querySelector(".price")?.textContent === "私訊花花";
+  if (isCombo || isPrivateMsg) return;
 
-    if (item.classList.contains('enlarged')) {
-      item.classList.remove('enlarged');
-      return;
-    }
-
-    document.querySelectorAll('.card.enlarged')
-            .forEach(el => el.classList.remove('enlarged'));
-
-    item.classList.add('enlarged');
-  });
+  const isEnlarged = clickedCard.classList.contains('enlarged');
+  document.querySelectorAll('.card.enlarged').forEach(el => el.classList.remove('enlarged'));
+  if (!isEnlarged) clickedCard.classList.add('enlarged');
 });
-
+  
 const navBarScroll = document.querySelector(".nav-bar-scroll");
 const leftArrow = document.querySelector(".nav-arrow.nav-left");
 const rightArrow = document.querySelector(".nav-arrow.nav-right");
