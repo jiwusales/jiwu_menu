@@ -489,18 +489,18 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-        if (isCombo) {
-          card.onclick = () => {
-            console.log("點擊組合商品卡:", item.name);
-            loadComboDetails(item.name);
-          };
-          card.style.cursor = "pointer";
-        } else if (needLineLink && card.tagName === "A") {
-          card.href = "https://lin.ee/X6FUFI9";
-          card.target = "_blank";
-          card.style.textDecoration = "none";
-          card.style.color = "inherit";
-        }
+       if (isCombo) {
+  card.onclick = () => loadComboDetails(item.name);
+  card.style.cursor = "pointer";
+} else if (needLineLink && card.tagName === "A") {
+  card.href = "https://lin.ee/X6FUFI9";
+  card.target = "_blank";
+  card.style.textDecoration = "none";
+  card.style.color = "inherit";
+} else {
+  card.onclick = () => showItemModal(item); // ✅ 加這行讓一般商品彈窗
+  card.style.cursor = "pointer";
+}
 
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
@@ -708,23 +708,29 @@ function getStatus(item){
   return{text:"點貨中",bg:"#E7F2F8",color:"#333"};
 }
 
+  function showItemModal(item) {
+  const modal = document.getElementById("comboModal");
+  const body = document.getElementById("comboBody");
+  const title = document.getElementById("comboTitle");
+
+  modal.style.display = "block";
+
+  title.textContent = item.name;
+  body.innerHTML = `
+    <div style="text-align:center;">
+      <img src="${item.img}" alt="${item.name}" style="max-width:80%; height:auto; margin-bottom:12px;">
+      <div style="font-size:16px; font-weight:bold; margin-bottom:4px;">${item.name}</div>
+      <div style="font-size:14px; color:#666; margin-bottom:8px;">價格：${formatPrice(item.price)}</div>
+      <div style="display:inline-block; padding:4px 8px; background:${getStatus(item).bg}; color:${getStatus(item).color}; border-radius:12px; font-size:13px;">
+        ${getStatus(item).text}
+      </div>
+    </div>
+  `;
+}
+
 // ================ 啟動 =====================
 loadSheetData();
 
-document.addEventListener('click', function (e) {
-  const clickedCard = e.target.closest('.card');
-  if (!clickedCard) return;
-
-  // 忽略特殊卡片（例如組合商品、私訊卡）
-  const isCombo = clickedCard.querySelector(".price")?.textContent === "組合出售";
-  const isPrivateMsg = clickedCard.querySelector(".price")?.textContent === "私訊花花";
-  if (isCombo || isPrivateMsg) return;
-
-  const isEnlarged = clickedCard.classList.contains('enlarged');
-  document.querySelectorAll('.card.enlarged').forEach(el => el.classList.remove('enlarged'));
-  if (!isEnlarged) clickedCard.classList.add('enlarged');
-});
-  
 const navBarScroll = document.querySelector(".nav-bar-scroll");
 const leftArrow = document.querySelector(".nav-arrow.nav-left");
 const rightArrow = document.querySelector(".nav-arrow.nav-right");
@@ -736,7 +742,7 @@ leftArrow.addEventListener("click", () => {
 rightArrow.addEventListener("click", () => {
   navBarScroll.scrollBy({ left: 100, behavior: "smooth" });
 });
- 
+
 </script>
 </body>
 </html>
