@@ -200,6 +200,18 @@ body {
   text-decoration: none;
   color: inherit;
 }
+.card.zoomed {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) scale(2.5) !important;
+  z-index: 9999 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-color: var(--tab-color) !important;
+  background-color: #fff;
+  cursor: default;
+  transition: transform 0.3s ease;
+}
 
 /* 貨況狀態標籤 */
 .status-badge {
@@ -347,7 +359,8 @@ body {
     </a>
   </div>
   <div id="card-container"></div>
-  
+  <div id="overlay" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998;"></div>
+
 <div class="nav-bar-wrapper">
   <div class="nav-arrow nav-left">❮</div>
   <div class="nav-bar-scroll">
@@ -706,6 +719,44 @@ function getStatus(item){
 
 // ================ 啟動 =====================
 loadSheetData();
+  
+const overlay = document.getElementById("overlay");
+let currentZoomedCard = null;
+
+function zoomCard(card) {
+  if (currentZoomedCard) return; // 已有放大卡片就不理
+
+  currentZoomedCard = card;
+  card.classList.add("zoomed");
+  overlay.style.display = "block";
+}
+
+function unzoomCard() {
+  if (!currentZoomedCard) return;
+
+  currentZoomedCard.classList.remove("zoomed");
+  currentZoomedCard = null;
+  overlay.style.display = "none";
+}
+
+overlay.addEventListener("click", () => {
+  unzoomCard();
+});
+
+// 修改 renderCards 裡面點擊的部分，改成用這個函式
+function onCardClick(item, card) {
+  const isCombo = item.price === "-";
+ if (isCombo) {
+  // 組合商品還是跳組合視窗
+  card.onclick = () => {
+    loadComboDetails(item.name);
+  };
+  card.style.cursor = "pointer";
+} else {
+  // 一般商品改用 onCardClick 來放大卡片
+  card.style.cursor = "pointer";
+  card.onclick = () => onCardClick(item, card);
+}
 
 const navBarScroll = document.querySelector(".nav-bar-scroll");
 const leftArrow = document.querySelector(".nav-arrow.nav-left");
