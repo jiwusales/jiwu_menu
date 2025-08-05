@@ -38,6 +38,94 @@
   50% { transform: scale(1.05); } /* 改成1.05，放大5% */
   100% { transform: scale(1); }
 }
+.nav-bar-wrapper {
+      position: fixed;
+      top: 40px;
+      width: 100%;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      z-index: 998;
+      padding: 0 5px;
+      box-sizing: border-box;
+      height: 40px;
+    }
+    .nav-bar-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-bar-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-bar {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 10px 0;
+      font-size: 10pt;
+      color: #333;
+    }
+    .nav-bar a {
+      color: #333;
+      text-decoration: none;
+      margin: 0px;
+      padding-top: 6px;
+      display: inline-block;
+      font-weight: normal;
+    }
+
+    .nav-bar a::after {
+      content: "｜";
+      margin: 0px;
+      color: #aaa;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    .nav-bar a:last-child::after {
+      content: "";
+    }
+    
+    .nav-bar a:hover {
+      font-weight: bold;
+      color: var(--tab-color, #333);
+    }
+    .nav-link.active {
+      font-weight: bold;
+      color: var(--tab-color, #333333);
+      text-decoration: none;
+    }
+
+.nav-arrow {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 18px;
+  color: #333;
+  background-color: transparent;
+  border-radius: 0;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0 6px;
+  padding-top: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  outline: none;
+}
+
+.nav-arrow:hover {
+  background-color: transparent;
+  color: var(--tab-color, #dac7b7);
+}
+.nav-arrow:focus,
+.nav-arrow:active {
+  outline: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+    
     #card-container {
       padding: 60px 10px 6px 7px;
       display: flex;
@@ -323,6 +411,15 @@
 </nav>
   
   <div id="card-container"></div>
+<div class="nav-bar-wrapper">
+  <button class="nav-arrow" id="navPrev">&#8249;</button>
+  <div class="nav-bar-scroll">
+    <nav class="nav-bar" id="menuNav">
+      <!-- 這邊用 JS 動態塞連結 -->
+    </nav>
+  </div>
+  <button class="nav-arrow" id="navNext">&#8250;</button>
+</div>
 
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
@@ -335,7 +432,9 @@
   <div id="cardOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); z-index:9998; align-items:center; justify-content:center;"></div>
 </body>
 <script>
-const navConfig = {
+// ========== 新增：自動切換導航選單 ==========
+
+const menuMap = {
   "貼紙膠帶": ["貼紙包", "圖鑑貼紙", "特殊貼紙", "膠帶"],
   "文具磁鐵": ["文具磁鐵", "徽章", "搭配配件"],
   "玩具盲抽": ["盲抽", "玩具", "隱藏款"],
@@ -344,36 +443,35 @@ const navConfig = {
 };
 
 function initMenuNav(typeName) {
-  const list = navConfig[typeName] || [];
   const ul = document.getElementById("menuNavList");
   if (!ul) return;
-
   ul.innerHTML = "";
+  const list = menuMap[typeName] || [];
   list.forEach(item => {
     const li = document.createElement("li");
     li.textContent = item;
     li.className = "nav-item";
     if (item === typeName) li.classList.add("active");
-    li.addEventListener("click", () => {
+    li.onclick = () => {
       const params = new URLSearchParams(window.location.search);
       params.set("type", item);
       window.location.search = params.toString();
-    });
+    };
     ul.appendChild(li);
   });
 }
 
-function getTypeFromURL() {
+function getTypeFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const typeParam = params.get("type");
-  return typeParam || "貼紙膠帶"; // 預設值
+  const t = params.get("type");
+  return t || "貼紙膠帶";
 }
 
-// 載入完 DOM 立即初始化導航選單
 document.addEventListener("DOMContentLoaded", () => {
-  const currentType = getTypeFromURL();
-  initMenuNav(currentType);
+  initMenuNav(getTypeFromUrl());
 });
+
+// ================= 下面為你原本 CHWBM.html 內 script，保持不動 =================
 
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
 const sheetName = "ちいかわ";
@@ -390,8 +488,10 @@ const colors = {
   "生活居家": "#98D7C2", "餐廚用品": "#F1A17E"
 };
 
-const roleMap = { "吉伊":"吉","小八":"八","兔兔":"兔","小桃":"桃","師傅":"獺",
-                  "栗子":"栗","獅薩":"獅","古本":"古","其他角色":"其" };
+const roleMap = {
+  "吉伊": "吉", "小八": "八", "兔兔": "兔", "小桃": "桃", "師傅": "獺",
+  "栗子": "栗", "獅薩": "獅", "古本": "古", "其他角色": "其"
+};
 
 function getRoleFromURL() {
   const params = new URLSearchParams(window.location.search);
@@ -521,7 +621,7 @@ function renderCards(items, typeName) {
           break;
         }
       }
-      if (matched) return;  // 已分組就跳過後面判斷
+      if (matched) return;
     }
 
     const combined = (item.type || "") + (item.style || "") + (item.name || "");
@@ -704,8 +804,6 @@ function loadComboDetails(clickedItemName) {
                   <div class="combo-price" style="font-weight:normal; position:relative; top:1px;">${formatPrice(priceC)}</div>
                 </div>
                 ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
-              </div>
-              <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
               </div>
             </div>
           `;
