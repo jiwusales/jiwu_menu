@@ -498,18 +498,21 @@ function renderCards(items,roleName){
         card.className = "card";
         card.style.borderColor = colors[roleName] || "#ccc";
 
-        if (isCombo) {
-          card.onclick = () => {
-            console.log("點擊組合商品卡:", item.name);
-            loadComboDetails(item.name);
-          };
-          card.style.cursor = "pointer";
-        } else if (needLineLink && card.tagName === "A") {
-          card.href = "https://lin.ee/X6FUFI9";
-          card.target = "_blank";
-          card.style.textDecoration = "none";
-          card.style.color = "inherit";
-        }
+       if (isCombo) {
+  card.onclick = () => {
+    console.log("點擊組合商品卡:", item.name);
+    loadComboDetails(item.name);
+  };
+  card.style.cursor = "pointer";
+} else if (needLineLink && card.tagName === "A") {
+  card.href = "https://lin.ee/X6FUFI9";
+  card.target = "_blank";
+  card.style.textDecoration = "none";
+  card.style.color = "inherit";
+} else {
+  card.style.cursor = "pointer";
+  card.onclick = () => onCardClick(item, card); // ✅ 補這行！
+}
 
         card.innerHTML=`
           ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
