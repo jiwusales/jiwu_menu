@@ -337,6 +337,18 @@ body {
     max-width: none;
   }
 }
+    
+#zoomedCardWrapper .card {
+  transform: scale(1.8);
+  transition: transform 0.3s ease;
+  z-index: 10000;
+}
+
+@media (max-width: 768px) {
+  #zoomedCardWrapper .card {
+    transform: scale(1.4);
+  }
+}
 
 </style>
 </head>
@@ -378,6 +390,14 @@ body {
       <div id="comboBody">載入中...</div>
     </div>
   </div>
+
+  <!-- 🚀 卡片放大專用 Modal -->
+<div id="cardZoomModal" class="modal">
+  <div id="zoomedCardWrapper" style="height: 100%; display: flex; justify-content: center; align-items: center;">
+    <!-- 放大卡片會塞在這裡 -->
+  </div>
+</div>
+
 </body>
 
 <script>
@@ -722,6 +742,34 @@ function getStatus(item){
       </div>
     </div>
   `;
+}
+
+  function zoomCard(item) {
+  const modal = document.getElementById("cardZoomModal");
+  const wrapper = document.getElementById("zoomedCardWrapper");
+  wrapper.innerHTML = ""; // 先清空
+
+  // 計算狀態跟角色標籤（和 renderCards 同邏輯）
+  const status = getStatus(item);
+  const roleName = getRoleFromURL();
+  const single = "吉八兔桃獺栗獅古其";
+  const ch = item.role.match(/[\u4e00-\u9fff]/g) || [];
+  const rtxt = (ch.length === 1 && single.includes(ch[0])) ? ch[0] : "綜";
+
+  // 建立放大卡片 DOM
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.borderColor = colors[roleName] || "#ccc";
+  card.innerHTML = `
+    ${item.category !== "吊娃、娃" ? `<div class="role-badge" style="background-color:${rtxt === "綜" ? "#dac7b7" : colors[roleName] || "#ccc"}">${rtxt}</div>` : ""}
+    <img src="${item.img}" alt="${item.name}">
+    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+    <div class="name">${formatName(item.name)}</div>
+    <div class="price">${formatPrice(item.price)}</div>
+  `;
+
+  wrapper.appendChild(card);
+  modal.style.display = "flex";
 }
 
 // ================ 啟動 =====================
