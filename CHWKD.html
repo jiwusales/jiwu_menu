@@ -585,46 +585,25 @@ function renderCards(items, typeName) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
 
+  // 先初始化分組物件
   const grouped = {};
   categoriesOrder.forEach(cat => grouped[cat] = []);
   grouped["其他"] = [];
-// 1. nav-bar 自動生成
-const navBar = document.querySelector(".nav-bar");
-navBar.innerHTML = "";
-const categories = categoriesOrder.filter(cat => grouped[cat] && grouped[cat].length > 0);
-categories.forEach(cat => {
-  const a = document.createElement("a");
-  a.className = "nav-link";
-  a.textContent = cat;
-  a.href = "#" + cat; // 對應 category ID
-  navBar.appendChild(a);
-});
 
-// 2. 左右箭頭滑動控制
-const scrollContainer = document.querySelector(".nav-bar-scroll");
-document.querySelector(".nav-arrow.nav-left").onclick = () => {
-  scrollContainer.scrollBy({ left: -150, behavior: "smooth" });
-};
-document.querySelector(".nav-arrow.nav-right").onclick = () => {
-  scrollContainer.scrollBy({ left: 150, behavior: "smooth" });
-};
-
-// 3. 確保每個分類標題有 ID 供錨點跳轉
-// 在建立 divider 時加上這行：
-divider.id = category;
+  // 分組把 items 放進 grouped
   items.forEach(item => {
-  if (item.type === "貼紙") {
-    let matched = false;
-    for (const group of stickerGroups) {
-      if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
-        grouped[group.groupName].push(item);
-        matched = true;
-        break;
+    if (item.type === "貼紙") {
+      let matched = false;
+      for (const group of stickerGroups) {
+        if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
+          grouped[group.groupName].push(item);
+          matched = true;
+          break;
+        }
       }
+      if (matched) return; // 已分組就跳過後面判斷
     }
-    if (matched) return;  // 已分組就跳過後面判斷
-  }
-    // 文具磁鐵分組
+
     if (typeName === "文具磁鐵") {
       for (const group of stationeryGroups) {
         if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
@@ -636,7 +615,6 @@ divider.id = category;
       return;
     }
 
-    // 餐廚用品分組
     if (typeName === "餐廚用品") {
       let matched = false;
       for (const group of kitchenGroups) {
@@ -650,7 +628,6 @@ divider.id = category;
       return;
     }
 
-    // 原本分組判斷
     const combined = (item.type || "") + (item.style || "") + (item.name || "");
     if (/盲/.test(combined)) {
       grouped["盲抽"].push(item);
@@ -673,15 +650,38 @@ divider.id = category;
     }
   });
 
+  // 產生 nav-bar（只包含有資料分類）
+  const navBar = document.querySelector(".nav-bar");
+  navBar.innerHTML = "";
+  const categories = categoriesOrder.filter(cat => grouped[cat] && grouped[cat].length > 0);
+  categories.forEach(cat => {
+    const a = document.createElement("a");
+    a.className = "nav-link";
+    a.textContent = cat;
+    a.href = "#" + cat; // 對應分類ID
+    navBar.appendChild(a);
+  });
+
+  // 左右箭頭滑動控制
+  const scrollContainer = document.querySelector(".nav-bar-scroll");
+  document.querySelector(".nav-arrow.nav-left").onclick = () => {
+    scrollContainer.scrollBy({ left: -150, behavior: "smooth" });
+  };
+  document.querySelector(".nav-arrow.nav-right").onclick = () => {
+    scrollContainer.scrollBy({ left: 150, behavior: "smooth" });
+  };
+
+  // 定義單字角色陣列
   const singleCharRoles = ["吉", "八", "兔", "桃", "獺", "栗", "獅", "古", "其"];
 
-  categoriesOrder.forEach(category => {
+  // 依分類產生區塊與卡片
+  categories.forEach(category => {
     if (grouped[category].length === 0) return;
 
     const divider = document.createElement("div");
-   divider.className = "type-divider";
-divider.id = category;  // 這行是關鍵，給分類區塊一個ID，跟 nav-bar 鏈結一致
-divider.textContent = category;
+    divider.className = "type-divider";
+    divider.id = category;  // 這行是關鍵，給分類區塊一個ID，跟 nav-bar 鏈結一致
+    divider.textContent = category;
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
@@ -705,63 +705,64 @@ divider.textContent = category;
     });
 
     grouped[category].forEach(item => {
-  const status = getStatus(item);
-  const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
-  const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
-  const badgeColor = roleColors[roleText] || "#ccc";
+      const status = getStatus(item);
+      const roleChars = item.role.match(/[\u4e00-\u9fff]/g) || [];
+      const roleText = roleChars.length === 1 && singleCharRoles.includes(roleChars[0]) ? roleChars[0] : "綜";
+      const badgeColor = roleColors[roleText] || "#ccc";
 
-  // 判斷私訊花花(跳連結) 和 組合出售(跳modal)
-  const needLink = (item.price === undefined || item.price === null || item.price === ""); // 私訊花花跳連結
-  const needModal = (item.price === "-"); // 組合出售跳modal
+      // 判斷私訊花花(跳連結) 和 組合出售(跳modal)
+      const needLink = (item.price === undefined || item.price === null || item.price === "");
+      const needModal = (item.price === "-");
 
-  const cardHTML = `
-    <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
-    <img src="${item.img}" alt="${item.name}">
-    <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-    <div class="name">${formatName(item.name)}</div>
-    <div class="price">${formatPrice(item.price)}</div>
-  `;
+      const cardHTML = `
+        <div class="role-badge" style="background-color:${badgeColor}">${roleText}</div>
+        <img src="${item.img}" alt="${item.name}">
+        <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
+        <div class="name">${formatName(item.name)}</div>
+        <div class="price">${formatPrice(item.price)}</div>
+      `;
 
-  if (needLink) {
-    // 私訊花花 - 跳連結
-    const link = document.createElement("a");
-    link.className = "card";
-    link.style.borderColor = colors[typeName] || "#ccc";
-    link.innerHTML = cardHTML;
-    link.href = "https://lin.ee/X6FUFI9";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    groupDiv.appendChild(link);
+      if (needLink) {
+        // 私訊花花 - 跳連結
+        const link = document.createElement("a");
+        link.className = "card";
+        link.style.borderColor = colors[typeName] || "#ccc";
+        link.innerHTML = cardHTML;
+        link.href = "https://lin.ee/X6FUFI9";
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        groupDiv.appendChild(link);
 
-  } else if (needModal) {
-    // 組合出售 - 跳 modal
-    const div = document.createElement("div");
-    div.className = "card";
-    div.style.borderColor = colors[typeName] || "#ccc";
-    div.innerHTML = cardHTML;
-    div.style.cursor = "pointer";
-    div.addEventListener("click", () => {
-      loadComboDetails(item.name);
+      } else if (needModal) {
+        // 組合出售 - 跳 modal
+        const div = document.createElement("div");
+        div.className = "card";
+        div.style.borderColor = colors[typeName] || "#ccc";
+        div.innerHTML = cardHTML;
+        div.style.cursor = "pointer";
+        div.addEventListener("click", () => {
+          loadComboDetails(item.name);
+        });
+        groupDiv.appendChild(div);
+
+      } else {
+        // 一般商品 - 點擊放大
+        const div = document.createElement("div");
+        div.className = "card";
+        div.style.borderColor = colors[typeName] || "#ccc";
+        div.innerHTML = cardHTML;
+        div.style.cursor = "zoom-in";
+        div.addEventListener("click", () => {
+          openCardOverlay(div);
+        });
+        groupDiv.appendChild(div);
+      }
     });
-    groupDiv.appendChild(div);
-
-  } else {
-    // 一般商品 - 點擊放大
-    const div = document.createElement("div");
-    div.className = "card";
-    div.style.borderColor = colors[typeName] || "#ccc";
-    div.innerHTML = cardHTML;
-    div.style.cursor = "zoom-in";
-    div.addEventListener("click", () => {
-      openCardOverlay(div);
-    });
-    groupDiv.appendChild(div);
-  }
-});
 
     container.appendChild(groupDiv);
   });
 }
+
 
   // ================ Modal 組合內容 ================
 function loadComboDetails(clickedItemName) {
