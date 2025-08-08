@@ -682,6 +682,7 @@ function renderCards(items, typeName) {
     divider.className = "type-divider";
     divider.id = category;  // 這行是關鍵，給分類區塊一個ID，跟 nav-bar 鏈結一致
     divider.textContent = category;
+    divider.style.scrollMarginTop = "90px";
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
