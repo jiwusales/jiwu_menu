@@ -507,6 +507,31 @@ function renderCards(items, typeName) {
     }
     if (matched) return;  // 已分組就跳過後面判斷
   }
+    // 文具磁鐵分組
+    if (typeName === "文具磁鐵") {
+      for (const group of stationeryGroups) {
+        if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
+          grouped[group.groupName].push(item);
+          return;
+        }
+      }
+      grouped["其他"].push(item);
+      return;
+    }
+
+    // 餐廚用品分組
+    if (typeName === "餐廚用品") {
+      let matched = false;
+      for (const group of kitchenGroups) {
+        if (group.styleKeywords.some(k => (item.style || "").includes(k))) {
+          grouped[group.groupName].push(item);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) grouped["其他"].push(item);
+      return;
+    }
 
     // 原本分組判斷
     const combined = (item.type || "") + (item.style || "") + (item.name || "");
