@@ -38,6 +38,93 @@
   50% { transform: scale(1.05); } /* 改成1.05，放大5% */
   100% { transform: scale(1); }
 }
+        .nav-bar-wrapper {
+      position: fixed;
+      top: 40px;
+      width: 100%;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      z-index: 998;
+      padding: 0 5px;
+      box-sizing: border-box;
+      height: 40px;
+    }
+    .nav-bar-scroll {
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .nav-bar-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-bar {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 10px 0;
+      font-size: 10pt;
+      color: #333;
+    }
+    .nav-bar a {
+      color: #333;
+      text-decoration: none;
+      margin: 0px;
+      padding-top: 6px;
+      display: inline-block;
+      font-weight: normal;
+    }
+
+    .nav-bar a::after {
+      content: "｜";
+      margin: 0px;
+      color: #aaa;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    .nav-bar a:last-child::after {
+      content: "";
+    }
+    
+    .nav-bar a:hover {
+      font-weight: bold;
+      color: var(--tab-color, #333);
+    }
+    .nav-link.active {
+      font-weight: bold;
+      color: var(--tab-color, #333333);
+      text-decoration: none;
+    }
+
+.nav-arrow {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 18px;
+  color: #333;
+  background-color: transparent;
+  border-radius: 0;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0 6px;
+  padding-top: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  outline: none;
+}
+
+.nav-arrow:hover {
+  background-color: transparent;
+  color: var(--tab-color, #dac7b7);
+}
+.nav-arrow:focus,
+.nav-arrow:active {
+  outline: none;
+  background-color: transparent;
+  box-shadow: none;
+}
     #card-container {
       padding: 60px 10px 6px 7px;
       display: flex;
@@ -310,6 +397,13 @@
     </a>
   </div>
   <div id="card-container"></div>
+<div class="nav-bar-wrapper">
+  <div class="nav-arrow nav-left">❮</div>
+  <div class="nav-bar-scroll">
+    <div class="nav-bar"></div> <!-- 自動生成分類連結 -->
+  </div>
+  <div class="nav-arrow nav-right">❯</div>
+</div>
 
   <!-- 🚀 Modal 組合內容 -->
   <div id="comboModal" class="modal">
@@ -494,7 +588,30 @@ function renderCards(items, typeName) {
   const grouped = {};
   categoriesOrder.forEach(cat => grouped[cat] = []);
   grouped["其他"] = [];
+// 1. nav-bar 自動生成
+const navBar = document.querySelector(".nav-bar");
+navBar.innerHTML = "";
+const categories = categoriesOrder.filter(cat => grouped[cat] && grouped[cat].length > 0);
+categories.forEach(cat => {
+  const a = document.createElement("a");
+  a.className = "nav-link";
+  a.textContent = cat;
+  a.href = "#" + cat; // 對應 category ID
+  navBar.appendChild(a);
+});
 
+// 2. 左右箭頭滑動控制
+const scrollContainer = document.querySelector(".nav-bar-scroll");
+document.querySelector(".nav-arrow.nav-left").onclick = () => {
+  scrollContainer.scrollBy({ left: -150, behavior: "smooth" });
+};
+document.querySelector(".nav-arrow.nav-right").onclick = () => {
+  scrollContainer.scrollBy({ left: 150, behavior: "smooth" });
+};
+
+// 3. 確保每個分類標題有 ID 供錨點跳轉
+// 在建立 divider 時加上這行：
+divider.id = category;
   items.forEach(item => {
   if (item.type === "貼紙") {
     let matched = false;
@@ -562,8 +679,9 @@ function renderCards(items, typeName) {
     if (grouped[category].length === 0) return;
 
     const divider = document.createElement("div");
-    divider.className = "type-divider";
-    divider.textContent = category;
+   divider.className = "type-divider";
+divider.id = category;  // 這行是關鍵，給分類區塊一個ID，跟 nav-bar 鏈結一致
+divider.textContent = category;
     container.appendChild(divider);
 
     const groupDiv = document.createElement("div");
@@ -854,6 +972,7 @@ function openCardOverlay(cardElement) {
   };
 }
 loadSheetData();
+
 </script>
 </body>
 </html>
