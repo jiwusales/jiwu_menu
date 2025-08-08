@@ -331,6 +331,30 @@ const roleColors = {
   "獅": "#FBAA60", "古": "#eb9e97", "其": "#45818e", "綜": "#dac7b7"
 };
 
+const stickerGroups = [
+    { groupName: "貼紙包", styleKeywords: ["貼紙包"] },
+    { groupName: "圖鑑貼紙", styleKeywords: ["圖鑑", "封蠟"] },
+    { groupName: "特殊貼紙", styleKeywords: ["特貼"] },
+    { groupName: "單張貼紙", styleKeywords: ["單張", "壁貼"] },
+    { groupName: "膠帶", styleKeywords: ["膠帶"] },
+  ];
+  const stationeryGroups = [
+    { groupName: "證件套", styleKeywords: ["證件套"] },
+    { groupName: "卡冊卡套", styleKeywords: ["卡冊", "卡套"] },
+    { groupName: "卡紙類", styleKeywords: ["紅包袋", "卡信組", "光柵卡", "透卡", "卡", "本", "書籤"] },
+    { groupName: "便條類", styleKeywords: ["便條"] },
+    { groupName: "資料夾", styleKeywords: ["資料夾"] },
+    { groupName: "筆", styleKeywords: ["筆", "娃筆", "筆架", "筆袋"] },
+    { groupName: "夾子", styleKeywords: ["夾子", "娃夾子"] },
+    { groupName: "磁鐵", styleKeywords: ["掛鉤", "方形", "造型"] },
+  ];
+  const kitchenGroups = [
+    { groupName: "杯子杯墊", styleKeywords: ["杯墊", "杯", "玻璃杯", "保溫"] },
+    { groupName: "碗盤", styleKeywords: ["匙", "碗", "盤", "碟"] },
+    { groupName: "其他", styleKeywords: [] },
+  ];
+
+  
 const colors = {
   "貼紙膠帶": "#F8C0C8", "文具磁鐵": "#BAD3E4", "立牌徽章": "#d5a6bd",
   "鑰匙圈御守": "#7E9DC2", "玩具盲抽": "#90ADC6", "服飾包袋": "#b4a7d6",
@@ -387,30 +411,7 @@ function loadSheetData() {
   const keywords = typeKeywordMap[currentType];
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
-  const stickerGroups = [
-    { groupName: "貼紙包", styleKeywords: ["貼紙包"] },
-    { groupName: "圖鑑貼紙", styleKeywords: ["圖鑑", "封蠟"] },
-    { groupName: "特殊貼紙", styleKeywords: ["特貼"] },
-    { groupName: "單張貼紙", styleKeywords: ["單張", "壁貼"] },
-    { groupName: "膠帶", styleKeywords: ["膠帶"] },
-  ];
-  const stationeryGroups = [
-    { groupName: "證件套", styleKeywords: ["證件套"] },
-    { groupName: "卡冊卡套", styleKeywords: ["卡冊", "卡套"] },
-    { groupName: "卡紙類", styleKeywords: ["紅包袋", "卡信組", "光柵卡", "透卡", "卡", "本", "書籤"] },
-    { groupName: "便條類", styleKeywords: ["便條"] },
-    { groupName: "資料夾", styleKeywords: ["資料夾"] },
-    { groupName: "筆", styleKeywords: ["筆", "娃筆", "筆架", "筆袋"] },
-    { groupName: "夾子", styleKeywords: ["夾子", "娃夾子"] },
-    { groupName: "磁鐵", styleKeywords: ["掛鉤", "方形", "造型"] },
-  ];
-  const kitchenGroups = [
-    { groupName: "杯子杯墊", styleKeywords: ["杯墊", "杯", "玻璃杯", "保溫"] },
-    { groupName: "碗盤", styleKeywords: ["匙", "碗", "盤", "碟"] },
-    { groupName: "其他", styleKeywords: [] },
-  ];
-
-  fetch(url)
+    fetch(url)
     .then(res => res.text())
     .then(text => JSON.parse(text.substr(47).slice(0, -2)))
     .then(data => {
