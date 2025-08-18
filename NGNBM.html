@@ -272,21 +272,6 @@
     max-width: none;
   }
 }
-/* 放大遮罩背景 */
-#cardOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* A網頁是 85% 深灰 */
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
 
 /* 放大卡片容器 */
 /* 點擊放大卡片的遮罩和放大樣式 */
@@ -294,8 +279,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  right: 0;
+  bottom: 0;   /* ✅ 加這行，取代 height:100% 或 100vh */
   background: rgba(0, 0, 0, 0.5);
   display: none;
   justify-content: center;
