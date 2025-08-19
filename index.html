@@ -325,7 +325,7 @@
   const caption = document.getElementById('carousel-caption');
 
   const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
-  const SHEET_NAME = '輪播'; //
+  const SHEET_NAME = '輪播';
   const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
   async function fetchSheetData() {
@@ -336,6 +336,9 @@
   }
 
   function buildCarouselItems(rows) {
+    // 清掉舊的圖片（避免重複累積）
+    carousel.querySelectorAll('a, img.carousel-dynamic').forEach(el => el.remove());
+
     const images = [];
     const captions = [];
 
@@ -348,19 +351,19 @@
 
       if (imgUrl) {
         const a = document.createElement('a');
-a.href = 'https://lin.ee/X6FUFI9'; // ✅ 點圖跳轉的網址
-a.target = '_blank';
-a.rel = 'noopener noreferrer';
+        a.href = 'https://lin.ee/X6FUFI9'; // ✅ 點圖跳轉的網址
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
 
-const img = document.createElement('img');
-img.src = imgUrl;
-img.alt = text || '輪播圖片';
-img.classList.add('carousel-dynamic');
-img.style.display = 'none';
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = text || '輪播圖片';
+        img.classList.add('carousel-dynamic');
+        img.style.display = 'none';
 
-a.appendChild(img);
-carousel.appendChild(a);
-images.push(img);
+        a.appendChild(img);
+        carousel.appendChild(a);
+        images.push(img);
 
         captions.push(text);
       }
@@ -385,7 +388,9 @@ images.push(img);
 
   function startAutoPlay() {
     intervalId = setInterval(() => {
-      show((currentIndex + 1) % images.length);
+      if (images.length > 0) {
+        show((currentIndex + 1) % images.length);
+      }
     }, 4500);
   }
 
@@ -405,23 +410,34 @@ images.push(img);
     startAutoPlay();
   });
 
-  try {
-    const rows = await fetchSheetData();
-    const result = buildCarouselItems(rows.slice(1));
-    images = result.images;
-    captions = result.captions;
-    if (images.length > 0) {
-      show(0);
-      startAutoPlay();
-    } else {
-      caption.textContent = '沒有可顯示的輪播圖片';
+  async function loadCarousel() {
+    try {
+      const rows = await fetchSheetData();
+      const result = buildCarouselItems(rows.slice(1));
+      images = result.images;
+      captions = result.captions;
+      if (images.length > 0) {
+        show(0);
+        startAutoPlay();
+      } else {
+        caption.textContent = '沒有可顯示的輪播圖片';
+      }
+    } catch (e) {
+      console.error('輪播載入失敗', e);
+      caption.textContent = '輪播載入失敗';
     }
-  } catch (e) {
-    console.error('輪播載入失敗', e);
-    caption.textContent = '輪播載入失敗';
   }
+
+  // ✅ 初始載入
+  await loadCarousel();
+
+  // ✅ 每30秒自動更新一次輪播資料
+  setInterval(async () => {
+    await loadCarousel();
+    show(currentIndex % images.length);
+  }, 30000);
+
 })();
 </script>
-
 </body>
 </html>
