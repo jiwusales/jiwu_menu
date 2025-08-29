@@ -170,20 +170,30 @@ body {
 
 /* 商品卡片基礎樣式 */
 .card {
-  width: 97%;
-  max-width: 120px;
+  width: 100%;            /* ✅ 改成自適應 */
+  max-width: 135px;       /* ✅ 上限控制 */
+  margin: 0 auto;         /* ✅ 水平置中 */
   border: 2px solid #ccc;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
   position: relative;
+  cursor: pointer;
+  transition: border-color 0.3s;
   text-align: center;
-  color: #333;
-  transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  color: #333333;
+  box-shadow: none !important;
 }
 .card img {
-  width: 80px;
+  height: auto;
+  max-height: 130px;
+  width: 100%;
   margin-top: 5px;
   object-fit: contain;
+  justify-content: flex-end; /* 圖片靠底 */
+  align-items: center;      /* 水平置中 */
+  -webkit-touch-callout: none;
 }
 .card .name {
   margin: 1px auto;
