@@ -296,7 +296,7 @@
   height: auto !important;
   margin-top: 5px !important;
   user-select: none;
-}    
+}     
   </style>
 </head>
 <body>
@@ -324,7 +324,6 @@
    <div class="nav-arrow nav-right">❯</div>
 </div>
   
-<!-- Modal for 組合內容 -->
 <div id="comboModal" class="modal">
   <div class="modal-content">
     <span class="close-btn">&times;</span>
@@ -430,6 +429,14 @@ items.sort((a, b) => {
   let groupDiv;
 
   items.forEach(item => {
+    // 判斷庫存是否為 x，若為 x 則不顯示
+    if (item.stock !== null && item.stock !== undefined) {
+      const stockVal = item.stock.toString().trim().toLowerCase();
+      if (stockVal === "x") {
+        return; 
+      }
+    }
+
 if (item.category !== currentCategory) {
   currentCategory = item.category;
   const divider = document.createElement("div");
@@ -553,8 +560,7 @@ if (isCombo) {
                 ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
               </div>
               <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px; opacity:0;">
-                <!-- 右側空白占位 -->
-              </div>
+                </div>
             </div>
           `;
         } else {
