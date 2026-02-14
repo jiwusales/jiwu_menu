@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物販售</title>
 
-  <!-- ✅ 貼網址預覽圖（社群分享圖） -->
   <meta property="og:title" content="JIWU吉物販售" />
   <meta property="og:description" content="JIWU寶寶目錄這邊看 ٩(๑ˆOˆ๑)۶ 歡迎參觀選購⁺⊹˚.⋆" />
   <meta property="og:image" content="https://i.postimg.cc/0QMPqY9n/image.png" />
@@ -13,17 +12,24 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- 分頁小圖（favicon）-->
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
 
-  <!-- 桌面/手機主畫面捷徑圖示 -->
   <link rel="apple-touch-icon" href="https://i.postimg.cc/VN7WjCdL/icon026.png" />
   <meta name="theme-color" content="#dac7b7" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   
   <style>
-    /* 按鈕樣式 */
+    /* 頁面基礎樣式 */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: #333333;
+      background: #fff;
+    }
+
+    /* 按鈕樣式 (重新整理) */
     .control-btn {
       position: fixed;
       top: 20px;
@@ -46,90 +52,62 @@
     .control-btn img {
       width: 60%;
       height: 60%;
-      pointer-events: none;
-      user-select: none;
-    }
-    .control-btn:hover {
-      opacity: 0.8;
-      transform: scale(1.05);
-    }
-
-    /* 頁面基礎樣式 */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      color: #333333;
-      background: #fff;
     }
 
     .logo-container {
       text-align: center;
       margin: 20px 0;
     }
-
     .logo-container img {
       width: 160px; 
       height: auto;
     }
 
-    /* 輪播容器，正方形 */
-    .carousel {
-      position: relative;
-      width: 90%;
-      max-width: 600px;
-      aspect-ratio: 1 / 1; /* 正方形 */
-      margin: 0 auto 15px auto;
-      overflow: hidden;
-      border-radius: 8px;
-      background: #eee;
+    /* 🚀 新版輪播容器：橫向捲動佈局 */
+    .carousel-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory; /* 捲動吸附感 */
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* 隱藏捲軸 */
+      margin-bottom: 5px;
+    }
+    .carousel-wrapper::-webkit-scrollbar {
+      display: none; /* 隱藏捲軸 */
     }
 
-    /* 輪播圖片，絕對定位，隱藏非當前 */
-    .carousel img {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      top: 0;
-      left: 0;
-      display: none;
-      user-select: none;
+    .carousel {
+      display: flex;
+      padding: 0 12px;
+      gap: 10px; /* 圖片間距 */
+      width: max-content;
     }
-    .carousel img.active {
+
+    /* 圖片項目的寬度與比例調整 (針對 1080x1350) */
+    .carousel a {
+      display: block;
+      width: 31vw; /* 手機螢幕顯示約 3.2 張圖 */
+      max-width: 180px; /* 避免桌機版太大 */
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      text-decoration: none;
+    }
+
+    .carousel img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1080 / 1350; /* 鎖定比例 */
+      object-fit: cover;
+      border-radius: 10px;
       display: block;
     }
 
-    /* 輪播按鈕 */
-    .carousel-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: rgba(0,0,0,0.3);
-      border: none;
-      color: white;
-      font-size: 24px;
-      padding: 10px 14px;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 4px;
-      z-index: 10;
-    }
-    .carousel-button.prev {
-      left: 10px;
-    }
-    .carousel-button.next {
-      right: 10px;
-    }
-
-    /* 輪播下方文字區 */
     #carousel-caption {
-      max-width: 600px;
-      margin: 0 auto 30px auto;
       text-align: center;
-      color: #333333;
-      font-size: 1em;
-      user-select: none;
+      color: #aaa;
+      font-size: 11px;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
     }
 
     /* 分隔塊 */
@@ -140,12 +118,10 @@
       font-size: 1.2em;
       text-align: center;
     }
-
     .divider-1, .divider-2 {
       background-color: #dac7b7;
       color: #ffffff;
     }
-
     .divider-3 {
       background-color: #F9F6F0;
       display: flex;
@@ -156,113 +132,68 @@
       padding: 15px 0;
     }
 
-    /* 角色目錄按鈕區 */
+    /* 角色按鈕樣式 */
     .role-buttons {
       max-width: 960px;
       margin: 20px auto 40px auto;
       padding: 0 10px;
     }
-
     .role-buttons .row {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 8px; /* 間距改成 8px */
+      gap: 8px;
       margin-bottom: 10px;
     }
-
     .role-buttons .item {
       width: 80px;
       text-align: center;
     }
-
-    /* 日本IP角色放大1.5倍 */
-    .role-buttons.japan-ip .item {
-      width: 120px; /* 80*1.5 */
-    }
-    .role-buttons.japan-ip .item img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      transition: transform 0.3s ease;
-    }
-    .role-buttons.japan-ip .item span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
-      margin-top: 0px;
-      font-size: 0.85em;
-    }
-
     .role-buttons .item img {
       width: 100%;
-      height: auto;
       border-radius: 6px;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s;
     }
-
     .role-buttons .item:hover img {
       transform: scale(1.1);
     }
-
     .role-buttons .item span {
       display: block;
-      margin-top: 0px;
       font-size: 0.85em;
+      color: #333;
     }
-
-    /* 連結樣式調整，避免看起來像超連結 */
-    .role-buttons a {
-      color: #333333;
-      text-decoration: none;
-      cursor: pointer;
+    .role-buttons.japan-ip .item {
+      width: 120px;
     }
-    .role-buttons a:hover {
-      color: #555555;
-      text-decoration: underline;
-    }
-
     .separator {
       border-top: 1px solid #ccc;
       margin: 20px 0;
     }
-
-    /* 社群平台小圖示 */
     .social-links a img {
       width: 40px;
-      height: auto;
-      user-select: none;
     }
-
     footer {
       text-align: center;
       padding: 20px 10px;
       font-size: 1em;
       color: #333333;
-      user-select: none;
     }
   </style>
 </head>
 <body>
 
-<!-- LOGO -->
 <div class="logo-container">
   <img src="https://i.postimg.cc/CLBFxHs3/logo-banner.png" alt="LOGO" />
 </div>
 
-<!-- 輪播 -->
-<div class="carousel" aria-label="輪播圖片">
-  <button class="carousel-button prev" aria-label="上一張">&#10094;</button>
-  <button class="carousel-button next" aria-label="下一張">&#10095;</button>
-  <!-- 圖片會由 JS 動態產生 -->
+<div class="carousel-wrapper">
+  <div class="carousel" id="carousel-inner">
+    </div>
 </div>
-<div id="carousel-caption" aria-live="polite"></div>
+<div id="carousel-caption">左右滑動查看活動 ➔</div>
 
-<!-- 分隔塊 1 -->
 <div class="section-divider divider-1">JIWU寶寶目錄 ᯓ★ 吉伊卡哇</div>
 
-<!-- 角色目錄 1 -->
 <div class="role-buttons">
   <div class="row">
     <div class="item"><a href="CHWBM.html?role=吉伊"><img src="https://i.postimg.cc/ncqjRJ9S/icon001.png" /><span>吉伊</span></a></div>
@@ -274,7 +205,7 @@
     <div class="item"><a href="CHWBM.html?role=獅薩"><img src="https://i.postimg.cc/Ghn9s5gF/icon007.png" /><span>獅薩</span></a></div>
     <div class="item"><a href="CHWBM.html?role=古本"><img src="https://i.postimg.cc/2jsL76yB/icon008.png" /><span>古本</span></a></div>
     <div class="item"><a href="CHWBM.html?role=其他角色"><img src="https://i.postimg.cc/PqVPpf0J/icon009.png" /><span>其他角色</span></a></div>
-      </div>
+  </div>
   <div class="separator"></div>
   <div class="row">
     <div class="item"><a href="CHWKD.html?type=貼紙膠帶"><img src="https://i.postimg.cc/bYtsrhgY/icon011.png" /><span>貼紙膠帶</span></a></div>
@@ -288,10 +219,8 @@
   </div>
 </div>
 
-<!-- 分隔塊 2 -->
 <div class="section-divider divider-2">JIWU寶寶目錄 ᯓ★ 日本IP角色</div>
 
-<!-- 角色目錄 2 (加 class "japan-ip" 讓圖片放大 1.5 倍) -->
 <div class="role-buttons japan-ip">
   <div class="row">
     <div class="item"><a href="NGNBM.html"><img src="https://i.postimg.cc/hP8v81NH/icon019.png" /><span>自嘲熊</span></a></div>
@@ -299,7 +228,6 @@
   </div>
 </div>
 
-<!-- 分隔塊 3：社群平台 -->
 <div class="section-divider divider-3 social-links">
   <a href="https://www.facebook.com/jiwusales" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" alt="Facebook" /></a>
   <a href="https://www.instagram.com/jiwu_sales/" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" alt="Instagram" /></a>
@@ -307,21 +235,15 @@
   <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" alt="LINE" /></a>
 </div>
 
-<!-- Footer -->
-<footer>
-  台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約
-</footer>
+<footer>台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約</footer>
 
-<!--  重新整理 按鈕 -->
-<button id="refreshBtn" class="control-btn" onclick="location.reload()" aria-label="重新整理" title="重新整理">
+<button id="refreshBtn" class="control-btn" onclick="location.reload()" title="重新整理">
   <img src="https://i.postimg.cc/gkpnr8RJ/re.png" alt="Refresh" />
 </button>
 
 <script>
 (async function() {
-  const carousel = document.querySelector('.carousel');
-  const prev = carousel.querySelector('.prev');
-  const next = carousel.querySelector('.next');
+  const carouselInner = document.getElementById('carousel-inner');
   const caption = document.getElementById('carousel-caption');
 
   const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
@@ -335,12 +257,10 @@
     return json.table.rows;
   }
 
-  function buildCarouselItems(rows) {
-    // 清掉舊的圖片（避免重複累積）
-    carousel.querySelectorAll('a, img.carousel-dynamic').forEach(el => el.remove());
-
-    const images = [];
-    const captions = [];
+  // 🚀 建立捲動式輪播內容
+  function renderCarousel(rows) {
+    carouselInner.innerHTML = '';
+    let hasImage = false;
 
     rows.forEach(row => {
       const onShelf = row.c[0]?.v?.toString().trim();
@@ -350,93 +270,39 @@
       const text = row.c[2]?.v || '';
 
       if (imgUrl) {
+        hasImage = true;
         const a = document.createElement('a');
-        a.href = 'https://lin.ee/X6FUFI9'; // ✅ 點圖跳轉的網址
+        a.href = 'https://lin.ee/X6FUFI9';
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
 
         const img = document.createElement('img');
         img.src = imgUrl;
-        img.alt = text || '輪播圖片';
-        img.classList.add('carousel-dynamic');
-        img.style.display = 'none';
-
+        img.alt = text;
+        
         a.appendChild(img);
-        carousel.appendChild(a);
-        images.push(img);
-
-        captions.push(text);
+        carouselInner.appendChild(a);
       }
     });
 
-    return { images, captions };
+    if (!hasImage) caption.textContent = '暫無活動圖片';
   }
 
-  let currentIndex = 0;
-  let intervalId;
-  let images = [];
-  let captions = [];
-
-  function show(index) {
-    images.forEach((img, i) => {
-      img.style.display = i === index ? 'block' : 'none';
-      img.classList.toggle('active', i === index);
-    });
-    caption.textContent = captions[index] || '';
-    currentIndex = index;
-  }
-
-  function startAutoPlay() {
-    intervalId = setInterval(() => {
-      if (images.length > 0) {
-        show((currentIndex + 1) % images.length);
-      }
-    }, 5000);
-  }
-
-  function stopAutoPlay() {
-    clearInterval(intervalId);
-  }
-
-  prev.addEventListener('click', () => {
-    stopAutoPlay();
-    show((currentIndex - 1 + images.length) % images.length);
-    startAutoPlay();
-  });
-
-  next.addEventListener('click', () => {
-    stopAutoPlay();
-    show((currentIndex + 1) % images.length);
-    startAutoPlay();
-  });
-
-  async function loadCarousel() {
+  // 🛠️ 整合第一部分的試算表索引邏輯 (供目錄頁使用之邏輯參考)
+  // 此處僅為首頁輪播載入
+  async function init() {
     try {
       const rows = await fetchSheetData();
-      const result = buildCarouselItems(rows.slice(1));
-      images = result.images;
-      captions = result.captions;
-      if (images.length > 0) {
-        show(0);
-        startAutoPlay();
-      } else {
-        caption.textContent = '沒有可顯示的輪播圖片';
-      }
+      renderCarousel(rows.slice(1));
     } catch (e) {
       console.error('輪播載入失敗', e);
-      caption.textContent = '輪播載入失敗';
+      caption.textContent = '資料載入失敗';
     }
   }
 
-  // ✅ 初始載入
-  await loadCarousel();
-
-  // ✅ 每30秒自動更新一次輪播資料
-  setInterval(async () => {
-    await loadCarousel();
-    show(currentIndex % images.length);
-  }, 30000);
-
+  init();
+  // 每 60 秒更新一次背景資料
+  setInterval(init, 60000);
 })();
 </script>
 </body>
