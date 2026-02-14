@@ -93,19 +93,13 @@
       font-size: 18px;
       color: #333;
       background-color: transparent;
-      border-radius: 0;
       text-align: center;
       user-select: none;
       cursor: pointer;
       flex-shrink: 0;
       margin: 0 6px;
       padding-top: 6px;
-      transition: background-color 0.2s ease, color 0.2s ease;
       outline: none;
-    }
-    .nav-arrow:hover {
-      background-color: transparent;
-      color: var(--tab-color, #dac7b7);
     }
     #card-container {
       padding: 80px 10px 6px 7px;
@@ -156,32 +150,48 @@
       padding: 2px 6px; font-size: 10px; font-weight: bold;
       margin: 0 auto 4px auto;
     }
-    @media (min-width: 768px) {
-      .card { width: 120px; }
-      .card img { width: 116px; }
-      .card .name, .card .price { font-size: 12px; }
-    }
-
-    /* Modal & Overlay Styles */
     .modal {
-      display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);
+      display: none; 
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
     }
     .modal-content {
-      background-color: #fff; margin: 10% auto; padding: 20px; border: 2px solid #ccc; width: 90%; max-width: 700px; border-radius: 8px; text-align: left;
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      width: 90%;
+      max-width: 700px;
+      border-radius: 8px;
+      text-align: left;
     }
     .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
     .img-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 0px; margin-bottom: 8px; }
-    .img-container img { width: 140px; height: auto; object-fit: contain; }
+    .img-container img { width: 140px; height: auto; border-radius: 0px; object-fit: contain; }
     #cardOverlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 10000;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none; justify-content: center; align-items: center;
+      z-index: 10000;
     }
     #cardOverlay .card {
-      position: relative; width: auto !important; max-width: 90vw !important; max-height: 90vh; background-color: #fff; padding: 20px; border-radius: 12px; border-width: 5px !important;
+      position: relative; width: auto !important;
+      max-width: 90vw !important; max-height: 90vh;
+      background-color: #fff; padding: 20px;
+      border-radius: 12px; border-width: 5px !important;
     }
-    #cardOverlay img { width: auto !important; max-width: 80vw !important; max-height: 60vh !important; object-fit: contain; display: block; margin: 0 auto; }
-    #cardOverlay .name { font-size: 2.4em !important; line-height: 1.3 !important; font-weight: bold; margin: 12px auto; }
-    #cardOverlay .price { font-size: 2em !important; margin-bottom: 12px; color: #333; }
-    #cardOverlay .status-badge { font-size: 1.5em !important; padding: 8px 18px !important; margin-bottom: 10px !important; border-radius: 999px !important; display: inline-block; line-height: 1; }
+    #cardOverlay img {
+      width: auto !important; max-width: 80vw !important;
+      max-height: 60vh !important; object-fit: contain;
+      display: block; margin: 0 auto;
+    }
+    #cardOverlay .name { font-size: 2.4em !important; line-height: 1.3 !important; font-weight: bold; margin: 12px auto; text-align: center; }
+    #cardOverlay .price { font-size: 2em !important; margin-bottom: 12px; color: #333; text-align: center; }
+    #cardOverlay .status-badge { font-size: 1.5em !important; padding: 8px 18px !important; margin-bottom: 10px !important; border-radius: 999px !important; display: inline-block; text-align: center; line-height: 1; }
   </style>
 </head>
 <body>
@@ -192,34 +202,34 @@
   </div>
   <div id="card-container"></div>
 
-<div class="nav-bar-wrapper">
-  <div class="nav-arrow nav-left">❮</div>
-  <div class="nav-bar-scroll">
-    <div class="nav-bar">
-      <a class="nav-link" href="#吊娃．娃">吊娃．娃</a>
-      <a class="nav-link" href="#包袋">包袋</a>
-      <a class="nav-link" href="#鑰匙圈．御守">鑰匙圈．御守</a>
-      <a class="nav-link" href="#文具磁鐵">文具磁鐵</a>
-      <a class="nav-link" href="#貼紙">貼紙</a>
-      <a class="nav-link" href="#立牌徽章">立牌徽章</a>
-      <a class="nav-link" href="#玩具盲抽">玩具盲抽</a>
-      <a class="nav-link" href="#生活居家">生活居家</a>
-      <a class="nav-link" href="#服飾配件">服飾配件</a>
-      <a class="nav-link" href="#餐廚">餐廚</a>
+  <div class="nav-bar-wrapper">
+    <div class="nav-arrow nav-left">❮</div>
+    <div class="nav-bar-scroll">
+      <div class="nav-bar">
+        <a class="nav-link" href="#吊娃．娃">吊娃．娃</a>
+        <a class="nav-link" href="#包袋">包袋</a>
+        <a class="nav-link" href="#鑰匙圈．御守">鑰匙圈．御守</a>
+        <a class="nav-link" href="#文具磁鐵">文具磁鐵</a>
+        <a class="nav-link" href="#貼紙">貼紙</a>
+        <a class="nav-link" href="#立牌徽章">立牌徽章</a>
+        <a class="nav-link" href="#玩具盲抽">玩具盲抽</a>
+        <a class="nav-link" href="#生活居家">生活居家</a>
+        <a class="nav-link" href="#服飾配件">服飾配件</a>
+        <a class="nav-link" href="#餐廚">餐廚</a>
+      </div>
+    </div>
+    <div class="nav-arrow nav-right">❯</div>
+  </div>
+
+  <div id="comboModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h2 id="comboTitle">組合內容</h2>
+      <div id="comboBody">載入中...</div>
     </div>
   </div>
-  <div class="nav-arrow nav-right">❯</div>
-</div>
 
-<div id="comboModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <h2 id="comboTitle">組合內容</h2>
-    <div id="comboBody">載入中...</div>
-  </div>
-</div>
-
-<div id="cardOverlay"></div>
+  <div id="cardOverlay"></div>
 
 <script>
 const SHEET_ID = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
@@ -234,18 +244,7 @@ const categoryMap = {
   "飾品": "服飾配件", "衣服": "服飾配件", "餐廚": "餐廚"
 };
 
-const categoryOrder = [
-  "吊娃．娃", "包袋", "文具磁鐵", "鑰匙圈．御守",
-  "立牌徽章", "玩具盲抽", "貼紙",
-  "生活居家", "服飾配件", "餐廚"
-];
-
-const roleColors = {
-  "熊": "#E6C2BF", "狗": "#999999", "餅": "#F3BC50",
-  "馬來": "#25C0C0", "水族": "#88B2CC", "其": "#D4BBDD", "綜": "#dac7b7"
-};
-
-let roleOrder = [];
+const categoryOrder = ["吊娃．娃", "包袋", "文具磁鐵", "鑰匙圈．御守", "立牌徽章", "玩具盲抽", "貼紙", "生活居家", "服飾配件", "餐廚"];
 
 function loadSheetData() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -262,16 +261,14 @@ function loadSheetData() {
         const style = row.c[2]?.v || "";
         const name = row.c[3]?.v || "";
         const price = row.c[5]?.v || "";
-        const stock = row.c[6]?.v || "";
-        const shop = row.c[7]?.v || "";      // 新增店面欄位 (原本索引7的位置)
-        const notStock = row.c[8]?.v || "";  // 順延 (原本索引7變索引8)
-        const up = row.c[9]?.v || "";       // 順延
-        const preorder = row.c[10]?.v || ""; // 順延
-        const img = row.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 順延
-
-        if (role && !roleOrder.includes(role)) {
-          roleOrder.push(role);
-        }
+        
+        // --- 核心修正：對應新版試算表欄位 ---
+        const stock = row.c[6]?.v || "";     // 庫存 (6)
+        const shop = row.c[7]?.v || "";      // 店面 (7) - 新增
+        const notStock = row.c[8]?.v || "";  // 非現 (8) - 原本是7
+        const up = row.c[9]?.v || "";       // 上架 (9) - 原本是8
+        const preorder = row.c[10]?.v || ""; // 受注 (10) - 原本是9
+        const img = row.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 圖片商品 (12) - 原本是11
 
         const baseCategory = categoryMap[kind] || kind || "未分類";
         let categoriesToAdd = [baseCategory];
@@ -282,19 +279,30 @@ function loadSheetData() {
           items.push({ role, category: cat, style, name, price, stock, shop, notStock, up, preorder, img });
         });
       });
-
       renderCards(items);
     })
-    .catch(err => {
-      document.getElementById("card-container").innerHTML = "載入資料失敗。";
-      console.error(err);
-    });
+    .catch(err => console.error(err));
+}
+
+function getStatus(item) {
+  const stock = String(item.stock ?? "").trim();
+  const notStock = String(item.notStock ?? "").trim();
+  const preorder = String(item.preorder ?? "").trim();
+  const up = String(item.up ?? "").trim();
+
+  if (preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
+  if (stock === "x" || up === "x") return null;
+  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0)
+    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
+  if (stock === "0") return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
+  if (/^\d+$/.test(stock) && Number(stock) > 0)
+    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
+  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
 }
 
 function renderCards(items) {
   const container = document.getElementById("card-container");
   container.innerHTML = "";
-
   items.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
   let currentCategory = "";
@@ -309,7 +317,6 @@ function renderCards(items) {
       divider.id = currentCategory;
       divider.style.scrollMarginTop = "90px";
       container.appendChild(divider);
-
       groupDiv = document.createElement("div");
       groupDiv.className = "group-grid";
       container.appendChild(groupDiv);
@@ -318,16 +325,14 @@ function renderCards(items) {
     if (!status) return;
 
     const isCombo = item.price === "-";
-    const link = (!item.price || isCombo) ? "https://lin.ee/X6FUFI9" : null;
-    const wrapper = document.createElement(link && !isCombo ? "a" : "div");
+    const wrapper = document.createElement("div");
     wrapper.className = "card";
+    wrapper.style.cursor = "pointer";
 
     if (isCombo) {
-      wrapper.style.cursor = "pointer";
-      wrapper.onclick = () => loadComboDetails(item.name);
-    } else if (link) {
-      wrapper.href = link;
-      wrapper.target = "_blank";
+      wrapper.onclick = (e) => { e.stopPropagation(); loadComboDetails(item.name); };
+    } else {
+      wrapper.onclick = (e) => { e.stopPropagation(); openCardOverlay(wrapper.cloneNode(true)); };
     }
 
     const img = document.createElement("img");
@@ -348,50 +353,18 @@ function renderCards(items) {
 
     const priceDiv = document.createElement("div");
     priceDiv.className = "price";
-    priceDiv.textContent = formatPrice(item.price);
+    priceDiv.textContent = item.price === "-" ? "組合出售" : (item.price || "私訊花花");
     wrapper.appendChild(priceDiv);
 
-    wrapper.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (item.price === "-") return;
-      openCardOverlay(wrapper.cloneNode(true));
-    });
-    
     groupDiv.appendChild(wrapper);
   });
-}
-
-function getStatus(item) {
-  const stock = String(item.stock ?? "").trim();
-  const notStock = String(item.notStock ?? "").trim();
-  const preorder = String(item.preorder ?? "").trim();
-  const up = String(item.up ?? "").trim();
-
-  // 狀態顯示邏輯維持原樣
-  if (preorder === "v") return { text: "受注品", bg: "#74BDCB", color: "#ffffff" };
-  if (stock === "x" || up === "x") return null;
-  if (stock === "0" && /^\d+$/.test(notStock) && Number(notStock) > 0)
-    return { text: "搭飛機中", bg: "#5885AF", color: "#ffffff" };
-  if (stock === "0") return { text: "需預訂", bg: "#D4BBDD", color: "#333333" };
-  if (/^\d+$/.test(stock) && Number(stock) > 0)
-    return { text: "現貨", bg: "#FFF4BD", color: "#333333" };
-  return { text: "點貨中", bg: "#E7F2F8", color: "#333333" };
-}
-
-function formatPrice(price) {
-  if (!price) return "私訊花花";
-  if (price === "-") return "組合出售";
-  return price;
 }
 
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
   if (cleanName.length <= 9) return cleanName;
-  const maxLengthBeforeWrap = 9;
-  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
-  if (spaceIndex > 0) return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
-  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
+  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
 }
 
 function openCardOverlay(cardElement) {
@@ -399,12 +372,36 @@ function openCardOverlay(cardElement) {
   overlay.innerHTML = "";
   overlay.appendChild(cardElement);
   overlay.style.display = "flex";
-  overlay.onclick = (e) => {
-    if (e.target === overlay) {
-      overlay.style.display = "none";
-      overlay.innerHTML = "";
-    }
-  };
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.style.display = "none"; };
+}
+
+function loadComboDetails(clickedItemName) {
+  const modal = document.getElementById("comboModal");
+  const body = document.getElementById("comboBody");
+  document.getElementById("comboTitle").textContent = clickedItemName;
+  body.innerHTML = "載入中...";
+  modal.style.display = "block";
+
+  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售區`)
+    .then(r => r.text())
+    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
+    .then(data => {
+      const rows = data.table.rows || [];
+      const filteredRows = rows.filter(row => (row.c[2]?.v || "").trim() === clickedItemName.trim());
+      if (!filteredRows.length) { body.innerHTML = "組合內容整理中..."; return; }
+      
+      let html = "";
+      filteredRows.forEach(row => {
+        const comboName = row.c[3]?.v || "";
+        const price = row.c[4]?.v || "";
+        const imgUrl = row.c[8]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+        html += `<div style="text-align:center;margin-bottom:10px;">
+          <img src="${imgUrl}" style="width:100px;"><br>
+          <b>${comboName}</b> - ${price}
+        </div><hr>`;
+      });
+      body.innerHTML = html;
+    });
 }
 
 document.querySelector(".close-btn").onclick = () => { document.getElementById("comboModal").style.display = "none"; };
