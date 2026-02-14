@@ -18,6 +18,12 @@
       background: #fff;
     }
 
+    /* 🚀 關鍵修改：移除所有連結底線並取消點擊高亮 */
+    a {
+      text-decoration: none !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     /* 重新整理按鈕 */
     .control-btn {
       position: fixed;
@@ -41,7 +47,7 @@
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
 
-    /* 🚀 修改：最新開團標題置中，無色條 */
+    /* 最新開團標題置中 */
     .section-title {
       text-align: center;
       margin: 15px auto 20px auto;
@@ -73,12 +79,11 @@
 
     .carousel a {
       display: block;
-      width: 31vw; /* 手機版顯示約 3.2 張圖 */
+      width: 31vw; 
       max-width: 180px; 
       flex-shrink: 0;
       scroll-snap-align: center;
-      text-decoration: none;
-      text-align: center; /* 讓下方文字也置中 */
+      text-align: center;
     }
 
     .carousel img {
@@ -87,19 +92,20 @@
       display: block;
       border-radius: 10px;
       pointer-events: none;
-      margin-bottom: 8px; /* 圖片與文字的距離 */
+      margin-bottom: 8px;
     }
 
-    /* 🚀 新增：圖片下方說明文字樣式 */
+    /* 圖片下方說明文字樣式 */
     .item-caption {
       font-size: 11px;
       color: #666;
       line-height: 1.3;
       display: -webkit-box;
-      -webkit-line-clamp: 2; /* 最多顯示兩行 */
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      min-height: 28px; /* 固定高度防止排版跳動 */
+      min-height: 28px;
+      text-decoration: none; /* 再次確保無底線 */
     }
 
     /* 分頁點點樣式 */
@@ -127,9 +133,17 @@
     .section-divider { width: 100%; padding: 12px 0; font-weight: bold; font-size: 1.2em; text-align: center; }
     .divider-1, .divider-2 { background-color: #dac7b7; color: #ffffff; }
     .divider-3 { background-color: #F9F6F0; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; padding: 15px 0; }
+    
     .role-buttons { max-width: 960px; margin: 20px auto 40px auto; padding: 0 10px; }
     .role-buttons .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 10px; }
     .role-buttons .item { width: 80px; text-align: center; }
+    
+    /* 確保按鈕內的連結沒有底線 */
+    .role-buttons .item a {
+      display: block;
+      text-decoration: none !important;
+    }
+    
     .role-buttons .item img { width: 100%; border-radius: 6px; transition: transform 0.3s; }
     .role-buttons .item span { display: block; font-size: 0.85em; color: #333; margin-top: 3px; }
     .role-buttons.japan-ip .item { width: 120px; }
@@ -228,18 +242,16 @@
       if (onShelf?.toLowerCase() === 'x') return;
       
       const imgUrl = row.c[1]?.v;
-      const captionText = row.c[2]?.v || ""; // 🚀 讀取第三欄文字 (索引 2)
+      const captionText = row.c[2]?.v || ""; 
 
       if (imgUrl) {
         const a = document.createElement('a');
         a.href = 'https://lin.ee/X6FUFI9';
         a.target = '_blank';
         
-        // 圖片
         const img = document.createElement('img');
         img.src = imgUrl;
         
-        // 🚀 文字說明
         const cap = document.createElement('div');
         cap.classList.add('item-caption');
         cap.textContent = captionText;
@@ -248,7 +260,6 @@
         a.appendChild(cap);
         inner.appendChild(a);
 
-        // 分頁點
         const dot = document.createElement('div');
         dot.classList.add('dot');
         if (count === 0) dot.classList.add('active');
@@ -263,7 +274,6 @@
     });
   }
 
-  // 監聽捲動更新分頁點
   wrapper.addEventListener('scroll', () => {
     const items = inner.querySelectorAll('a');
     const dots = dotsContainer.querySelectorAll('.dot');
@@ -285,7 +295,6 @@
     });
   });
 
-  // 滑鼠拖曳滑動
   function enableDrag(el) {
     let isDown = false, startX, scrollLeft;
     el.addEventListener('mousedown', (e) => {
