@@ -41,28 +41,17 @@
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
 
-    /* 🚀 新增：最新開團標題樣式 */
+    /* 🚀 修改：最新開團標題置中，無色條 */
     .section-title {
-      padding: 0 15px;
-      margin: 10px auto 15px auto;
-      max-width: 960px;
+      text-align: center;
+      margin: 15px auto 20px auto;
       font-weight: bold;
-      font-size: 1.1em;
+      font-size: 1.2em;
       color: #5d4a3a;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .section-title::before {
-      content: "";
-      display: inline-block;
-      width: 4px;
-      height: 1.1em;
-      background-color: #dac7b7;
-      border-radius: 2px;
+      letter-spacing: 2px;
     }
 
-    /* 🚀 輪播容器優化 */
+    /* 輪播容器 */
     .carousel-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -70,7 +59,7 @@
       -webkit-overflow-scrolling: touch;
       cursor: grab;
       user-select: none;
-      scrollbar-width: none; /* 隱藏預設捲軸 */
+      scrollbar-width: none;
     }
     .carousel-wrapper::-webkit-scrollbar { display: none; }
     .carousel-wrapper:active { cursor: grabbing; }
@@ -87,8 +76,9 @@
       width: 31vw; /* 手機版顯示約 3.2 張圖 */
       max-width: 180px; 
       flex-shrink: 0;
-      scroll-snap-align: center; /* 改為置中對齊，讓點點對應更準確 */
+      scroll-snap-align: center;
       text-decoration: none;
+      text-align: center; /* 讓下方文字也置中 */
     }
 
     .carousel img {
@@ -97,19 +87,32 @@
       display: block;
       border-radius: 10px;
       pointer-events: none;
+      margin-bottom: 8px; /* 圖片與文字的距離 */
     }
 
-    /* 🚀 新增：分頁點點樣式 */
+    /* 🚀 新增：圖片下方說明文字樣式 */
+    .item-caption {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2; /* 最多顯示兩行 */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 28px; /* 固定高度防止排版跳動 */
+    }
+
+    /* 分頁點點樣式 */
     .carousel-dots {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
-      margin: 20px 0 30px 0; /* 增加與上方廣告的距離 */
+      margin: 15px 0 35px 0;
     }
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background-color: #eee;
       border-radius: 50%;
       cursor: pointer;
@@ -117,7 +120,7 @@
     }
     .dot.active {
       background-color: #dac7b7;
-      transform: scale(1.2);
+      transform: scale(1.3);
     }
 
     /* 其餘區塊樣式 */
@@ -220,22 +223,32 @@
     dotsContainer.innerHTML = '';
     let count = 0;
 
-    rows.forEach((row, index) => {
+    rows.forEach((row) => {
       const onShelf = row.c[0]?.v?.toString().trim();
       if (onShelf?.toLowerCase() === 'x') return;
+      
       const imgUrl = row.c[1]?.v;
+      const captionText = row.c[2]?.v || ""; // 🚀 讀取第三欄文字 (索引 2)
+
       if (imgUrl) {
-        // 渲染圖片項目
         const a = document.createElement('a');
         a.href = 'https://lin.ee/X6FUFI9';
         a.target = '_blank';
-        a.dataset.index = count;
+        
+        // 圖片
         const img = document.createElement('img');
         img.src = imgUrl;
+        
+        // 🚀 文字說明
+        const cap = document.createElement('div');
+        cap.classList.add('item-caption');
+        cap.textContent = captionText;
+
         a.appendChild(img);
+        a.appendChild(cap);
         inner.appendChild(a);
 
-        // 🚀 渲染點點
+        // 分頁點
         const dot = document.createElement('div');
         dot.classList.add('dot');
         if (count === 0) dot.classList.add('active');
@@ -250,7 +263,7 @@
     });
   }
 
-  // 🚀 監聽捲動事件來更新點點狀態
+  // 監聽捲動更新分頁點
   wrapper.addEventListener('scroll', () => {
     const items = inner.querySelectorAll('a');
     const dots = dotsContainer.querySelectorAll('.dot');
@@ -272,7 +285,7 @@
     });
   });
 
-  // 滑鼠拖曳功能
+  // 滑鼠拖曳滑動
   function enableDrag(el) {
     let isDown = false, startX, scrollLeft;
     el.addEventListener('mousedown', (e) => {
