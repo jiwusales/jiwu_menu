@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物販售</title>
 
-  <meta property="og:title" content="JIWU吉物販售" />
-  <meta property="og:description" content="JIWU寶寶目錄這邊看 ٩(๑ˆOˆ๑)۶ 歡迎參觀選購⁺⊹˚.⋆" />
-  <meta property="og:image" content="https://i.postimg.cc/0QMPqY9n/image.png" />
-  <meta property="og:url" content="https://jiwusales.github.io/jiwu_menu/" />
-  <meta property="og:type" content="website" />
-
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   <link rel="apple-touch-icon" href="https://i.postimg.cc/VN7WjCdL/icon026.png" />
   <meta name="theme-color" content="#dac7b7" />
@@ -47,32 +41,44 @@
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
 
-    /* 🚀 捲動式輪播容器 */
+    /* 🚀 新增：最新開團標題樣式 */
+    .section-title {
+      padding: 0 15px;
+      margin: 10px auto 15px auto;
+      max-width: 960px;
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #5d4a3a;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 1.1em;
+      background-color: #dac7b7;
+      border-radius: 2px;
+    }
+
+    /* 🚀 輪播容器優化 */
     .carousel-wrapper {
       width: 100%;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 25px; /* 增加下方間距 */
       cursor: grab;
       user-select: none;
+      scrollbar-width: none; /* 隱藏預設捲軸 */
     }
+    .carousel-wrapper::-webkit-scrollbar { display: none; }
     .carousel-wrapper:active { cursor: grabbing; }
-
-    /* 電腦版顯示細微捲軸，手機版隱藏 */
-    @media (pointer: fine) {
-      .carousel-wrapper::-webkit-scrollbar { height: 5px; display: block; }
-      .carousel-wrapper::-webkit-scrollbar-thumb { background: #dac7b7; border-radius: 10px; }
-      .carousel-wrapper::-webkit-scrollbar-track { background: #f9f9f9; }
-    }
-    @media (pointer: coarse) {
-      .carousel-wrapper::-webkit-scrollbar { display: none; }
-    }
 
     .carousel {
       display: flex;
-      padding: 0 12px;
-      gap: 10px;
+      padding: 0 15px;
+      gap: 12px;
       width: max-content;
     }
 
@@ -81,45 +87,48 @@
       width: 31vw; /* 手機版顯示約 3.2 張圖 */
       max-width: 180px; 
       flex-shrink: 0;
-      scroll-snap-align: start;
+      scroll-snap-align: center; /* 改為置中對齊，讓點點對應更準確 */
       text-decoration: none;
     }
 
-    /* 🚀 修改：圖片等比縮放，寬度符合容器 */
     .carousel img {
       width: 100%;
-      height: auto; /* 自動根據比例調整高度 */
+      height: auto;
       display: block;
       border-radius: 10px;
-      pointer-events: none; /* 防止圖片被滑鼠單獨拖走 */
+      pointer-events: none;
     }
 
-    /* 分隔塊 */
-    .section-divider {
-      width: 100%;
-      padding: 12px 0;
-      font-weight: bold;
-      font-size: 1.2em;
-      text-align: center;
-    }
-    .divider-1, .divider-2 { background-color: #dac7b7; color: #ffffff; }
-    .divider-3 {
-      background-color: #F9F6F0;
+    /* 🚀 新增：分頁點點樣式 */
+    .carousel-dots {
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      padding: 15px 0;
+      gap: 8px;
+      margin: 20px 0 30px 0; /* 增加與上方廣告的距離 */
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      background-color: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .dot.active {
+      background-color: #dac7b7;
+      transform: scale(1.2);
     }
 
-    /* 角色按鈕 */
+    /* 其餘區塊樣式 */
+    .section-divider { width: 100%; padding: 12px 0; font-weight: bold; font-size: 1.2em; text-align: center; }
+    .divider-1, .divider-2 { background-color: #dac7b7; color: #ffffff; }
+    .divider-3 { background-color: #F9F6F0; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; padding: 15px 0; }
     .role-buttons { max-width: 960px; margin: 20px auto 40px auto; padding: 0 10px; }
     .role-buttons .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 10px; }
     .role-buttons .item { width: 80px; text-align: center; }
     .role-buttons .item img { width: 100%; border-radius: 6px; transition: transform 0.3s; }
-    .role-buttons .item:hover img { transform: scale(1.1); }
-    .role-buttons .item span { display: block; font-size: 0.85em; color: #333; }
+    .role-buttons .item span { display: block; font-size: 0.85em; color: #333; margin-top: 3px; }
     .role-buttons.japan-ip .item { width: 120px; }
     .separator { border-top: 1px solid #ccc; margin: 20px 0; }
     .social-links a img { width: 40px; }
@@ -132,9 +141,13 @@
   <img src="https://i.postimg.cc/CLBFxHs3/logo-banner.png" alt="LOGO" />
 </div>
 
+<div class="section-title">最新開團</div>
+
 <div class="carousel-wrapper" id="scroll-wrapper">
   <div class="carousel" id="carousel-inner"></div>
 </div>
+
+<div class="carousel-dots" id="carousel-dots"></div>
 
 <div class="section-divider divider-1">JIWU寶寶目錄 ᯓ★ 吉伊卡哇</div>
 
@@ -189,6 +202,7 @@
 (async function() {
   const wrapper = document.getElementById('scroll-wrapper');
   const inner = document.getElementById('carousel-inner');
+  const dotsContainer = document.getElementById('carousel-dots');
 
   const SHEET_ID = '12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
   const SHEET_NAME = '輪播';
@@ -203,23 +217,62 @@
 
   function renderCarousel(rows) {
     inner.innerHTML = '';
-    rows.forEach(row => {
+    dotsContainer.innerHTML = '';
+    let count = 0;
+
+    rows.forEach((row, index) => {
       const onShelf = row.c[0]?.v?.toString().trim();
       if (onShelf?.toLowerCase() === 'x') return;
       const imgUrl = row.c[1]?.v;
       if (imgUrl) {
+        // 渲染圖片項目
         const a = document.createElement('a');
         a.href = 'https://lin.ee/X6FUFI9';
         a.target = '_blank';
+        a.dataset.index = count;
         const img = document.createElement('img');
         img.src = imgUrl;
         a.appendChild(img);
         inner.appendChild(a);
+
+        // 🚀 渲染點點
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (count === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+          const scrollTarget = a.offsetLeft - (wrapper.offsetWidth / 2) + (a.offsetWidth / 2);
+          wrapper.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+        });
+        dotsContainer.appendChild(dot);
+        
+        count++;
       }
     });
   }
 
-  // 滑鼠拖曳滑動邏輯
+  // 🚀 監聽捲動事件來更新點點狀態
+  wrapper.addEventListener('scroll', () => {
+    const items = inner.querySelectorAll('a');
+    const dots = dotsContainer.querySelectorAll('.dot');
+    let activeIndex = 0;
+    let minDiff = Infinity;
+
+    items.forEach((item, i) => {
+      const centerOfItem = item.offsetLeft + item.offsetWidth / 2;
+      const centerOfWrapper = wrapper.scrollLeft + wrapper.offsetWidth / 2;
+      const diff = Math.abs(centerOfItem - centerOfWrapper);
+      if (diff < minDiff) {
+        minDiff = diff;
+        activeIndex = i;
+      }
+    });
+
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === activeIndex);
+    });
+  });
+
+  // 滑鼠拖曳功能
   function enableDrag(el) {
     let isDown = false, startX, scrollLeft;
     el.addEventListener('mousedown', (e) => {
@@ -228,14 +281,8 @@
       scrollLeft = el.scrollLeft;
       el.style.scrollSnapType = 'none';
     });
-    el.addEventListener('mouseleave', () => { 
-      isDown = false; 
-      el.style.scrollSnapType = 'x mandatory';
-    });
-    el.addEventListener('mouseup', () => { 
-      isDown = false; 
-      el.style.scrollSnapType = 'x mandatory';
-    });
+    el.addEventListener('mouseleave', () => { isDown = false; el.style.scrollSnapType = 'x mandatory'; });
+    el.addEventListener('mouseup', () => { isDown = false; el.style.scrollSnapType = 'x mandatory'; });
     el.addEventListener('mousemove', (e) => {
       if (!isDown) return;
       e.preventDefault();
