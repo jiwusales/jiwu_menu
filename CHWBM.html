@@ -378,13 +378,13 @@ function loadSheetData(){
         rawType:row.c[1]?.v||"",
         style:row.c[2]?.v||"",
         name:row.c[3]?.v||"",
-        price:row.c[5]?.v,      // 售價 (F欄)
-        stock:row.c[6]?.v,      // 庫存 (G欄)
-        shop:row.c[7]?.v||"",   // 店面 (H欄) - 新增欄位
-        notStock:row.c[8]?.v,   // 非現 (I欄) - 索引位移
-        up:row.c[9]?.v,        // 上架 (J欄) - 索引位移
-        preorder:row.c[10]?.v,  // 受注 (K欄) - 索引位移
-        img:row.c[12]?.v||"https://i.postimg.cc/bv5xRs04/image.png" // 圖片 (M欄) - 索引位移
+        price:row.c[5]?.v,
+        stock:row.c[6]?.v,
+        // 修改處：從這裡開始索引後移一位
+        notStock:row.c[8]?.v,  // 原 7 -> 8
+        up:row.c[9]?.v,        // 原 8 -> 9
+        preorder:row.c[10]?.v, // 原 9 -> 10
+        img:row.c[12]?.v||"https://i.postimg.cc/bv5xRs04/image.png" // 原 11 -> 12
       }))
       .filter(it=>it.role.includes(keyword))
       .map(it=>({...it,category:(it.style==="證件套")?"證件套":(categoryMap[it.rawType]||categoryMap[it.style]||it.rawType||"未分類")}));
