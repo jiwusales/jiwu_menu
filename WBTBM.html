@@ -296,7 +296,7 @@
   height: auto !important;
   margin-top: 5px !important;
   user-select: none;
-}     
+}      
   </style>
 </head>
 <body>
@@ -369,16 +369,19 @@ function loadSheetData() {
       let items = [];
 
       rows.forEach(row => {
+        // --- 僅修改抓取欄位順序索引 ---
         const role = row.c[0]?.v || "";
         const kind = row.c[1]?.v || "";
         const style = row.c[2]?.v || "";
         const name = row.c[3]?.v || "";
-        const price = row.c[5]?.v || "";
-        const stock = row.c[6]?.v || "";
-        const notStock = row.c[7]?.v || "";
-        const up = row.c[8]?.v || "";
-        const preorder = row.c[9]?.v || "";
-        const img = row.c[11]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+        const price = row.c[5]?.v || ""; // 售價 (不變)
+        const stock = row.c[6]?.v || ""; // 庫存 (不變)
+        // 索引 7 為新增的「店面」，跳過不抓
+        const notStock = row.c[8]?.v || ""; // 非現 (原為 7)
+        const up = row.c[9]?.v || ""; // 上架 (原為 8)
+        const preorder = row.c[10]?.v || ""; // 受注 (原為 9)
+        const img = row.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 圖片 (原為 11)
+        // ---------------------------
 
         if (role && !roleOrder.includes(role)) {
           roleOrder.push(role);
