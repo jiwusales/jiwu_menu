@@ -42,8 +42,11 @@
       justify-content: center;
       z-index: 999;
     }
-    .control-btn img { width: 60%; height: 60%; }
-
+.control-btn img { 
+  width: 65%;           /* 寬度佔按鈕的 65% */
+  height: auto;         /* 高度自動，維持圖片原始比例 */
+  object-fit: contain;  /* 確保圖片完整顯示在範圍內 */
+}
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
 
