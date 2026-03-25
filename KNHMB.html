@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物目錄系統</title>
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+  
+  <style>
+    /* -------------------------------------------
+       1. 公版外觀設定 (顏色維持你要求的粉色)
+       ------------------------------------------- */
+    :root { 
+      --theme-color: #f4b9b8; 
+      --nav-bg: #f9f9f9;      
+      --text-color: #333333;  
+    }
+
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
+    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    
+    .nav-bar-wrapper { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); display: flex; align-items: center; z-index: 998; padding: 0 5px; box-sizing: border-box; height: 40px; border-bottom: 1px solid #eee; }
+    .nav-bar-scroll { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-bar-scroll::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; white-space: nowrap; padding: 10px 0; font-size: 10pt; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; }
+    .nav-bar a:last-child::after { content: ""; }
+    .nav-bar a:hover { font-weight: bold; color: var(--theme-color); }
+    .nav-arrow { width: 28px; font-size: 18px; cursor: pointer; flex-shrink: 0; padding-top: 6px; user-select: none; }
+
+    #card-container { padding: 90px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); font-size: 16px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
+    
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fit, 120px); } }
+    
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    .card img { width: 100%; max-width: 110px; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
+
+    /* --- 這裡依照你提供的原始腳本修改 --- */
+    .card .name { 
+      margin: 1px auto; 
+      font-size: 9px; 
+      font-weight: bold; 
+      line-height: 1.2; 
+      /* 移除原本的 height: 2.4em 和 display: flex 以還原原始間距 */
+    }
+
+    .card .price { 
+      font-size: 10px; 
+      margin: 1px auto 5px; /* 這裡改回你給的原始 margin */
+      color: #666; 
+    }
+    /* ---------------------------------- */
+
+    .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;">
+      <span class="pulse-text" id="top-msg">載入中...</span>
+    </a>
+  </div>
+
+  <div id="card-container"></div>
+
+  <div class="nav-bar-wrapper">
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-150,0)">❮</div>
+    <div class="nav-bar-scroll">
+      <div class="nav-bar" id="dynamic-nav"></div>
+    </div>
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(150,0)">❯</div>
+  </div>
+
+<script>
+/* -------------------------------------------
+   2. 資料連動設定
+   ------------------------------------------- */
+const CONFIG = {
+  SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
+  SHEET_NAME: "カナヘイの小動物", 
+  TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )"
+};
+
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  fetch(url).then(r => r.text()).then(t => {
+    try {
+      const data = JSON.parse(t.substr(47).slice(0,-2));
+      const rows = data.table.rows;
+      const items = rows.map(r => ({
+        kind: (r.c[1]?.v || "其他").toString().trim(),
+        name: r.c[3]?.v || "", 
+        price: r.c[5]?.v, 
+        stock: r.c[6]?.v, 
+        img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
+      }));
+
+      const categories = [];
+      items.forEach(item => {
+        if (item.stock?.toString().toLowerCase() === 'x') return;
+        if (!categories.includes(item.kind)) {
+          categories.push(item.kind);
+        }
+      });
+
+      const nav = document.getElementById('dynamic-nav');
+      nav.innerHTML = categories.map(cat => `<a href="#${cat}">${cat}</a>`).join('');
+
+      render(items, categories);
+    } catch (e) {
+      document.getElementById('card-container').innerHTML = "載入失敗，請確認分頁名稱。";
+    }
+  });
+}
+
+function render(items, categories) {
+  const container = document.getElementById('card-container');
+  container.innerHTML = "";
+
+  categories.forEach(cat => {
+    const catItems = items.filter(i => i.kind === cat && i.stock?.toString().toLowerCase() !== 'x');
+    if (catItems.length === 0) return;
+
+    const divider = document.createElement('div');
+    divider.className = 'type-divider';
+    divider.id = cat;
+    divider.textContent = cat;
+    container.appendChild(divider);
+
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    container.appendChild(grid);
+
+    catItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      let displayPrice = "";
+      if (item.price === '-') {
+        displayPrice = "組合出售";
+      } else if (item.price === null || item.price === undefined || item.price === "") {
+        displayPrice = "私訊花花";
+      } else {
+        const priceStr = item.price.toString().trim();
+        displayPrice = priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
+      }
+
+      card.innerHTML = `
+        <img src="${item.img}">
+        <div class="name">${formatName(item.name)}</div>
+        <div class="price">${displayPrice}</div>
+      `;
+      
+      card.onclick = () => zoomCard(card);
+      grid.appendChild(card);
+    });
+  });
+}
+
+// 原始腳本中的名稱格式化邏輯
+function formatName(name) {
+  if (!name) return "";
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+  if (totalLength <= 9) return cleanName;
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+  if (spaceIndex > 0) {
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
+  }
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
+}
+
+function zoomCard(card) {
+  const ov = document.createElement('div');
+  ov.className = 'card-overlay';
+  const clone = card.cloneNode(true);
+  ov.appendChild(clone);
+  ov.onclick = () => ov.remove();
+  document.body.appendChild(ov);
+}
+
+loadData();
+</script>
+</body>
+</html>
