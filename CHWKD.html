@@ -392,7 +392,7 @@
 <body>
    <div class="top-bar">
     <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: none;">
-      <span class="pulse-text">組合內容點擊卡片會跳出噢！訂購這邊找花花 (৹˙꒳˙ฅ)</span>
+      <span class="pulse-text">組合內容點擊卡片會跳出噢！訂購這邊找花花 (৹˙꒳˙ฅ )</span>
     </a>
   </div>
   <div id="card-container"></div>
@@ -925,10 +925,12 @@ window.onclick = e => {
   if (e.target === document.getElementById("comboModal")) document.getElementById("comboModal").style.display = "none";
 };
 
+// 修改處：統一格式化售價，自動加上 $
 function formatPrice(price) {
-  if (!price) return "私訊花花";
+  if (price === undefined || price === null || price === "") return "私訊花花";
   if (price === "-") return "組合出售";
-  return price;
+  // 如果已經有 $ 就直接回傳，沒有的話補上
+  return String(price).startsWith('$') ? price : "$" + price;
 }
 
 function getStatus(item) {
@@ -975,5 +977,4 @@ function openCardOverlay(cardElement) {
 loadSheetData();
 
 </script>
-</body>
 </html>
