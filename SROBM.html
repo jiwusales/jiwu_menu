@@ -40,7 +40,11 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     .card img { width: 100%; max-width: 110px; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
+    
+    /* 還原：名稱原始設定 */
     .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 2.4em; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    
+    /* 還原：價格原始設定（移除 margin-top，維持原本間距） */
     .card .price { font-size: 10px; padding-bottom: 2px; color: #666; font-weight: normal; }
 
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -60,19 +64,18 @@
   <div class="nav-bar-wrapper">
     <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-150,0)">❮</div>
     <div class="nav-bar-scroll">
-      <div class="nav-bar" id="dynamic-nav">
-        </div>
+      <div class="nav-bar" id="dynamic-nav"></div>
     </div>
     <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(150,0)">❯</div>
   </div>
 
 <script>
 /* -------------------------------------------
-   2. 資料連動設定 (換 IP 只需改分頁名稱)
+   2. 資料連動設定
    ------------------------------------------- */
 const CONFIG = {
   SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-  SHEET_NAME: "綜合IP", // <--- 替換成你要的分頁名稱
+  SHEET_NAME: "綜合IP", 
   TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )"
 };
 
@@ -84,17 +87,14 @@ function loadData() {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       const rows = data.table.rows;
-      
-      // 1. 整理所有商品資料
       const items = rows.map(r => ({
-        kind: (r.c[1]?.v || "其他").toString().trim(), // 種類
+        kind: (r.c[1]?.v || "其他").toString().trim(),
         name: r.c[3]?.v || "", 
         price: r.c[5]?.v, 
         stock: r.c[6]?.v, 
         img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       }));
 
-      // 2. 獲取所有出現過的分類 (維持試算表順序)
       const categories = [];
       items.forEach(item => {
         if (item.stock?.toString().toLowerCase() === 'x') return;
@@ -103,14 +103,12 @@ function loadData() {
         }
       });
 
-      // 3. 生成導覽列按鈕
       const nav = document.getElementById('dynamic-nav');
       nav.innerHTML = categories.map(cat => `<a href="#${cat}">${cat}</a>`).join('');
 
-      // 4. 開始渲染卡片
       render(items, categories);
     } catch (e) {
-      document.getElementById('card-container').innerHTML = "載入失敗，請確認分頁名稱是否正確。";
+      document.getElementById('card-container').innerHTML = "載入失敗，請確認分頁名稱。";
     }
   });
 }
@@ -120,19 +118,15 @@ function render(items, categories) {
   container.innerHTML = "";
 
   categories.forEach(cat => {
-    // 過濾出屬於該分類且庫存不為 x 的商品
     const catItems = items.filter(i => i.kind === cat && i.stock?.toString().toLowerCase() !== 'x');
-    
     if (catItems.length === 0) return;
 
-    // 建立分類標題
     const divider = document.createElement('div');
     divider.className = 'type-divider';
     divider.id = cat;
     divider.textContent = cat;
     container.appendChild(divider);
 
-    // 建立商品網格
     const grid = document.createElement('div');
     grid.className = 'group-grid';
     container.appendChild(grid);
@@ -141,7 +135,6 @@ function render(items, categories) {
       const card = document.createElement('div');
       card.className = 'card';
       
-      // 金額處理
       let displayPrice = "";
       if (item.price === '-') {
         displayPrice = "組合出售";
