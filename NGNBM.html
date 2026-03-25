@@ -262,13 +262,12 @@ function loadSheetData() {
         const name = row.c[3]?.v || "";
         const price = row.c[5]?.v || "";
         
-        // --- 核心修正：對應新版試算表欄位 ---
-        const stock = row.c[6]?.v || "";     // 庫存 (6)
-        const shop = row.c[7]?.v || "";      // 店面 (7) - 新增
-        const notStock = row.c[8]?.v || "";  // 非現 (8) - 原本是7
-        const up = row.c[9]?.v || "";       // 上架 (9) - 原本是8
-        const preorder = row.c[10]?.v || ""; // 受注 (10) - 原本是9
-        const img = row.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; // 圖片商品 (12) - 原本是11
+        const stock = row.c[6]?.v || "";     
+        const shop = row.c[7]?.v || "";      
+        const notStock = row.c[8]?.v || "";  
+        const up = row.c[9]?.v || "";       
+        const preorder = row.c[10]?.v || ""; 
+        const img = row.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"; 
 
         const baseCategory = categoryMap[kind] || kind || "未分類";
         let categoriesToAdd = [baseCategory];
@@ -353,7 +352,8 @@ function renderCards(items) {
 
     const priceDiv = document.createElement("div");
     priceDiv.className = "price";
-    priceDiv.textContent = item.price === "-" ? "組合出售" : (item.price || "私訊花花");
+    // 修改處：加入售價 $ 符號判斷
+    priceDiv.textContent = item.price === "-" ? "組合出售" : (item.price ? "$" + item.price : "私訊花花");
     wrapper.appendChild(priceDiv);
 
     groupDiv.appendChild(wrapper);
@@ -395,9 +395,10 @@ function loadComboDetails(clickedItemName) {
         const comboName = row.c[3]?.v || "";
         const price = row.c[4]?.v || "";
         const imgUrl = row.c[8]?.v || "https://i.postimg.cc/bv5xRs04/image.png";
+        // 修改處：組合內容彈窗加入 $ 符號
         html += `<div style="text-align:center;margin-bottom:10px;">
           <img src="${imgUrl}" style="width:100px;"><br>
-          <b>${comboName}</b> - ${price}
+          <b>${comboName}</b> - $${price}
         </div><hr>`;
       });
       body.innerHTML = html;
