@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物目錄系統</title>
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+  
+  <style>
+    /* -------------------------------------------
+       1. 公版外觀設定 (改這裡就好)
+       ------------------------------------------- */
+    :root { 
+      --theme-color: #4f5474; /* 主題色 (TopBar、卡片邊框) */
+      --nav-bg: #f9f9f9;      /* 導覽列底色 */
+      --text-color: #333333;  /* 文字顏色 */
+    }
+
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
+    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    
+    .nav-bar-wrapper { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); display: flex; align-items: center; z-index: 998; padding: 0 5px; box-sizing: border-box; height: 40px; }
+    .nav-bar-scroll { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-bar-scroll::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; white-space: nowrap; padding: 10px 0; font-size: 10pt; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; }
+    .nav-bar a:last-child::after { content: ""; }
+    .nav-bar a:hover, .nav-link.active { font-weight: bold; color: var(--theme-color); }
+    .nav-arrow { width: 28px; font-size: 18px; cursor: pointer; flex-shrink: 0; padding-top: 6px; }
+
+    #card-container { padding: 85px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 12px 0; font-weight: bold; scroll-margin-top: 90px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ccc; margin: 0 10px; }
+    
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fit, 120px); } }
+    
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; }
+    .card img { width: 100%; max-width: 110px; display: block; margin: 5px auto; object-fit: contain; }
+    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 2.4em; overflow: hidden; }
+    .card .price { font-size: 10px; padding-bottom: 5px; color: #666; }
+
+    /* Modal & Overlay */
+    .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+    .modal-content { background: #fff; margin: 15% auto; padding: 20px; width: 85%; max-width: 600px; border-radius: 12px; }
+    .close-btn { float: right; font-size: 24px; cursor: pointer; }
+    .img-container { display: flex; flex-wrap: wrap; justify-content: center; }
+    .img-container img { width: 33%; object-fit: contain; }
+    
+    .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+    .card-overlay .card { transform: scale(3); background: white; width: 120px; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;">
+      <span class="pulse-text" id="top-msg">載入中...</span>
+    </a>
+  </div>
+
+  <div id="card-container"></div>
+
+  <div class="nav-bar-wrapper">
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-100,0)">❮</div>
+    <div class="nav-bar-scroll">
+      <div class="nav-bar" id="dynamic-nav"></div>
+    </div>
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(100,0)">❯</div>
+  </div>
+  
+  <div id="comboModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h2 id="comboTitle"></h2>
+      <div id="comboBody"></div>
+    </div>
+  </div>
+
+<script>
+/* -------------------------------------------
+   2. 資料連動設定 (換 IP 只要改這裡)
+   ------------------------------------------- */
+const CONFIG = {
+  SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", // 固定網址 ID
+  SHEET_NAME: "小白虎黑虎蝦", // <--- 換分頁改這裡就好！
+  COMBO_PAGE: "組合出售區",
+  TOP_BAR_TEXT: "組合內容點擊卡片會跳出噢！訂購找花花 (৹˙꒳˙ฅ )",
+  
+  // 分類名稱對應
+  CAT_MAP: { "吊娃":"吊娃．娃", "娃":"吊娃．娃", "包包":"包袋", "鑰匙圈":"鑰匙圈．御守", "立牌":"立牌．徽章．玩具", "徽章":"立牌．徽章．玩具", "文具":"文具．磁鐵", "3C":"生活居家", "餐廚":"餐廚" },
+  
+  // 導覽列順序 (會自動產生)
+  CAT_ORDER: ["吊娃．娃", "包袋", "鑰匙圈．御守", "文具．磁鐵", "貼紙", "立牌．徽章．玩具", "生活居家", "餐廚"]
+};
+
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+document.getElementById('dynamic-nav').innerHTML = CONFIG.CAT_ORDER.map(c => `<a href="#${c}">${c}</a>`).join('');
+
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  fetch(url).then(r => r.text()).then(t => {
+    const data = JSON.parse(t.substr(47).slice(0,-2));
+    const items = data.table.rows.map(r => ({
+      role: r.c[0]?.v, kind: r.c[1]?.v, style: r.c[2]?.v, name: r.c[3]?.v, 
+      price: r.c[5]?.v, stock: r.c[6]?.v, img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
+    }));
+    render(items);
+  });
+}
+
+function render(items) {
+  const container = document.getElementById('card-container');
+  let currentCat = "";
+  let grid;
+
+  items.sort((a,b) => CONFIG.CAT_ORDER.indexOf(CONFIG.CAT_MAP[a.kind] || a.kind) - CONFIG.CAT_ORDER.indexOf(CONFIG.CAT_MAP[b.kind] || b.kind));
+
+  items.forEach(item => {
+    if (item.stock?.toString().toLowerCase() === 'x') return;
+    const cat = CONFIG.CAT_MAP[item.kind] || item.kind || "其他";
+    
+    if (cat !== currentCat) {
+      currentCat = cat;
+      const div = document.createElement('div');
+      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
+      container.appendChild(div);
+      grid = document.createElement('div');
+      grid.className = 'group-grid';
+      container.appendChild(grid);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<img src="${item.img}"><div class="name">${item.name}</div><div class="price">${item.price==='-'?'組合出售':(item.price||'私訊花花')}</div>`;
+    
+    card.onclick = (e) => {
+      if (item.price === '-') {
+        showCombo(item.name);
+      } else {
+        zoomCard(card);
+      }
+    };
+    grid.appendChild(card);
+  });
+}
+
+function zoomCard(card) {
+  const ov = document.createElement('div');
+  ov.className = 'card-overlay';
+  ov.appendChild(card.cloneNode(true));
+  ov.onclick = () => ov.remove();
+  document.body.appendChild(ov);
+}
+
+function showCombo(name) {
+  const modal = document.getElementById('comboModal');
+  document.getElementById('comboTitle').textContent = name;
+  document.getElementById('comboBody').innerHTML = "載入中...";
+  modal.style.display = 'block';
+
+  fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.COMBO_PAGE)}`)
+    .then(r => r.text()).then(t => {
+      const rows = JSON.parse(t.substr(47).slice(0,-2)).table.rows;
+      const filtered = rows.filter(r => (r.c[2]?.v || "").trim() === name.trim());
+      // 這裡簡化處理，直接顯示圖片與價格
+      document.getElementById('comboBody').innerHTML = filtered.length ? 
+        filtered.map(r => `<img src="${r.c[8]?.v}" style="width:45%; margin:2px;">`).join('') : "內容整理中...";
+    });
+}
+
+function closeModal() { document.getElementById('comboModal').style.display='none'; }
+window.onclick = e => { if(e.target.className==='modal') closeModal(); };
+
+loadData();
+</script>
+</body>
+</html>
