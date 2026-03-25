@@ -8,7 +8,7 @@
   
   <style>
     /* -------------------------------------------
-       1. 公版外觀設定 (主題色與文字顏色)
+       1. 公版外觀設定
        ------------------------------------------- */
     :root { 
       --theme-color: #e78790; 
@@ -25,14 +25,14 @@
     .nav-bar-scroll { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .nav-bar-scroll::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; white-space: nowrap; padding: 10px 0; font-size: 10pt; }
-    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; }
     .nav-bar a:last-child::after { content: ""; }
-    .nav-bar a:hover, .nav-link.active { font-weight: bold; color: var(--theme-color); }
+    .nav-bar a:hover { font-weight: bold; color: var(--theme-color); }
     .nav-arrow { width: 28px; font-size: 18px; cursor: pointer; flex-shrink: 0; padding-top: 6px; user-select: none; }
 
     #card-container { padding: 90px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
     
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
@@ -43,7 +43,6 @@
     .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 2.4em; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .card .price { font-size: 10px; padding-bottom: 5px; color: #666; font-weight: bold; }
 
-    /* 點擊放大效果 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
   </style>
@@ -61,100 +60,107 @@
   <div class="nav-bar-wrapper">
     <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-150,0)">❮</div>
     <div class="nav-bar-scroll">
-      <div class="nav-bar" id="dynamic-nav"></div>
+      <div class="nav-bar" id="dynamic-nav">
+        </div>
     </div>
     <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(150,0)">❯</div>
   </div>
 
 <script>
 /* -------------------------------------------
-   2. 資料連動設定 (換 IP 改 SHEET_NAME 即可)
+   2. 資料連動設定 (換 IP 只需改分頁名稱)
    ------------------------------------------- */
 const CONFIG = {
   SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-  SHEET_NAME: "綜合IP", // <--- 替換分頁名稱
-  TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
-  
-  // 分類名稱對應映射 (依據試算表「種類」欄位)
-  CAT_MAP: { 
-    "吊娃":"吊娃．娃", "娃":"吊娃．娃", "包包":"包袋", "鑰匙圈":"鑰匙圈．御守", 
-    "立牌":"立牌．徽章．玩具", "徽章":"立牌．徽章．玩具", "文具":"文具．磁鐵", 
-    "3C":"生活居家", "餐廚":"餐廚" 
-  },
-  
-  // 導覽列順序 (自動生成分類按鈕)
-  CAT_ORDER: ["吊娃．娃", "包袋", "鑰匙圈．御守", "文具．磁鐵", "貼紙", "立牌．徽章．玩具", "生活居家", "餐廚"]
+  SHEET_NAME: "綜合IP", // <--- 替換成你要的分頁名稱
+  TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )"
 };
 
-// 初始化介面
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
-document.getElementById('dynamic-nav').innerHTML = CONFIG.CAT_ORDER.map(c => `<a href="#${c}">${c}</a>`).join('');
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      const items = data.table.rows.map(r => ({
-        kind: r.c[1]?.v || "", 
+      const rows = data.table.rows;
+      
+      // 1. 整理所有商品資料
+      const items = rows.map(r => ({
+        kind: (r.c[1]?.v || "其他").toString().trim(), // 種類
         name: r.c[3]?.v || "", 
         price: r.c[5]?.v, 
         stock: r.c[6]?.v, 
         img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       }));
-      render(items);
+
+      // 2. 獲取所有出現過的分類 (維持試算表順序)
+      const categories = [];
+      items.forEach(item => {
+        if (item.stock?.toString().toLowerCase() === 'x') return;
+        if (!categories.includes(item.kind)) {
+          categories.push(item.kind);
+        }
+      });
+
+      // 3. 生成導覽列按鈕
+      const nav = document.getElementById('dynamic-nav');
+      nav.innerHTML = categories.map(cat => `<a href="#${cat}">${cat}</a>`).join('');
+
+      // 4. 開始渲染卡片
+      render(items, categories);
     } catch (e) {
       document.getElementById('card-container').innerHTML = "載入失敗，請確認分頁名稱是否正確。";
     }
   });
 }
 
-function render(items) {
+function render(items, categories) {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  let currentCat = "";
-  let grid;
 
-  // 排序
-  items.sort((a,b) => CONFIG.CAT_ORDER.indexOf(CONFIG.CAT_MAP[a.kind] || a.kind) - CONFIG.CAT_ORDER.indexOf(CONFIG.CAT_MAP[b.kind] || b.kind));
-
-  items.forEach(item => {
-    if (item.stock?.toString().toLowerCase() === 'x') return;
-    const cat = CONFIG.CAT_MAP[item.kind] || item.kind || "其他";
+  categories.forEach(cat => {
+    // 過濾出屬於該分類且庫存不為 x 的商品
+    const catItems = items.filter(i => i.kind === cat && i.stock?.toString().toLowerCase() !== 'x');
     
-    if (cat !== currentCat) {
-      currentCat = cat;
-      const div = document.createElement('div');
-      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
-      container.appendChild(div);
-      grid = document.createElement('div');
-      grid.className = 'group-grid';
-      container.appendChild(grid);
-    }
+    if (catItems.length === 0) return;
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    // 金額顯示邏輯 (增加 $ 符號)
-    let displayPrice = "";
-    if (item.price === '-') {
-      displayPrice = "組合出售";
-    } else if (item.price === null || item.price === undefined || item.price === "") {
-      displayPrice = "私訊花花";
-    } else {
-      // 判斷是否已經有 $ 符號，沒有的話才加
-      const priceStr = item.price.toString().trim();
-      displayPrice = priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
-    }
+    // 建立分類標題
+    const divider = document.createElement('div');
+    divider.className = 'type-divider';
+    divider.id = cat;
+    divider.textContent = cat;
+    container.appendChild(divider);
 
-    card.innerHTML = `
-      <img src="${item.img}">
-      <div class="name">${item.name}</div>
-      <div class="price">${displayPrice}</div>
-    `;
-    
-    card.onclick = () => zoomCard(card);
-    grid.appendChild(card);
+    // 建立商品網格
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    container.appendChild(grid);
+
+    catItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      // 金額處理
+      let displayPrice = "";
+      if (item.price === '-') {
+        displayPrice = "組合出售";
+      } else if (item.price === null || item.price === undefined || item.price === "") {
+        displayPrice = "私訊花花";
+      } else {
+        const priceStr = item.price.toString().trim();
+        displayPrice = priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
+      }
+
+      card.innerHTML = `
+        <img src="${item.img}">
+        <div class="name">${item.name}</div>
+        <div class="price">${displayPrice}</div>
+      `;
+      
+      card.onclick = () => zoomCard(card);
+      grid.appendChild(card);
+    });
   });
 }
 
