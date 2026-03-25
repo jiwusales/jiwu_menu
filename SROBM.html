@@ -8,7 +8,7 @@
   
   <style>
     /* -------------------------------------------
-       1. 公版外觀設定
+       1. 公版外觀設定 (顏色維持你要求的粉色)
        ------------------------------------------- */
     :root { 
       --theme-color: #e78790; 
@@ -40,12 +40,22 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     .card img { width: 100%; max-width: 110px; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
-    
-    /* 還原：名稱原始設定 */
-    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 2.4em; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    
-    /* 還原：價格原始設定（移除 margin-top，維持原本間距） */
-    .card .price { font-size: 10px; padding-bottom: 2px; color: #666; font-weight: normal; }
+
+    /* --- 這裡依照你提供的原始腳本修改 --- */
+    .card .name { 
+      margin: 1px auto; 
+      font-size: 9px; 
+      font-weight: bold; 
+      line-height: 1.2; 
+      /* 移除原本的 height: 2.4em 和 display: flex 以還原原始間距 */
+    }
+
+    .card .price { 
+      font-size: 10px; 
+      margin: 1px auto 5px; /* 這裡改回你給的原始 margin */
+      color: #666; 
+    }
+    /* ---------------------------------- */
 
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
@@ -147,7 +157,7 @@ function render(items, categories) {
 
       card.innerHTML = `
         <img src="${item.img}">
-        <div class="name">${item.name}</div>
+        <div class="name">${formatName(item.name)}</div>
         <div class="price">${displayPrice}</div>
       `;
       
@@ -155,6 +165,20 @@ function render(items, categories) {
       grid.appendChild(card);
     });
   });
+}
+
+// 原始腳本中的名稱格式化邏輯
+function formatName(name) {
+  if (!name) return "";
+  const cleanName = name.trim();
+  const totalLength = cleanName.length;
+  if (totalLength <= 9) return cleanName;
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+  if (spaceIndex > 0) {
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
+  }
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
 function zoomCard(card) {
