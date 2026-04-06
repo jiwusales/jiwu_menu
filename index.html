@@ -42,11 +42,11 @@
       justify-content: center;
       z-index: 999;
     }
-.control-btn img { 
-  width: 65%;           /* 寬度佔按鈕的 65% */
-  height: auto;         /* 高度自動，維持圖片原始比例 */
-  object-fit: contain;  /* 確保圖片完整顯示在範圍內 */
-}
+    .control-btn img { 
+      width: 65%;           /* 寬度佔按鈕的 65% */
+      height: auto;         /* 高度自動，維持圖片原始比例 */
+      object-fit: contain;  /* 確保圖片完整顯示在範圍內 */
+    }
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
 
@@ -246,10 +246,13 @@
       
       const imgUrl = row.c[1]?.v;
       const captionText = row.c[2]?.v || ""; 
+      
+      // ✅ 修改點：讀取試算表 D 欄 (索引 3) 的跳轉網址
+      const customLink = row.c[3]?.v || 'https://lin.ee/X6FUFI9';
 
       if (imgUrl) {
         const a = document.createElement('a');
-        a.href = 'https://lin.ee/X6FUFI9';
+        a.href = customLink; // 使用 D 欄連結
         a.target = '_blank';
         
         const img = document.createElement('img');
