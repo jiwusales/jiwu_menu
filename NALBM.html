@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物目錄系統</title>
+  <title>JIWU吉物販售．綜合IP</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
   <style>
@@ -39,13 +39,13 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fit, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
-        .card img { 
-      height: 90px;        /* 固定所有圖片的高度為 75px */
-      width: auto;         /* 寬度根據比例自動縮放，不壓扁圖片 */
-      max-width: 90%;      /* 確保橫向圖片不會碰到邊框 */
+    .card img { 
+      height: 90px; 
+      width: auto; 
+      max-width: 90%; 
       display: block; 
-      margin: 5px auto 12px;   /* 圖片上下留一點呼吸空間 */
-      object-fit: contain; /* 確保去背圖完整顯示在 75px 高度內 */
+      margin: 5px auto 12px; 
+      object-fit: contain; 
       pointer-events: none; 
     }
     .card .name { 
@@ -53,15 +53,12 @@
       font-size: 9px; 
       font-weight: bold; 
       line-height: 1.2; 
-      /* 移除原本的 height: 2.4em 和 display: flex 以還原原始間距 */
     }
-
     .card .price { 
       font-size: 10px; 
-      margin: 1px auto 5px; 、
+      margin: 1px auto 5px; 
       color: #666; 
     }
-    /* ---------------------------------- */
 
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
@@ -104,7 +101,8 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       const rows = data.table.rows;
       const items = rows.map(r => ({
-        kind: (r.c[1]?.v || "其他").toString().trim(),
+        // 【修改點】將 kind 改為取自 A 欄 (索引 0)，即角色名稱
+        kind: (r.c[0]?.v || "其他角色").toString().trim(),
         name: r.c[3]?.v || "", 
         price: r.c[5]?.v, 
         stock: r.c[6]?.v, 
@@ -114,6 +112,7 @@ function loadData() {
       const categories = [];
       items.forEach(item => {
         if (item.stock?.toString().toLowerCase() === 'x') return;
+        // 如果該角色尚未加入分類陣列，則加入
         if (!categories.includes(item.kind)) {
           categories.push(item.kind);
         }
@@ -139,7 +138,7 @@ function render(items, categories) {
 
     const divider = document.createElement('div');
     divider.className = 'type-divider';
-    divider.id = cat;
+    divider.id = cat; // 對應導覽列的連結 ID
     divider.textContent = cat;
     container.appendChild(divider);
 
@@ -173,7 +172,6 @@ function render(items, categories) {
   });
 }
 
-// 原始腳本中的名稱格式化邏輯
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
