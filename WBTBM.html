@@ -8,7 +8,7 @@
   
   <style>
     /* -------------------------------------------
-       1. 公版外觀設定 (顏色維持你要求的粉色)
+       1. 公版外觀設定
        ------------------------------------------- */
     :root { 
       --theme-color: #4f5474; 
@@ -39,23 +39,39 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fit, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    
+    /* --- 新增：現貨標籤樣式 --- */
+    .stock-tag {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background-color: #fab460;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
     .card img { width: 100%; max-width: 110px; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
 
-    /* --- 這裡依照你提供的原始腳本修改 --- */
     .card .name { 
       margin: 1px auto; 
       font-size: 9px; 
       font-weight: bold; 
       line-height: 1.2; 
-      /* 移除原本的 height: 2.4em 和 display: flex 以還原原始間距 */
     }
 
     .card .price { 
       font-size: 10px; 
-      margin: 1px auto 5px; /* 這裡改回你給的原始 margin */
+      margin: 1px auto 5px; 
       color: #666; 
     }
-    /* ---------------------------------- */
 
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
@@ -81,7 +97,7 @@
 
 <script>
 /* -------------------------------------------
-   2. 資料連動設定
+    2. 資料連動設定
    ------------------------------------------- */
 const CONFIG = {
   SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
@@ -145,6 +161,10 @@ function render(items, categories) {
       const card = document.createElement('div');
       card.className = 'card';
       
+      // 判斷庫存 (G欄) 是否大於 0
+      const stockNum = parseFloat(item.stock);
+      const stockTagHtml = (!isNaN(stockNum) && stockNum > 0) ? `<div class="stock-tag">現</div>` : "";
+
       let displayPrice = "";
       if (item.price === '-') {
         displayPrice = "組合出售";
@@ -156,6 +176,7 @@ function render(items, categories) {
       }
 
       card.innerHTML = `
+        ${stockTagHtml}
         <img src="${item.img}">
         <div class="name">${formatName(item.name)}</div>
         <div class="price">${displayPrice}</div>
@@ -167,7 +188,6 @@ function render(items, categories) {
   });
 }
 
-// 原始腳本中的名稱格式化邏輯
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
