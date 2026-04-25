@@ -39,8 +39,8 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fit, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
-
-    /* --- 新增：現貨標籤樣式 --- */
+    
+    /* --- 新增：左上角「現」標籤樣式 --- */
     .stock-tag {
       position: absolute;
       top: 4px;
@@ -67,14 +67,12 @@
       object-fit: contain; 
       pointer-events: none; 
     }
-
     .card .name { 
       margin: 1px auto; 
       font-size: 9px; 
       font-weight: bold; 
       line-height: 1.2; 
     }
-
     .card .price { 
       font-size: 10px; 
       margin: 1px auto 5px; 
@@ -122,10 +120,10 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       const rows = data.table.rows;
       const items = rows.map(r => ({
-        kind: (r.c[1]?.v || "其他").toString().trim(),
+        kind: (r.c[0]?.v || "其他角色").toString().trim(),
         name: r.c[3]?.v || "", 
         price: r.c[5]?.v, 
-        stock: r.c[6]?.v, 
+        stock: r.c[6]?.v, // G欄 (索引 6)
         img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       }));
 
