@@ -228,9 +228,8 @@ function createCard(item) {
     tagBg = "#B1DEC1";
   } 
   else if (item.colG === "0" && parseFloat(item.colI) > 0) {
-    tagText = "✈︎";
+    tagText = "搭機中";
     tagBg = "#6C95B0";
-    extraClass = "plane-tag"; // 套用飛機專屬旋轉
   }
   else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
     tagText = "訂";
