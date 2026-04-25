@@ -227,31 +227,32 @@ function createCard(item) {
   card.className = 'card';
   
   let tagText = "";
-  let tagBg = "#fab460"; // 預設現貨橘
+  let tagBg = "#fab460"; 
   let tagColor = "white";
 
-  // 優先判斷 K 欄：受注 (注)
+  // 1. 優先判斷 K 欄：受注 (注)
   if (item.colK !== "") {
     tagText = "注";
     tagBg = "#B1DEC1";
   } 
-  // 規則 1: 飛機 (G=0, I>0)
+  // 2. 飛機規則 (G=0, I>0)
   else if (item.colG === "0" && parseFloat(item.colI) > 0) {
     tagText = "✈︎";
     tagBg = "#6C95B0";
   }
-  // 規則 2: 訂購 (G,H,I 皆為 0)
-  else if (item.colG === "0" && item.colH === "0" && item.colI === "0") {
+  // 3. 訂購規則：G=0 且 (H,I 是 0 或 空白)
+  // 注意：這裡排除掉三者皆空白的情況，因為那是「點名中」
+  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
     tagText = "訂";
     tagBg = "#C197D2";
   }
-  // 規則 3: 點名中 (G,H,I 皆空白)
+  // 4. 點名中 (G,H,I 全部皆為空白)
   else if (item.colG === "" && item.colH === "" && item.colI === "") {
     tagText = "點名中";
     tagBg = "#D2EAF1";
     tagColor = "#666";
   }
-  // 原有規則: 現貨 (G > 0)
+  // 5. 現貨標籤 (G > 0)
   else if (parseFloat(item.colG) > 0) {
     tagText = "現";
     tagBg = "#fab460";
