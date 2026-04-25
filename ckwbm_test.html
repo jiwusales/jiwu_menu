@@ -224,7 +224,7 @@ function createCard(item) {
   let extraClass = "";
 
   if (item.colK !== "") {
-    tagText = "注";
+    tagText = "受注";
     tagBg = "#B1DEC1";
   } 
   else if (item.colG === "0" && parseFloat(item.colI) > 0) {
@@ -232,7 +232,7 @@ function createCard(item) {
     tagBg = "#6C95B0";
   }
   else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
-    tagText = "訂";
+    tagText = "需預訂";
     tagBg = "#C197D2";
   }
   else if (item.colG === "" && item.colH === "" && item.colI === "") {
@@ -241,7 +241,7 @@ function createCard(item) {
     tagColor = "#666";
   }
   else if (parseFloat(item.colG) > 0) {
-    tagText = "現";
+    tagText = "現貨";
     tagBg = "#fab460";
   }
 
