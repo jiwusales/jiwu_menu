@@ -23,8 +23,8 @@
     
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     
-    /* 種類 Bar 調整為複選樣式 */
-    .filter-bar-wrapper { display: flex; align-items: center; padding: 0 10px; box-sizing: border-box; min-height: 32px; background: #fff; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    /* 種類複選 Bar 樣式 */
+    .filter-bar-wrapper { display: flex; align-items: center; padding: 0 10px; box-sizing: border-box; height: 32px; background: #fff; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .filter-bar-wrapper::-webkit-scrollbar { display: none; }
     
     .filter-item { 
@@ -38,9 +38,13 @@
     .filter-item input { margin-right: 4px; cursor: pointer; accent-color: var(--theme-color); }
     .filter-item.active { color: var(--theme-color); font-weight: bold; }
 
-    /* 由於取消分組，間距微調 */
     #card-container { padding: 85px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; padding-top: 10px; }
+    
+    /* 分隔線樣式 (預設模式使用) */
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; color: var(--text-color); font-size: 16px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
+
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
@@ -71,13 +75,11 @@
     <div class="filter-bar-wrapper" id="filter-bar"></div>
   </div>
 
-  <div id="card-container">
-    <div class="group-grid" id="main-grid"></div>
-  </div>
+  <div id="card-container"></div>
 
 <script>
 /* -------------------------------------------
-    2. 資料連動與複選邏輯
+    2. 資料連動與邏輯設定
    ------------------------------------------- */
 const CONFIG = {
   SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
@@ -86,8 +88,9 @@ const CONFIG = {
 };
 
 let allItems = [];
+let allCategories = []; 
 let allTypes = [];      
-let selectedTypes = []; // 儲存已勾選的種類
+let selectedTypes = []; 
 
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
@@ -107,9 +110,9 @@ function loadData() {
         img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
       })).filter(item => item.stock?.toString().toLowerCase() !== 'x');
 
-      // 取得所有種類 (B欄) 並預設全選
+      allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
-      selectedTypes = [...allTypes]; 
+      selectedTypes = [...allTypes]; // 初始全選
 
       renderFilters();
       renderItems();
@@ -121,7 +124,6 @@ function loadData() {
 
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
-  // 全選按鈕 + 各種類勾選
   let html = `
     <label class="filter-item ${selectedTypes.length === allTypes.length ? 'active' : ''}">
       <input type="checkbox" ${selectedTypes.length === allTypes.length ? 'checked' : ''} onchange="toggleAll(this)">全選
@@ -138,11 +140,7 @@ function renderFilters() {
 }
 
 function toggleAll(el) {
-  if (el.checked) {
-    selectedTypes = [...allTypes];
-  } else {
-    selectedTypes = [];
-  }
+  selectedTypes = el.checked ? [...allTypes] : [];
   renderFilters();
   renderItems();
 }
@@ -158,45 +156,69 @@ function toggleType(type) {
 }
 
 function renderItems() {
-  const grid = document.getElementById('main-grid');
-  grid.innerHTML = "";
+  const container = document.getElementById('card-container');
+  container.innerHTML = "";
 
-  // 只要符合勾選種類的商品就顯示 (不分角色分組)
+  const isFullSelection = selectedTypes.length === allTypes.length;
   const filteredItems = allItems.filter(i => selectedTypes.includes(i.type));
 
   if (filteredItems.length === 0) {
-    grid.innerHTML = "<div style='grid-column: 1/-1; padding: 20px; color: #999;'>沒有符合勾選條件的寶寶唷</div>";
+    container.innerHTML = "<div style='padding: 20px; color: #999;'>沒有勾選任何種類唷</div>";
     return;
   }
 
-  filteredItems.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    const stockNum = parseFloat(item.stock);
-    const stockTagHtml = (!isNaN(stockNum) && stockNum > 0) ? `<div class="stock-tag">現</div>` : "";
+  if (isFullSelection) {
+    // 模式 1: 全部勾選時 -> 按照角色 (A欄) 分組顯示
+    allCategories.forEach(cat => {
+      const catItems = filteredItems.filter(i => i.kind === cat);
+      if (catItems.length === 0) return;
 
-    let displayPrice = "";
-    if (item.price === '-') {
-      displayPrice = "組合出售";
-    } else if (!item.price) {
-      displayPrice = "私訊花花";
-    } else {
-      const priceStr = item.price.toString().trim();
-      const isPureNumber = /^[0-9]+$/.test(priceStr);
-      displayPrice = isPureNumber ? `$${priceStr}` : priceStr;
-    }
+      const divider = document.createElement('div');
+      divider.className = 'type-divider';
+      divider.textContent = cat;
+      container.appendChild(divider);
 
-    card.innerHTML = `
-      ${stockTagHtml}
-      <img src="${item.img}">
-      <div class="name">${formatName(item.name)}</div>
-      <div class="price">${displayPrice}</div>
-    `;
-    
-    card.onclick = () => zoomCard(card);
-    grid.appendChild(card);
-  });
+      const grid = document.createElement('div');
+      grid.className = 'group-grid';
+      catItems.forEach(item => grid.appendChild(createCard(item)));
+      container.appendChild(grid);
+    });
+  } else {
+    // 模式 2: 有部分勾選時 -> 不分角色，全部混合顯示
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    grid.style.paddingTop = "10px";
+    filteredItems.forEach(item => grid.appendChild(createCard(item)));
+    container.appendChild(grid);
+  }
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  const stockNum = parseFloat(item.stock);
+  const stockTagHtml = (!isNaN(stockNum) && stockNum > 0) ? `<div class="stock-tag">現</div>` : "";
+
+  let displayPrice = "";
+  if (item.price === '-') {
+    displayPrice = "組合出售";
+  } else if (!item.price) {
+    displayPrice = "私訊花花";
+  } else {
+    const priceStr = item.price.toString().trim();
+    const isPureNumber = /^[0-9]+$/.test(priceStr);
+    displayPrice = isPureNumber ? `$${priceStr}` : priceStr;
+  }
+
+  card.innerHTML = `
+    ${stockTagHtml}
+    <img src="${item.img}">
+    <div class="name">${formatName(item.name)}</div>
+    <div class="price">${displayPrice}</div>
+  `;
+  card.onclick = () => zoomCard(card);
+  return card;
 }
 
 function formatName(name) {
