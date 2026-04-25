@@ -105,7 +105,6 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       min-height: 28px;
-      text-decoration: none;
     }
 
     .carousel-dots {
@@ -128,43 +127,47 @@
       transform: scale(1.3);
     }
 
-    /* 頂部社群 ICON 條 */
-    .section-divider { width: 100%; padding: 12px 0; font-weight: bold; font-size: 1.2em; text-align: center; }
-    .divider-social { background-color: #dac7b7; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; padding: 15px 0; }
-    .divider-social a img { width: 40px; }
+    /* 分隔標題列 */
+    .section-divider { 
+      width: 100%; 
+      padding: 12px 0; 
+      font-weight: bold; 
+      font-size: 1.1em; 
+      text-align: center; 
+      background-color: #dac7b7; 
+      color: #ffffff;
+      margin-bottom: 25px;
+    }
+
+    /* 底部社群平台 */
+    .social-divider { 
+      background-color: #F9F6F0; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      flex-wrap: wrap; 
+      gap: 20px; 
+      padding: 15px 0; 
+      margin-top: 40px;
+    }
+    .social-divider a img { width: 40px; }
     
     .role-buttons { max-width: 960px; margin: 20px auto 40px auto; padding: 0 10px; }
-    .role-buttons .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .role-buttons .item { width: 80px; text-align: center; }
+    .role-buttons .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
     
-    .role-buttons .item a {
-      display: block;
-      text-decoration: none !important;
-    }
-    
-    .role-buttons .item img { width: 100%; border-radius: 6px; transition: transform 0.3s; }
-    .role-buttons .item span { display: block; font-size: 0.85em; color: #333; margin-top: 3px; }
-    .separator { border-top: 1px solid #eee; margin: 20px 0; }
+    /* 按鈕樣式 */
+    .role-buttons .item { width: 100px; text-align: center; }
+    .role-buttons .item a { display: block; text-decoration: none !important; }
+    .role-buttons .item img { width: 100%; border-radius: 10px; transition: transform 0.2s; }
+    .role-buttons .item span { display: block; font-size: 0.85em; color: #333; margin-top: 8px; font-weight: bold; }
     
     footer { text-align: center; padding: 20px 10px; font-size: 1em; color: #333333; }
-
-    /* 整合大分類樣式 */
-    .main-category { width: 120px !important; margin-bottom: 15px; }
-    .main-category img { border-radius: 12px !important; }
-    .main-category span { font-weight: bold; font-size: 1em !important; margin-top: 5px !important; }
   </style>
 </head>
 <body>
 
 <div class="logo-container">
   <img src="https://i.postimg.cc/CLBFxHs3/logo-banner.png" alt="LOGO" />
-</div>
-
-<div class="section-divider divider-social">
-  <a href="https://www.facebook.com/jiwusales" target="_blank"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" /></a>
-  <a href="https://www.instagram.com/jiwu_sales/" target="_blank"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" /></a>
-  <a href="https://www.threads.com/@jiwu_sales" target="_blank"><img src="https://i.postimg.cc/brcYkZgy/icon023.png" /></a>
-  <a href="https://lin.ee/X6FUFI9" target="_blank"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" /></a>
 </div>
 
 <div class="section-title">最新開團</div>
@@ -175,43 +178,36 @@
 
 <div class="carousel-dots" id="carousel-dots"></div>
 
+<div class="section-divider">JIWU寶寶目錄 ᯓ★ 日本IP</div>
+
 <div class="role-buttons">
   <div class="row">
-    <div class="item main-category">
+    <div class="item">
       <a href="CHWBM.html">
         <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" />
         <span>吉伊卡哇</span>
       </a>
     </div>
+    <div class="item">
+      <a href="NGNBM.html">
+        <img src="https://i.postimg.cc/hP8v81NH/icon019.png" />
+        <span>自嘲熊</span>
+      </a>
+    </div>
+    <div class="item">
+      <a href="WBTBM.html">
+        <img src="https://i.postimg.cc/sXB1pdRc/icon020.png" />
+        <span>小白虎黑虎蝦</span>
+      </a>
+    </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="item"><a href="CHWBM.html?role=吉伊"><img src="https://i.postimg.cc/ncqjRJ9S/icon001.png" /><span>吉伊</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=小八"><img src="https://i.postimg.cc/Ss5kqJ3L/icon002.png" /><span>小八</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=兔兔"><img src="https://i.postimg.cc/QdbBDJbp/icon003.png" /><span>兔兔</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=小桃"><img src="https://i.postimg.cc/3NmRcXN0/icon004.png" /><span>小桃</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=師傅"><img src="https://i.postimg.cc/y8vNtY1j/icon005.png" /><span>師傅</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=栗子"><img src="https://i.postimg.cc/mD0kjXLG/icon006.png" /><span>栗子</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=獅薩"><img src="https://i.postimg.cc/Ghn9s5gF/icon007.png" /><span>獅薩</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=古本"><img src="https://i.postimg.cc/2jsL76yB/icon008.png" /><span>古本</span></a></div>
-    <div class="item"><a href="CHWBM.html?role=其他角色"><img src="https://i.postimg.cc/PqVPpf0J/icon009.png" /><span>其他角色</span></a></div>
-    
-    <div class="item"><a href="NGNBM.html"><img src="https://i.postimg.cc/hP8v81NH/icon019.png" /><span>自嘲熊</span></a></div>
-    <div class="item"><a href="WBTBM.html"><img src="https://i.postimg.cc/sXB1pdRc/icon020.png" /><span>小白虎黑虎蝦</span></a></div>
-  </div>
-
-  <div class="separator"></div>
-
-  <div class="row">
-    <div class="item"><a href="CHWKD.html?type=貼紙膠帶"><img src="https://i.postimg.cc/bYtsrhgY/icon011.png" /><span>貼紙膠帶</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=文具磁鐵"><img src="https://i.postimg.cc/NLvt9Zg5/icon012.png" /><span>文具磁鐵</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=立牌徽章"><img src="https://i.postimg.cc/c1g83YxS/icon013.png" /><span>立牌徽章</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=鑰匙圈御守"><img src="https://i.postimg.cc/GptpCw9C/icon014.png" /><span>鑰匙圈御守</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=玩具盲抽"><img src="https://i.postimg.cc/ydWswFQY/icon015.png" /><span>玩具盲抽</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=服飾包袋"><img src="https://i.postimg.cc/rwcd7PSV/icon016.png" /><span>服飾包袋</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=生活居家"><img src="https://i.postimg.cc/1z383VCb/icon017.png" /><span>生活居家</span></a></div>
-    <div class="item"><a href="CHWKD.html?type=餐廚用品"><img src="https://i.postimg.cc/g2YJg6Wr/icon018.png" /><span>餐廚用品</span></a></div>
-  </div>
+<div class="social-divider">
+  <a href="https://www.facebook.com/jiwusales" target="_blank"><img src="https://i.postimg.cc/9fkQX8qq/icon021.png" /></a>
+  <a href="https://www.instagram.com/jiwu_sales/" target="_blank"><img src="https://i.postimg.cc/Hx7srwQv/icon022.png" /></a>
+  <a href="https://www.threads.com/@jiwu_sales" target="_blank"><img src="https://i.postimg.cc/brcYkZgy/icon023.png" /></a>
+  <a href="https://lin.ee/X6FUFI9" target="_blank"><img src="https://i.postimg.cc/KjPGNmpn/icon024.png" /></a>
 </div>
 
 <footer>台中朋朋歡迎自取 ˖ ࣪ ★ (ง˙∇˙)ว 官方LINE約約</footer>
