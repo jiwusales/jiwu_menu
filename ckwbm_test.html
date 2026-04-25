@@ -11,25 +11,16 @@
        【這區是你的專屬修改區】
        =========================================== */
     const CONFIG = {
-      // 1. 色系設定
       THEME_COLOR: "#FBCC7E",   // 整體色
       ACTIVE_COLOR: "#f5b080",  // 勾選色
-      
-      // 2. 試算表設定
-      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", // 網址中間那串 ID
-      SHEET_NAME: "ちいかわ",                               // 分頁名稱
-      
-      // 3. 文字設定
+      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
+      SHEET_NAME: "ちいかわ",                               
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
-      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      // 網頁圖示
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      
     };
-    /* ===========================================
-       修改結束，以下程式碼建議不要隨意改動
-       =========================================== */
   </script>
 
   <style>
-    /* 使用 CONFIG 的色系 */
     :root { 
       --theme-color: #FBCC7E; 
       --active-color: #f5b080; 
@@ -47,7 +38,6 @@
     .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
-    
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
     .nav-bar a.active-role { color: var(--active-color); font-weight: bold; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
@@ -68,20 +58,33 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
+    /* 標籤通用樣式：強制正圓形 */
     .stock-tag { 
       position: absolute; top: 4px; left: 4px; 
-      min-width: 18px; min-height: 18px; 
+      width: 22px; 
+      height: 22px; 
       border-radius: 50%; 
       font-size: 11px; font-weight: bold; 
       display: flex; align-items: center; justify-content: center; 
-      z-index: 10; padding: 2px; box-sizing: border-box;
+      z-index: 10; box-sizing: border-box;
+      padding: 0;
     }
+
+    /* 多字標籤：變回長橢圓膠囊狀 */
     .stock-tag.vertical {
       writing-mode: vertical-rl;
       text-orientation: upright;
+      width: 20px;
       height: auto;
-      border-radius: 8px;
-      padding: 4px 2px;
+      border-radius: 10px;
+      padding: 4px 0;
+      font-size: 9px;
+    }
+
+    /* 飛機標籤專用修正 */
+    .stock-tag.plane-tag {
+      font-size: 14px; /* 加大符號 */
+      transform: rotate(45deg); /* 轉向右下 */
     }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -110,7 +113,6 @@
   <div id="card-container"></div>
 
 <script>
-// 初始化設定
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
@@ -127,26 +129,22 @@ function loadData() {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
-        
         return {
           kind: getV(0) || "其他角色",
           type: getV(1) || "其他",
           name: getV(3),
           price: r.c[5]?.v,
-          colG: getV(6),  // 庫存
-          colH: getV(7),  // 店面
-          colI: getV(8),  // 飛機
-          colJ: getV(9),  // 隱藏
-          colK: getV(10), // 受注
+          colG: getV(6),
+          colH: getV(7),
+          colI: getV(8),
+          colJ: getV(9),
+          colK: getV(10),
           img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
         };
-      })
-      // 過濾規則：J 欄有文字 或 G 欄為 'x' 都不上架
-      .filter(item => item.colJ === "" && item.colG.toLowerCase() !== 'x');
+      }).filter(item => item.colJ === "" && item.colG.toLowerCase() !== 'x');
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
-      
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -223,29 +221,26 @@ function createCard(item) {
   let tagText = "";
   let tagBg = "#fab460"; 
   let tagColor = "white";
+  let extraClass = "";
 
-  // 1. 優先判斷 K 欄：受注 (注)
   if (item.colK !== "") {
     tagText = "注";
     tagBg = "#B1DEC1";
   } 
-  // 2. 飛機規則 (G=0, I>0)
   else if (item.colG === "0" && parseFloat(item.colI) > 0) {
     tagText = "✈︎";
     tagBg = "#6C95B0";
+    extraClass = "plane-tag"; // 套用飛機專屬旋轉
   }
-  // 3. 訂購規則：G=0 且 (H,I 是 0 或 空白)
   else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
     tagText = "訂";
     tagBg = "#C197D2";
   }
-  // 4. 點名中 (G,H,I 全部皆為空白)
   else if (item.colG === "" && item.colH === "" && item.colI === "") {
     tagText = "點名中";
     tagBg = "#D2EAF1";
     tagColor = "#666";
   }
-  // 5. 現貨標籤 (G > 0)
   else if (parseFloat(item.colG) > 0) {
     tagText = "現";
     tagBg = "#fab460";
@@ -254,7 +249,7 @@ function createCard(item) {
   let tagHtml = "";
   if (tagText) {
     const isVertical = tagText.length >= 2 ? "vertical" : "";
-    tagHtml = `<div class="stock-tag ${isVertical}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
+    tagHtml = `<div class="stock-tag ${isVertical} ${extraClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
   }
 
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
