@@ -178,7 +178,9 @@ function render(items, categories) {
         displayPrice = "私訊花花";
       } else {
         const priceStr = item.price.toString().trim();
-        displayPrice = priceStr.startsWith('$') ? priceStr : `$${priceStr}`;
+        // 檢查是否為純數字
+        const isPureNumber = /^[0-9]+$/.test(priceStr);
+        displayPrice = isPureNumber ? `$${priceStr}` : priceStr;
       }
 
       card.innerHTML = `
