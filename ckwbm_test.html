@@ -11,7 +11,7 @@
        【這區是你的專屬修改區】
        =========================================== */
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",   // 整體主色（未設定顏色的角色會跟隨此色）
+      THEME_COLOR: "#FBCC7E",   // 整體色
       ACTIVE_COLOR: "#f5b080",  // 勾選色
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "ちいかわ測試用",                               
@@ -239,10 +239,17 @@ function createCard(item) {
   let tagColor = "white";
   let extraClass = "";
 
+  // --- 標籤判斷邏輯 ---
   if (item.colK !== "") {
     tagText = "受注";
     tagBg = "#B1DEC1";
   } 
+  else if (item.colG === "" && item.colH === "") {
+    // 只要 G 跟 H 是空白，就顯示點貨中 (無視 IJK)
+    tagText = "點貨中";
+    tagBg = "#D2EAF1";
+    tagColor = "#666";
+  }
   else if (item.colG === "0" && parseFloat(item.colI) > 0) {
     tagText = "搭機中";
     tagBg = "#6C95B0";
@@ -250,11 +257,6 @@ function createCard(item) {
   else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
     tagText = "需預訂";
     tagBg = "#C197D2";
-  }
-  else if (item.colG === "" && item.colH === "" && item.colI === "") {
-    tagText = "點名中";
-    tagBg = "#D2EAF1";
-    tagColor = "#666";
   }
   else if (parseFloat(item.colG) > 0) {
     tagText = "現貨";
