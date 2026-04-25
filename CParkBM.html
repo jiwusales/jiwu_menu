@@ -6,8 +6,37 @@
   <title>JIWU吉物寶寶目錄</title>
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
+  <script>
+    /* ===========================================
+       【這區是你的專屬修改區】
+       =========================================== */
+    const CONFIG = {
+      // 1. 色系設定
+      THEME_COLOR: "#f2c2d5",   // 整體主題色 (淺粉)
+      ACTIVE_COLOR: "#f06490",  // 勾選/選中時的強調色 (桃粉)
+      
+      // 2. 試算表設定
+      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", // 網址中間那串 ID
+      SHEET_NAME: "ちいかわ樂園",                               // 分頁名稱
+      
+      // 3. 文字設定
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      // 網頁圖示
+    };
+    /* ===========================================
+       修改結束，以下程式碼建議不要隨意改動
+       =========================================== */
+  </script>
+
   <style>
-    :root { --theme-color: #f2c2d5; --active-color: #f06490; --nav-bg: #f9f9f9; --text-color: #333333; }
+    /* 使用 CONFIG 的色系 */
+    :root { 
+      --theme-color: #f2c2d5; 
+      --active-color: #f06490; 
+      --nav-bg: #f9f9f9; 
+      --text-color: #333333; 
+    }
+
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
     .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
@@ -19,7 +48,6 @@
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     
-    /* 角色選單樣式 */
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
     .nav-bar a.active-role { color: var(--active-color); font-weight: bold; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
@@ -66,9 +94,12 @@
   <div id="card-container"></div>
 
 <script>
-const CONFIG = { SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", SHEET_NAME: "ちいかわ樂園", TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )" };
-let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+// 初始化設定
+document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
+document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+
+let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -90,7 +121,7 @@ function loadData() {
       renderRoleNav();
       renderFilters();
       renderItems();
-    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗"; }
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查 SHEET_NAME 是否正確。"; }
   });
 }
 
@@ -98,20 +129,15 @@ function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    // 點擊事件：如果已經是選中狀態，點了就取消(重置)；如果沒選中，點了就篩選
     return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
 function toggleRole(cat) {
-  if (selectedRole === cat) {
-    selectedRole = null; // 取消篩選
-  } else {
-    selectedRole = cat; // 選中角色
-    // 如果是全選模式（沒勾選種類），點擊後跳轉到該位置
-    if (selectedTypes.length === 0) {
-      window.location.hash = cat;
-    }
+  if (selectedRole === cat) { selectedRole = null; } 
+  else { 
+    selectedRole = cat; 
+    if (selectedTypes.length === 0) window.location.hash = cat;
   }
   renderRoleNav();
   renderItems();
@@ -135,23 +161,15 @@ function toggleType(type) {
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-
   const isFilterMode = selectedTypes.length > 0;
-  
-  // 第一層篩選：種類 (如果有選的話)
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
-  
-  // 第二層篩選：角色 (如果有選的話)
-  if (selectedRole) {
-    filteredItems = filteredItems.filter(i => i.kind === selectedRole);
-  }
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
 
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>這個組合沒有寶寶唷 (☍﹏⁰)</div>";
     return;
   }
 
-  // 渲染邏輯：如果是在沒勾選種類的「全目錄模式」，維持分組顯示
   if (!isFilterMode && !selectedRole) {
     allCategories.forEach(cat => {
       const catItems = filteredItems.filter(i => i.kind === cat);
@@ -165,7 +183,6 @@ function renderItems() {
       container.appendChild(grid);
     });
   } else {
-    // 篩選模式（勾了種類 或 選了特定角色）：直接顯示大雜燴
     const grid = document.createElement('div');
     grid.className = 'group-grid';
     grid.style.paddingTop = "10px";
