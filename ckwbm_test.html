@@ -11,7 +11,7 @@
        【這區是你的專屬修改區】
        =========================================== */
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",   // 整體色
+      THEME_COLOR: "#FBCC7E",   // 整體主色（未設定顏色的角色會跟隨此色）
       ACTIVE_COLOR: "#f5b080",  // 勾選色
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "ちいかわ測試用",                               
@@ -56,7 +56,6 @@
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
-    /* 商品卡邊框預設值 */
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
     .stock-tag { 
@@ -231,16 +230,15 @@ function createCard(item) {
     "其他角色": "#45818e"
   };
 
-  // 商品卡邊框色隨角色變動
-  const borderColor = roleColors[item.kind] || roleColors["其他角色"];
+  // 判斷邊框顏色：有設定就用設定值，沒設定就抓 CONFIG.THEME_COLOR
+  const borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderColor;
 
   let tagText = "";
-  let tagBg = "#fab460"; // 預設橘色
+  let tagBg = "#fab460"; 
   let tagColor = "white";
   let extraClass = "";
 
-  // 標籤狀態判斷（維持固定配色）
   if (item.colK !== "") {
     tagText = "受注";
     tagBg = "#B1DEC1";
@@ -266,7 +264,6 @@ function createCard(item) {
   let tagHtml = "";
   if (tagText) {
     const isVertical = tagText.length >= 2 ? "vertical" : "";
-    // 飛機符號專用處理
     if (tagText === "✈︎") extraClass = "plane-tag";
     tagHtml = `<div class="stock-tag ${isVertical} ${extraClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
   }
