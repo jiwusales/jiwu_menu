@@ -21,36 +21,18 @@
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     
-    /* 導覽列與篩選列容器 */
-    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
-    
-    .nav-bar-wrapper, .filter-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; }
-    .nav-bar-scroll, .filter-bar-scroll { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .nav-bar-scroll::-webkit-scrollbar, .filter-bar-scroll::-webkit-scrollbar { display: none; }
-    
-    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
+    .nav-bar-wrapper { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); display: flex; align-items: center; z-index: 998; padding: 0 5px; box-sizing: border-box; height: 40px; border-bottom: 1px solid #eee; }
+    .nav-bar-scroll { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-bar-scroll::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; white-space: nowrap; padding: 10px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; }
     .nav-bar a:last-child::after { content: ""; }
-    
-    /* 篩選按鈕樣式 */
-    .filter-bar { display: inline-block; padding: 5px 0; }
-    .filter-btn { 
-      display: inline-block; 
-      padding: 4px 12px; 
-      margin: 0 3px; 
-      border-radius: 15px; 
-      background: #eee; 
-      font-size: 11px; 
-      cursor: pointer; 
-      transition: 0.2s;
-    }
-    .filter-btn.active { background: var(--theme-color); color: #fff; font-weight: bold; }
+    .nav-bar a:hover { font-weight: bold; color: var(--theme-color); }
+    .nav-arrow { width: 28px; font-size: 18px; cursor: pointer; flex-shrink: 0; padding-top: 6px; user-select: none; }
 
-    .nav-arrow { width: 28px; font-size: 18px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; }
-
-    #card-container { padding: 130px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 135px; color: var(--text-color); font-size: 16px; }
+    #card-container { padding: 90px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
     
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
@@ -58,15 +40,44 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
+    /* --- 新增：左上角「現」標籤樣式 --- */
     .stock-tag {
-      position: absolute; top: 4px; left: 4px; background-color: #fab460; color: white;
-      width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center; z-index: 10;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background-color: #fab460;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
     }
 
-    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 12px; object-fit: contain; pointer-events: none; }
-    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; }
-    .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
+    .card img { 
+      height: 90px; 
+      width: auto; 
+      max-width: 90%; 
+      display: block; 
+      margin: 5px auto 12px; 
+      object-fit: contain; 
+      pointer-events: none; 
+    }
+    .card .name { 
+      margin: 1px auto; 
+      font-size: 9px; 
+      font-weight: bold; 
+      line-height: 1.2; 
+    }
+    .card .price { 
+      font-size: 10px; 
+      margin: 1px auto 5px; 
+      color: #666; 
+    }
 
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
@@ -80,39 +91,25 @@
     </a>
   </div>
 
-  <div class="header-fixed">
-    <div class="nav-bar-wrapper">
-      <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-150,0)">❮</div>
-      <div class="nav-bar-scroll">
-        <div class="nav-bar" id="dynamic-nav"></div>
-      </div>
-      <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(150,0)">❯</div>
-    </div>
-    <div class="filter-bar-wrapper">
-      <div class="nav-arrow" onclick="document.querySelector('.filter-bar-scroll').scrollBy(-150,0)">❮</div>
-      <div class="filter-bar-scroll">
-        <div class="filter-bar" id="filter-bar"></div>
-      </div>
-      <div class="nav-arrow" onclick="document.querySelector('.filter-bar-scroll').scrollBy(150,0)">❯</div>
-    </div>
-  </div>
-
   <div id="card-container"></div>
+
+  <div class="nav-bar-wrapper">
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(-150,0)">❮</div>
+    <div class="nav-bar-scroll">
+      <div class="nav-bar" id="dynamic-nav"></div>
+    </div>
+    <div class="nav-arrow" onclick="document.querySelector('.nav-bar-scroll').scrollBy(150,0)">❯</div>
+  </div>
 
 <script>
 /* -------------------------------------------
-    2. 資料連動與篩選設定
+    2. 資料連動設定
    ------------------------------------------- */
 const CONFIG = {
   SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
   SHEET_NAME: "ちいかわ樂園", 
   TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )"
 };
-
-let allItems = [];
-let allCategories = []; // A欄
-let allTypes = [];      // B欄
-let currentType = "全部";
 
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
@@ -122,62 +119,38 @@ function loadData() {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       const rows = data.table.rows;
-      
-      allItems = rows.map(r => ({
+      const items = rows.map(r => ({
         kind: (r.c[0]?.v || "其他角色").toString().trim(),
-        type: (r.c[1]?.v || "其他").toString().trim(), // B欄 種類
         name: r.c[3]?.v || "", 
         price: r.c[5]?.v, 
-        stock: r.c[6]?.v, 
+        stock: r.c[6]?.v, // G欄 (索引 6)
         img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
-      })).filter(item => item.stock?.toString().toLowerCase() !== 'x');
+      }));
 
-      // 取得所有角色類別 (A欄)
-      allCategories = [...new Set(allItems.map(i => i.kind))];
-      // 取得所有種類 (B欄)
-      allTypes = ["全部", ...new Set(allItems.map(i => i.type))];
+      const categories = [];
+      items.forEach(item => {
+        if (item.stock?.toString().toLowerCase() === 'x') return;
+        if (!categories.includes(item.kind)) {
+          categories.push(item.kind);
+        }
+      });
 
-      renderNav();
-      renderFilters();
-      renderItems();
+      const nav = document.getElementById('dynamic-nav');
+      nav.innerHTML = categories.map(cat => `<a href="#${cat}">${cat}</a>`).join('');
+
+      render(items, categories);
     } catch (e) {
-      document.getElementById('card-container').innerHTML = "載入失敗，請確認資料。";
+      document.getElementById('card-container').innerHTML = "載入失敗，請確認分頁名稱。";
     }
   });
 }
 
-// 渲染導覽列 (A欄角色)
-function renderNav() {
-  const nav = document.getElementById('dynamic-nav');
-  nav.innerHTML = allCategories.map(cat => `<a href="#${cat}">${cat}</a>`).join('');
-}
-
-// 渲染篩選列 (B欄種類)
-function renderFilters() {
-  const filterBar = document.getElementById('filter-bar');
-  filterBar.innerHTML = allTypes.map(t => 
-    `<div class="filter-btn ${t === currentType ? 'active' : ''}" onclick="filterByType('${t}')">${t}</div>`
-  ).join('');
-}
-
-function filterByType(type) {
-  currentType = type;
-  renderFilters();
-  renderItems();
-}
-
-function renderItems() {
+function render(items, categories) {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
 
-  // 先過濾種類
-  const filteredItems = currentType === "全部" 
-    ? allItems 
-    : allItems.filter(i => i.type === currentType);
-
-  // 依照角色類別分組顯示
-  allCategories.forEach(cat => {
-    const catItems = filteredItems.filter(i => i.kind === cat);
+  categories.forEach(cat => {
+    const catItems = items.filter(i => i.kind === cat && i.stock?.toString().toLowerCase() !== 'x');
     if (catItems.length === 0) return;
 
     const divider = document.createElement('div');
@@ -194,16 +167,18 @@ function renderItems() {
       const card = document.createElement('div');
       card.className = 'card';
       
+      // 檢查庫存 (G欄) 是否 > 0
       const stockNum = parseFloat(item.stock);
       const stockTagHtml = (!isNaN(stockNum) && stockNum > 0) ? `<div class="stock-tag">現</div>` : "";
 
       let displayPrice = "";
       if (item.price === '-') {
         displayPrice = "組合出售";
-      } else if (!item.price) {
+      } else if (item.price === null || item.price === undefined || item.price === "") {
         displayPrice = "私訊花花";
       } else {
         const priceStr = item.price.toString().trim();
+        // 檢查是否為純數字
         const isPureNumber = /^[0-9]+$/.test(priceStr);
         displayPrice = isPureNumber ? `$${priceStr}` : priceStr;
       }
@@ -224,8 +199,14 @@ function renderItems() {
 function formatName(name) {
   if (!name) return "";
   const cleanName = name.trim();
-  if (cleanName.length <= 9) return cleanName;
-  return cleanName.slice(0, 9) + "<br>" + cleanName.slice(9);
+  const totalLength = cleanName.length;
+  if (totalLength <= 9) return cleanName;
+  const maxLengthBeforeWrap = 9;
+  const spaceIndex = cleanName.lastIndexOf(" ", maxLengthBeforeWrap);
+  if (spaceIndex > 0) {
+    return cleanName.slice(0, spaceIndex) + "<br>" + cleanName.slice(spaceIndex + 1);
+  }
+  return cleanName.slice(0, maxLengthBeforeWrap) + "<br>" + cleanName.slice(maxLengthBeforeWrap);
 }
 
 function zoomCard(card) {
