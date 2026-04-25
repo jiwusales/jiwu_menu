@@ -4,774 +4,286 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物寶寶目錄</title>
-  
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
- 
+  
+  <script>
+    /* ===========================================
+       【這區是你的專屬修改區】
+       =========================================== */
+    const CONFIG = {
+      THEME_COLOR: "#FBCC7E",   // 整體色
+      ACTIVE_COLOR: "#f5b080",  // 勾選色
+      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
+      SHEET_NAME: "ちいかわ測試用",                               
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      
+    };
+  </script>
+
   <style>
-/* 頁面基礎樣式 */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 0;
-  color: #333333;
-  text-align: center;
-}
-/* 頂部通知條（色塊+文字跳動動畫） */
-.top-bar {
-  background: var(--tab-color);
-  color: #fff;
-  padding: 10px 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 999;
-  user-select: none;
-  text-align: center;
-  font-size: 15px;
-}
-.top-bar .pulse-text {
-  display: inline-block;
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); } 
-  100% { transform: scale(1); }
-}
-
-    .nav-bar-wrapper {
-      position: fixed;
-      top: 40px;
-      width: 100%;
-      background: #f9f9f9;
-      display: flex;
-      align-items: center;
-      z-index: 998;
-      padding: 0 5px;
-      box-sizing: border-box;
-      height: 40px;
-    }
-    .nav-bar-scroll {
-      flex: 1;
-      overflow-x: auto;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .nav-bar-scroll::-webkit-scrollbar {
-      display: none;
-    }
-    .nav-bar {
-      display: inline-block;
-      white-space: nowrap;
-      padding: 10px 0;
-      font-size: 10pt;
-      color: #333;
-    }
-    .nav-bar a {
-      color: #333;
-      text-decoration: none;
-      margin: 0px;
-      padding-top: 6px;
-      display: inline-block;
-      font-weight: normal;
+    :root { 
+      --theme-color: #FBCC7E; 
+      --active-color: #f5b080; 
+      --nav-bg: #f9f9f9; 
+      --text-color: #333333; 
     }
 
-    .nav-bar a::after {
-      content: "｜";
-      margin: 0px;
-      color: #aaa;
-      font-weight: normal;
-      pointer-events: none;
-    }
-    .nav-bar a:last-child::after {
-      content: "";
-    }
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
+    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     
-    .nav-bar a:hover {
-      font-weight: bold;
-      color: var(--tab-color, #333);
+    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
+    .nav-bar a.active-role { color: var(--active-color); font-weight: bold; }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
+    .nav-bar a:last-child::after { content: ""; }
+
+    .filter-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 30px; background: #fff; }
+    .filter-item { display: inline-flex; align-items: center; margin: 0 4px; font-size: 12px; cursor: pointer; color: #666; vertical-align: middle; transition: color 0.2s; }
+    .filter-item.active { color: var(--active-color); font-weight: bold; }
+    .filter-item input { margin-right: 3px; cursor: pointer; accent-color: var(--active-color); transform: scale(0.8); }
+
+    .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
+
+    #card-container { padding: 115px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 120px; color: var(--text-color); font-size: 16px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
+    
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    
+    .stock-tag { 
+      position: absolute; top: 4px; left: 4px; 
+      width: 22px; 
+      height: 22px; 
+      border-radius: 50%; 
+      font-size: 11px; font-weight: bold; 
+      display: flex; align-items: center; justify-content: center; 
+      z-index: 10; box-sizing: border-box;
+      padding: 0;
     }
-    .nav-link.active {
-      font-weight: bold;
-      color: var(--tab-color, #333333);
-      text-decoration: none;
+
+    .stock-tag.vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      width: 20px;
+      height: auto;
+      border-radius: 10px;
+      padding: 4px 0;
+      font-size: 9px;
     }
 
-.nav-arrow {
-  width: 28px;
-  height: 28px;
-  line-height: 28px;
-  font-size: 18px;
-  color: #333;
-  background-color: transparent;
-  border-radius: 0;
-  text-align: center;
-  user-select: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin: 0 6px;
-  padding-top: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  outline: none;
-}
+    .stock-tag.plane-tag {
+      font-size: 14px; 
+      transform: rotate(45deg); 
+    }
 
-.nav-arrow:hover {
-  background-color: transparent;
-  color: var(--tab-color, #dac7b7);
-}
-.nav-arrow:focus,
-.nav-arrow:active {
-  outline: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-/* 商品卡片容器 */
-#card-container {
-  padding: 80px 10px 6px 7px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-}
-
-/* 分類標題與橫線 */
-.type-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 8px 0;
-  color: #333333;
-  font-weight: bold;
-}
-.type-divider::before,
-.type-divider::after {
-  content: "";
-  flex: 1;
-  border-top: 1px solid #333333;
-  margin: 0 10px;
-}
-
-.group-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 120px);
-  justify-content: start;
-  gap: 6px;
-}
-@media (max-width: 480px) {
-  .group-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* 商品卡片基礎樣式 */
-.card {
-  width: 97%;
-  max-width: 120px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  position: relative;
-  text-align: center;
-  color: #333;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.card img {
-  width: 80px;
-  margin-top: 5px;
-  object-fit: contain;
-}
-.card .name {
-  margin: 1px auto;
-  font-size: 9px;
-  font-weight: bold;
-  line-height: 1.2;
-}
-.card .price {
-  font-size: 10px;
-  margin: 1px auto 5px;
-}
-.card,
-.card * {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* 貨況狀態標籤 */
-.status-badge {
-  display: inline-block;
-  border-radius: 12px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: bold;
-  margin: 0 auto 4px auto;
-}
-
-/* 角色圓形標籤 */
-.role-badge {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background-color: var(--tab-color);
-  color: #fff;
-  font-size: 10px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-}
-
-/* 大螢幕版型調整 */
-@media (min-width: 768px) {
-  .card {
-    width: 120px;
-  }
-  .card img {
-    width: 116px;
-  }
-  .card .name,
-  .card .price {
-    font-size: 12px;
-  }
-}
-
-/* Modal 基本樣式 */
-.modal {
-  display: none; 
-  position: fixed;
-  z-index: 9999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-  background-color: #fff;
-  margin: 10% auto;
-  padding: 20px;
-  border: 2px solid #ccc;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 8px;
-  text-align: left;
-}
-
-.close-btn {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.img-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0px;
-  margin-bottom: 8px;
-}
-
-.img-container img {
-  width: 140px;
-  height: auto;
-  border-radius: 0px;
-  object-fit: contain;
-}
-
-.modal-content .combo-name,
-.modal-content .combo-price {
-  color: #4E4F50;
-}
-    
-/* 手機 2張2組一排 */
-.img-row-2 img {
-  width: 50%;  
-  margin: 0;
-  object-fit: contain;
-}
-    
-/* 手機 4張一排 */
-.img-row-4 img {
-  width: calc(100% / 4);
-  margin: 0;
-}
-
-/* 手機 3張一排 */
-.img-row-3 img {
-  width: calc(100% / 3);
-  margin: 0;
-}
-
-/* 平板+電腦 6張一排 */
-@media (min-width: 768px) {
-  .img-row-6 img {
-    width: calc(100% / 6);
-    margin: 0;
-  }
-} 
-    
-@media (max-width: 480px) {
-  .modal-content {
-    width: 80% !important;
-    max-width: none;
-  }
-}
-/* 放大遮罩背景 */
-#cardOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); 
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-}
-
-/* 放大卡片容器樣式 */
-#cardOverlay .card {
-  position: relative;
-  width: auto !important;
-  max-width: 90vw !important;
-  max-height: 90vh;
-  transform: none !important;
-  cursor: default !important;
-  box-shadow: none !important;
-  border-width: 5px !important;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-#cardOverlay img {
-  width: auto !important;
-  max-width: 80vw !important;
-  max-height: 60vh !important;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-}
-
-#cardOverlay .name {
-  font-size: 2.4em !important;
-  line-height: 1.3 !important;
-  font-weight: bold;
-  margin: 12px auto;
-  text-align: center;
-}
-
-#cardOverlay .price {
-  font-size: 2em !important;
-  margin-bottom: 12px;
-  color: #333;
-  text-align: center;
-}
-
-#cardOverlay .status-badge {
-  font-size: 1.5em !important;
-  padding: 8px 18px !important;
-  margin-bottom: 10px !important;
-  border-radius: 999px !important;
-  display: inline-block;
-  text-align: center;
-  line-height: 1;
-}
-
-#cardOverlay .role-badge {
-  display: none !important;
-}
-
+    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
+    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
+    .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
+    .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <a href="https://lin.ee/X6FUFI9" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: none;">
-      <span class="pulse-text">組合內容點擊卡片會跳出噢！訂購這邊找花花 (৹˙꒳˙ฅ)</span>
-    </a>
-  </div>
-  <div id="card-container"></div>
-  
-<div class="nav-bar-wrapper">
-  <div class="nav-arrow nav-left">❮</div>
-  <div class="nav-bar-scroll">
-    <div class="nav-bar">
-      <a class="nav-link" href="#吊娃、娃">吊娃．娃</a>
-      <a class="nav-link" href="#包袋">包袋</a>
-      <a class="nav-link" href="#證件套">證件套</a>
-      <a class="nav-link" href="#鑰匙圈">鑰匙圈</a>
-      <a class="nav-link" href="#御守繪馬">御守繪馬</a>
-      <a class="nav-link" href="#文具磁鐵">文具磁鐵</a>
-      <a class="nav-link" href="#貼紙">貼紙</a>
-      <a class="nav-link" href="#立牌徽章">立牌徽章</a>
-      <a class="nav-link" href="#玩具盲抽">玩具盲抽</a>
-      <a class="nav-link" href="#3C配件">3C配件</a>
-      <a class="nav-link" href="#生活居家">生活居家</a>
-      <a class="nav-link" href="#服飾配件">服飾配件</a>
-      <a class="nav-link" href="#餐廚">餐廚</a>
-    </div>
-  </div>
-   <div class="nav-arrow nav-right">❯</div>
-</div>
-  
-  <div id="comboModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn">&times;</span>
-      <h2 id="comboTitle">組合內容</h2>
-      <div id="comboBody">載入中...</div>
-    </div>
-  </div>
-  <div id="cardOverlay"></div>
+  <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
 
-</body>
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
+    </div>
+    <div class="filter-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="filter-scroll"><div id="filter-bar" style="display: inline-block;"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)">❯</div>
+    </div>
+  </div>
+
+  <div id="card-container"></div>
 
 <script>
-// ================= 基礎設定 =================
-const SHEET_ID  = "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY";
-const sheetName = "ちいかわ";
+document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
+document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
-const roleMap = { "吉伊":"吉","小八":"八","兔兔":"兔","小桃":"桃","師傅":"獺",
-                  "栗子":"栗","獅薩":"獅","古本":"古","其他角色":"其" };
+let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 
-const colors  = { "吉伊":"#d77485","小八":"#6293b8","兔兔":"#f9be3c","小桃":"#838BC2",
-                  "師傅":"#CCAFA5","栗子":"#94C973","獅薩":"#FBAA60","古本":"#eb9e97",
-                  "其他角色":"#45818e" };
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  fetch(url).then(r => r.text()).then(t => {
+    try {
+      const data = JSON.parse(t.substr(47).slice(0,-2));
+      allItems = data.table.rows.map(r => {
+        const getV = (idx) => {
+          const val = r.c[idx]?.v;
+          return (val !== null && val !== undefined) ? val.toString().trim() : "";
+        };
+        return {
+          kind: getV(0) || "其他角色",
+          type: getV(1) || "其他",
+          name: getV(3),
+          price: r.c[5]?.v,
+          colG: getV(6),
+          colH: getV(7),
+          colI: getV(8),
+          colJ: getV(9),
+          colK: getV(10),
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
+        };
+      }).filter(item => item.colJ === "" && item.colG.toLowerCase() !== 'x');
 
-// ---------- 分區對照 ----------
-const categoryMap = {
-  "吊娃":"吊娃、娃","娃":"吊娃、娃",
-  "包包":"包袋","證件套":"證件套",
-  "文具":"文具磁鐵","磁鐵":"文具磁鐵",
-  "貼紙":"貼紙","鑰匙圈":"鑰匙圈",
-  "御守":"御守繪馬","立牌":"立牌徽章","徽章":"立牌徽章",
-  "玩具":"玩具盲抽","盲":"玩具盲抽",
-  "3C":"3C配件","居家":"生活居家","毛巾":"生活居家",
-  "衣服":"服飾配件","飾品":"服飾配件","襪子":"服飾配件","餐廚":"餐廚"
-};
-const categoryOrder = [
-  "吊娃、娃","包袋","證件套","鑰匙圈","御守繪馬","文具磁鐵","貼紙",
-  "立牌徽章","玩具盲抽","3C配件","生活居家","服飾配件","餐廚","未分類"
-];
-const extraStyleCategoryMap = {
-  "鑰匙包":"包袋","娃夾子":"文具磁鐵",
-  "斜背包":"包袋","娃徽章":"立牌徽章","抱枕":"生活居家"
-};
-
-// ================ 載入資料 (修正索引) ================
-function getRoleFromURL(){
-  const p = new URLSearchParams(location.search).get("role");
-  return roleMap[p] ? p : "吉伊";
-}
-function loadSheetData(){
-  const currentRole = getRoleFromURL();
-  document.documentElement.style.setProperty("--tab-color",colors[currentRole]||"#999");
-  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`)
-    .then(r=>r.text())
-    .then(t=>JSON.parse(t.substr(47).slice(0,-2)))
-    .then(data=>{
-      const keyword = roleMap[currentRole];
-      const rows = data.table.rows||[];
-      const items = rows.map((row,i)=>({
-        index:i,
-        role:row.c[0]?.v||"",
-        rawType:row.c[1]?.v||"",
-        style:row.c[2]?.v||"",
-        name:row.c[3]?.v||"",
-        price:row.c[5]?.v,
-        stock:row.c[6]?.v,
-        notStock:row.c[8]?.v,    // 修正：跳過「店面」位移至 8
-        up:row.c[9]?.v,          // 修正：位移至 9
-        preorder:row.c[10]?.v,   // 修正：位移至 10
-        img:row.c[12]?.v||"https://i.postimg.cc/bv5xRs04/image.png" // 修正：位移至 12
-      }))
-      .filter(it=>it.role.includes(keyword))
-      .map(it=>({...it,category:(it.style==="證件套")?"證件套":(categoryMap[it.rawType]||categoryMap[it.style]||it.rawType||"未分類")}));
-      renderCards(items,currentRole);
-    })
-    .catch(()=>document.getElementById("card-container").textContent="載入資料失敗");
+      allCategories = [...new Set(allItems.map(i => i.kind))];
+      allTypes = [...new Set(allItems.map(i => i.type))];
+      renderRoleNav();
+      renderFilters();
+      renderItems();
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
+  });
 }
 
-// ================ 畫面渲染 ================
-function renderCards(items,roleName){
-  const container = document.getElementById("card-container");
+function renderRoleNav() {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = allCategories.map(cat => {
+    const isSelected = selectedRole === cat;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
+  }).join('');
+}
+
+function toggleRole(cat) {
+  selectedRole = (selectedRole === cat) ? null : cat;
+  renderRoleNav();
+  renderItems();
+}
+
+function renderFilters() {
+  const filterBar = document.getElementById('filter-bar');
+  filterBar.innerHTML = allTypes.map(t => {
+    const isActive = selectedTypes.includes(t);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
+  }).join('');
+}
+
+function toggleType(type) {
+  if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
+  else { selectedTypes.push(type); }
+  renderFilters();
+  renderItems();
+}
+
+function renderItems() {
+  const container = document.getElementById('card-container');
   container.innerHTML = "";
-  const styleOrder = [];
-  items.forEach(it=>{if(!styleOrder.includes(it.style))styleOrder.push(it.style);});
-  const grouped={};
-  items.forEach(it=>{
-    const cat=it.category;
-    (grouped[cat]=grouped[cat]||[]).push(it);
-    if(cat==="吊娃、娃"){
-      const tgt=extraStyleCategoryMap[it.style];
-      if(tgt)(grouped[tgt]=grouped[tgt]||[]).push({...it});
-    }
-  });
-  categoryOrder.forEach(cat=>{
-    const list=grouped[cat];
-    if(!list||!list.length)return;
-    const div=document.createElement("div");
-    div.className = "type-divider";
-    div.id = cat;
-    div.style.scrollMarginTop = "90px";
-    div.textContent = cat;
-    container.appendChild(div);
-    const gdiv=document.createElement("div");
-    gdiv.className="group-grid";
-    const byStyle={};
-    list.forEach(it=>(byStyle[it.style]=byStyle[it.style]||[]).push(it));
-    styleOrder.forEach(sty=>{
-      const arr=byStyle[sty];
-      if(!arr)return;
-      arr.sort((a,b)=>a.index-b.index).forEach(item=>{
-        const status=getStatus(item);
-        if(!status)return;
-        const single="吉八兔桃獺栗獅古其";
-        const ch=item.role.match(/[\u4e00-\u9fff]/g)||[];
-        const rtxt=(ch.length===1&&single.includes(ch[0]))?ch[0]:"綜";
+  const isFilterMode = selectedTypes.length > 0;
+  let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
 
-        const isCombo = item.price === "-";
-        const needLineLink = item.price === "" || item.price === null || item.price === undefined;
+  if (filteredItems.length === 0) {
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    return;
+  }
 
-        const cardTag = (needLineLink ? "a" : "div");
-        const card = document.createElement(cardTag);
-        card.className = "card";
-        card.style.borderColor = colors[roleName] || "#ccc";
-
-      if (isCombo) {
-        card.onclick = () => loadComboDetails(item.name);
-        card.style.cursor = "pointer";
-      } else if (needLineLink && card.tagName === "A") {
-        card.href = "https://lin.ee/X6FUFI9";
-        card.target = "_blank";
-      } else {
-        card.style.cursor = "pointer";
-        card.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openCardOverlay(card.cloneNode(true));
-        });
-      }
-        card.innerHTML=`
-          ${cat!=="吊娃、娃"?`<div class="role-badge" style="background-color:${rtxt==="綜"?"#dac7b7":colors[roleName]||"#ccc"}">${rtxt}</div>`:""}
-          <img src="${item.img}" alt="${item.name}">
-          <div class="status-badge" style="background:${status.bg};color:${status.color}">${status.text}</div>
-          <div class="name">${formatName(item.name)}</div>
-          <div class="price">${formatPrice(item.price)}</div>
-        `;
-        gdiv.appendChild(card);
-      });
+  if (!isFilterMode && !selectedRole) {
+    allCategories.forEach(cat => {
+      const catItems = filteredItems.filter(i => i.kind === cat);
+      if (catItems.length === 0) return;
+      const div = document.createElement('div');
+      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
+      container.appendChild(div);
+      const grid = document.createElement('div');
+      grid.className = 'group-grid';
+      catItems.forEach(item => grid.appendChild(createCard(item)));
+      container.appendChild(grid);
     });
-    container.appendChild(gdiv);
-  });
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    grid.style.paddingTop = "10px";
+    filteredItems.forEach(item => grid.appendChild(createCard(item)));
+    container.appendChild(grid);
+  }
 }
 
-// ================ Modal 組合內容 ================
-function loadComboDetails(clickedItemName) {
-  const modal = document.getElementById("comboModal");
-  const body = document.getElementById("comboBody");
-  document.getElementById("comboTitle").textContent = clickedItemName; 
-  body.innerHTML = "載入中...";
-  modal.style.display = "block";
-
-  fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=組合出售區`)
-    .then(r => r.text())
-    .then(t => JSON.parse(t.substr(47).slice(0, -2)))
-    .then(data => {
-      const rows = data.table.rows || [];
-      const currentRoleFull = getRoleFromURL();      
-      const currentRole = roleMap[currentRoleFull] || ""; 
-      const targetItem = clickedItemName.trim();
-
-      let lastRole = "", lastItem = "";
-      const filteredRows = rows.filter(row => {
-        const roleField = (row.c[1]?.v || lastRole).trim();
-        const itemField = (row.c[2]?.v || lastItem).trim();
-        if (row.c[1]?.v) lastRole = row.c[1].v;
-        if (row.c[2]?.v) lastItem = row.c[2].v;
-        return roleField.includes(currentRole) && itemField === targetItem;
-      });
-
-      if (!filteredRows.length) {
-        body.innerHTML = "🚀 組合內容整理中 ε=ε=ヾ(;ﾟд)/<br>可以先私訊花花詢問！";
-        return;
-      }
-
-      const groupedByCombo = {};
-      filteredRows.forEach(row => {
-        const comboGroupName = (row.c[3]?.v || "").trim();
-        if (!groupedByCombo[comboGroupName]) groupedByCombo[comboGroupName] = [];
-        groupedByCombo[comboGroupName].push(row);
-      });
-
-      const groupNames = Object.keys(groupedByCombo);
-      const twoImgCombos = groupNames.filter(g => groupedByCombo[g].length === 2);
-      const otherCombos = groupNames.filter(g => groupedByCombo[g].length !== 2);
-
-      let html = "";
-      const pairedGroups = [];
-      for (let i = 0; i < twoImgCombos.length; i += 2) {
-        pairedGroups.push([twoImgCombos[i], twoImgCombos[i + 1]]);
-      }
-      const singleGroups = otherCombos;
-      const totalBlocks = pairedGroups.length + singleGroups.length;
-      let currentIndex = 0;
-
-      for (const pair of pairedGroups) {
-        const [groupA, groupB] = pair;
-        currentIndex++;
-        if (!groupB) {
-          const itemsC = groupedByCombo[groupA];
-          const priceC = itemsC[0].c[4]?.v || "";
-          const remarkC = itemsC[0].c[9]?.v || "";
-          const imgListC = itemsC.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
-          html += `<div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
-                    <div style="text-align:center; width:160px;">
-                      <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListC}</div>
-                      <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                        <div class="combo-name">${groupA}</div>
-                        <div class="combo-price">${formatPrice(priceC)}</div>
-                      </div>
-                      ${remarkC ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkC}</div>` : ""}
-                    </div>
-                    <div style="text-align:center; width:160px; opacity:0;"></div>
-                  </div>`;
-        } else {
-          const itemsA = groupedByCombo[groupA];
-          const priceA = itemsA[0].c[4]?.v || "";
-          const remarkA = itemsA[0].c[9]?.v || "";
-          const imgListA = itemsA.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupA}">`).join("");
-          const itemsB = groupedByCombo[groupB];
-          const priceB = itemsB[0].c[4]?.v || "";
-          const remarkB = itemsB[0].c[9]?.v || "";
-          const imgListB = itemsB.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${groupB}">`).join("");
-          html += `<div style="display:flex; justify-content:center; gap:24px; margin-bottom:8px; align-items:flex-start;">
-                    <div style="text-align:center; width:160px;">
-                      <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListA}</div>
-                      <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                        <div class="combo-name">${groupA}</div>
-                        <div class="combo-price">${formatPrice(priceA)}</div>
-                      </div>
-                      ${remarkA ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkA}</div>` : ""}
-                    </div>
-                    <div style="text-align:center; width:160px; border-left:1px solid #ccc; padding-left:16px;">
-                      <div class="img-container img-row-2" style="margin-bottom:4px;">${imgListB}</div>
-                      <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline;">
-                        <div class="combo-name">${groupB}</div>
-                        <div class="combo-price">${formatPrice(priceB)}</div>
-                      </div>
-                      ${remarkB ? `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin-top:4px;">${remarkB}</div>` : ""}
-                    </div>
-                  </div>`;
-        }
-        if (currentIndex < totalBlocks) html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
-      }
-
-      for (const group of singleGroups) {
-        currentIndex++;
-        const items = groupedByCombo[group];
-        const price = items[0].c[4]?.v || "";
-        const remark = items[0].c[9]?.v || "";
-        const imgList = items.map(row => `<img src="${row.c[8]?.v || 'https://i.postimg.cc/bv5xRs04/image.png'}" alt="${group}">`).join("");
-        const rowClass = items.length <= 4 ? "img-row-4" : "img-row-3";
-        html += `<div style="text-align:center; margin-bottom:8px;">
-                  <div class="img-container ${rowClass}">${imgList}</div>
-                  <div style="display:flex; justify-content:center; gap:6px; font-weight:bold; font-size:16px; align-items:baseline; margin-top:4px;">
-                    <div class="combo-name">${group}</div>
-                    <div class="combo-price">${formatPrice(price)}</div>
-                  </div>
-                  ${remark ? remark.split(/\r?\n/).map(r => `<div style="background:#647C90; color:#fff; border-radius:12px; padding:2px 6px; font-size:12px; display:inline-block; margin:2px;">${r}</div>`).join("") : ""}
-                </div>`;
-        if (currentIndex < totalBlocks) html += `<hr style="border:none; border-top:1px solid #ccc; margin: 12px 0;">`;
-      }
-      body.innerHTML = html;
-    })
-    .catch(() => { body.textContent = "🛠️ 網站維護中 (´•̥×•̥`) "; });
-}
-
-document.querySelector(".close-btn").onclick = () => document.getElementById("comboModal").style.display = "none";
-window.onclick = e => { if (e.target === document.getElementById("comboModal")) document.getElementById("comboModal").style.display = "none"; };
-
-// ================ 輔助函式 ================
-function formatName(name){
-  if(!name)return "";
-  const cleanName=name.trim();
-  const totalLength=cleanName.length;
-  if(totalLength<=9)return cleanName;
-  const maxLengthBeforeWrap=9;
-  const spaceIndex=cleanName.lastIndexOf(" ",maxLengthBeforeWrap);
-  if(spaceIndex>0)return cleanName.slice(0,spaceIndex)+"<br>"+cleanName.slice(spaceIndex+1);
-  return cleanName.slice(0,maxLengthBeforeWrap)+"<br>"+cleanName.slice(maxLengthBeforeWrap);
-}
-function formatPrice(price){
-  if(price === "" || price === null || price === undefined) return "私訊花花";
-  if(price === "-") return "組合出售";
-  return typeof price === 'number' ? "$" + price : price;
-}
-function getStatus(item){
-  const stock=(item.stock??"").toString().trim();
-  const notStock=(item.notStock??"").toString().trim();
-  const preorder=(item.preorder??"").toString().trim();
-  const up=(item.up??"").toString().trim();
-  if(preorder==="v")return{text:"受注品",bg:"#74BDCB",color:"#fff"};
-  if(stock==="x"||up==="x")return null;
-  if(stock==="0"&&/^\d+$/.test(notStock)&&Number(notStock)>0)return{text:"搭飛機中",bg:"#5885AF",color:"#fff"};
-  if(stock==="0")return{text:"需預訂",bg:"#D4BBDD",color:"#333"};
-  if(/^\d+$/.test(stock)&&Number(stock)>0)return{text:"現貨",bg:"#FFF4BD",color:"#333"};
-  return{text:"點貨中",bg:"#E7F2F8",color:"#333"};
-}
-
-// ================ 啟動 =====================
-loadSheetData();
-
-const navBarScroll = document.querySelector(".nav-bar-scroll");
-const leftArrow = document.querySelector(".nav-arrow.nav-left");
-const rightArrow = document.querySelector(".nav-arrow.nav-right");
-leftArrow.addEventListener("click", () => navBarScroll.scrollBy({ left: -100, behavior: "smooth" }));
-rightArrow.addEventListener("click", () => navBarScroll.scrollBy({ left: 100, behavior: "smooth" }));
-
-// 修正後的 Overlay 函式，確保強制套用大卡片 Flex 佈局
-function openCardOverlay(cardElement) {
-  const overlay = document.getElementById("cardOverlay");
-  overlay.innerHTML = ""; 
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
   
-  // 建立大卡片容器
-  const newCard = document.createElement("div");
-  newCard.className = "card";
-  newCard.style.borderColor = cardElement.style.borderColor;
-  newCard.innerHTML = cardElement.innerHTML;
-  
-  overlay.appendChild(newCard);
-  overlay.style.display = "flex";
-
-  overlay.onclick = (e) => {
-    if (e.target === overlay) {
-      overlay.style.display = "none";
-      overlay.innerHTML = "";
-    }
+  // 角色專屬邊框顏色
+  const roleColors = {
+    "吉伊": "#d77485",
+    "小八": "#6293b8",
+    "兔兔": "#f9be3c",
+    "小桃": "#838BC2",
+    "師傅": "#CCAFA5",
+    "栗子": "#94C973",
+    "獅薩": "#FBAA60",
+    "古本": "#eb9e97",
+    "綜合角色": "#989FC0",
+    "全角色": "#E24C60",
+    "其他角色": "#45818e"
   };
-}
+
+  // 判斷邊框顏色：有設定就用設定值，沒設定就抓 CONFIG.THEME_COLOR
+  const borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+  card.style.borderColor = borderColor;
+
+  let tagText = "";
+  let tagBg = "#fab460"; 
+  let tagColor = "white";
+  let extraClass = "";
+
+  // --- 標籤判斷邏輯 ---
+  if (item.colK !== "") {
+    tagText = "受注";
+    tagBg = "#B1DEC1";
+  } 
+  else if (item.colG === "" && item.colH === "") {
+    // 只要 G 跟 H 是空白，就顯示點貨中 (無視 IJK)
+    tagText = "點貨中";
+    tagBg = "#D2EAF1";
+    tagColor = "#666";
+  }
+  else if (item.colG === "0" && parseFloat(item.colI) > 0) {
+    tagText = "搭機中";
+    tagBg = "#6C95B0";
+  }
+  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
+    tagText = "需預訂";
+    tagBg = "#C197D2";
+  }
+  else if (parseFloat(item.colG) > 0) {
+    tagText = "現貨";
+    tagBg = "#fab460";
+  }
+
+  let tagHtml = "";
+  if (tagText) {
+    const isVertical = tagText.length >= 2 ? "vertical" : "";
+    if (tagText === "✈︎") extraClass = "plane-tag";
+    tagHtml = `<div class="stock-tag ${isVertical} ${extraClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
+  }
+
+  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   
+  card.innerHTML = `${tagHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  card.onclick = () => zoomCard(card);
+  return card;
+}
+
+function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function zoomCard(c) {
+  const ov = document.createElement('div'); ov.className = 'card-overlay';
+  const clone = c.cloneNode(true); ov.appendChild(clone);
+  ov.onclick = () => ov.remove(); document.body.appendChild(ov);
+}
+loadData();
 </script>
 </body>
 </html>
