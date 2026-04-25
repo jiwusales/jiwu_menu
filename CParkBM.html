@@ -7,12 +7,13 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
   <style>
-    :root { --theme-color: #f2c2d5; --nav-bg: #f9f9f9; --text-color: #333333; }
+    :root { --theme-color: #f2c2d5; --active-color: #f06490; --nav-bg: #f9f9f9; --text-color: #333333; }
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
     .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     
+    /* 頂部兩行導覽列固定顯示 */
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
     .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -23,10 +24,30 @@
     .nav-bar a:last-child::after { content: ""; }
 
     .filter-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 30px; background: #fff; }
-    .filter-item { display: inline-flex; align-items: center; margin: 0 8px; font-size: 10px; cursor: pointer; color: #666; vertical-align: middle; }
-    .filter-item input { margin-right: 3px; cursor: pointer; accent-color: var(--theme-color); transform: scale(0.8); }
+    
+    /* 種類勾選樣式：變色邏輯在此 */
+    .filter-item { 
+      display: inline-flex; 
+      align-items: center; 
+      margin: 0 8px; 
+      font-size: 10px; 
+      cursor: pointer; 
+      color: #666; 
+      vertical-align: middle; 
+      transition: color 0.2s;
+    }
+    /* 勾選後的文字與勾勾顏色 */
+    .filter-item.active { color: var(--active-color); font-weight: bold; }
+    .filter-item input { 
+      margin-right: 3px; 
+      cursor: pointer; 
+      accent-color: var(--active-color); /* 勾勾變色 */
+      transform: scale(0.8); 
+    }
+
     .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
+    /* 內容區塊 */
     #card-container { padding: 115px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
     .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 120px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
@@ -46,7 +67,7 @@
   <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
 
   <div class="header-fixed">
-    <div class="nav-bar-wrapper" id="role-nav-wrapper">
+    <div class="nav-bar-wrapper">
       <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
       <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
       <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
@@ -81,7 +102,6 @@ function loadData() {
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
-      // 預設不勾選任何東西，依照需求顯示全部
       selectedTypes = []; 
 
       renderRoleNav();
@@ -98,29 +118,28 @@ function renderRoleNav() {
 
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
-  // 移除全選按鈕，只保留各種類
-  filterBar.innerHTML = allTypes.map(t => `<label class="filter-item"><input type="checkbox" ${selectedTypes.includes(t) ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`).join('');
+  filterBar.innerHTML = allTypes.map(t => {
+    const isActive = selectedTypes.includes(t);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
+  }).join('');
 }
 
 function toggleType(type) {
   if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
   else { selectedTypes.push(type); }
+  renderFilters(); // 重新渲染勾選列以更新文字變色
   renderItems();
 }
 
 function renderItems() {
   const container = document.getElementById('card-container');
-  const roleNav = document.getElementById('role-nav-wrapper');
   container.innerHTML = "";
 
-  // 核心邏輯：如果沒勾選任何東西，顯示全部商品；有勾選則篩選
   const isFilterMode = selectedTypes.length > 0;
   const filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
 
-  // 只有在「沒勾選任何東西」且「想看全部」時，才顯示角色 Bar 並分組
   if (!isFilterMode) {
-    roleNav.style.display = "flex";
-    container.style.paddingTop = "115px";
+    // 沒勾選：分組顯示
     allCategories.forEach(cat => {
       const catItems = filteredItems.filter(i => i.kind === cat);
       if (catItems.length === 0) return;
@@ -133,9 +152,7 @@ function renderItems() {
       container.appendChild(grid);
     });
   } else {
-    // 勾選模式：不分角色，全部混合顯示
-    roleNav.style.display = "none";
-    container.style.paddingTop = "80px";
+    // 有勾選：搜尋模式不分角色
     const grid = document.createElement('div');
     grid.className = 'group-grid';
     grid.style.paddingTop = "10px";
