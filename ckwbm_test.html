@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JIWU吉物寶寶目錄</title>
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+  
+  <script>
+    /* ===========================================
+       【這區是你的專屬修改區】
+       =========================================== */
+    const CONFIG = {
+      // 1. 色系設定
+      THEME_COLOR: "#f2c2d5",   // 整體主題色 (淺粉)
+      ACTIVE_COLOR: "#f06490",  // 勾選/選中時的強調色 (桃粉)
+      
+      // 2. 試算表設定
+      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", // 網址中間那串 ID
+      SHEET_NAME: "ちいかわ樂園",                               // 分頁名稱
+      
+      // 3. 文字設定
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      // 網頁圖示
+    };
+    /* ===========================================
+       修改結束，以下程式碼建議不要隨意改動
+       =========================================== */
+  </script>
+
+  <style>
+    /* 使用 CONFIG 的色系 */
+    :root { 
+      --theme-color: #f2c2d5; 
+      --active-color: #f06490; 
+      --nav-bg: #f9f9f9; 
+      --text-color: #333333; 
+    }
+
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
+    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    
+    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
+    
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
+    .nav-bar a.active-role { color: var(--active-color); font-weight: bold; }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
+    .nav-bar a:last-child::after { content: ""; }
+
+    .filter-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 30px; background: #fff; }
+    .filter-item { display: inline-flex; align-items: center; margin: 0 4px; font-size: 12px; cursor: pointer; color: #666; vertical-align: middle; transition: color 0.2s; }
+    .filter-item.active { color: var(--active-color); font-weight: bold; }
+    .filter-item input { margin-right: 3px; cursor: pointer; accent-color: var(--active-color); transform: scale(0.8); }
+
+    .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
+
+    #card-container { padding: 115px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 120px; color: var(--text-color); font-size: 16px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
+    
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    
+    /* 標籤通用樣式 */
+    .stock-tag { 
+      position: absolute; top: 4px; left: 4px; 
+      min-width: 18px; min-height: 18px; 
+      border-radius: 50%; 
+      font-size: 11px; font-weight: bold; 
+      display: flex; align-items: center; justify-content: center; 
+      z-index: 10; padding: 2px; box-sizing: border-box;
+    }
+    /* 直式顯示：字數超過 2 個字時 */
+    .stock-tag.vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      height: auto;
+      border-radius: 8px;
+      padding: 4px 2px;
+    }
+
+    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
+    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
+    .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
+    .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
+
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
+    </div>
+    <div class="filter-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="filter-scroll"><div id="filter-bar" style="display: inline-block;"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)">❯</div>
+    </div>
+  </div>
+
+  <div id="card-container"></div>
+
+<script>
+// 初始化設定
+document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
+document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+
+let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  fetch(url).then(r => r.text()).then(t => {
+    try {
+      const data = JSON.parse(t.substr(47).slice(0,-2));
+      allItems = data.table.rows.map(r => {
+        const getV = (idx) => {
+          const val = r.c[idx]?.v;
+          return (val !== null && val !== undefined) ? val.toString().trim() : "";
+        };
+        
+        return {
+          kind: getV(0) || "其他角色",
+          type: getV(1) || "其他",
+          name: getV(3),
+          price: r.c[5]?.v,
+          colG: getV(6),  // 庫存
+          colH: getV(7),  // 店面
+          colI: getV(8),  // 飛機
+          colJ: getV(9),  // 隱藏
+          colK: getV(10), // 受注
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
+        };
+      })
+      // 規則 4: J 欄有任何文字不顯示
+      .filter(item => item.colJ === "");
+
+      allCategories = [...new Set(allItems.map(i => i.kind))];
+      allTypes = [...new Set(allItems.map(i => i.type))];
+      
+      renderRoleNav();
+      renderFilters();
+      renderItems();
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查 SHEET_NAME 是否正確。"; }
+  });
+}
+
+function renderRoleNav() {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = allCategories.map(cat => {
+    const isSelected = selectedRole === cat;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
+  }).join('');
+}
+
+function toggleRole(cat) {
+  if (selectedRole === cat) { selectedRole = null; } 
+  else { 
+    selectedRole = cat; 
+    if (selectedTypes.length === 0) window.location.hash = cat;
+  }
+  renderRoleNav();
+  renderItems();
+}
+
+function renderFilters() {
+  const filterBar = document.getElementById('filter-bar');
+  filterBar.innerHTML = allTypes.map(t => {
+    const isActive = selectedTypes.includes(t);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
+  }).join('');
+}
+
+function toggleType(type) {
+  if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
+  else { selectedTypes.push(type); }
+  renderFilters();
+  renderItems();
+}
+
+function renderItems() {
+  const container = document.getElementById('card-container');
+  container.innerHTML = "";
+  const isFilterMode = selectedTypes.length > 0;
+  let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
+
+  if (filteredItems.length === 0) {
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    return;
+  }
+
+  if (!isFilterMode && !selectedRole) {
+    allCategories.forEach(cat => {
+      const catItems = filteredItems.filter(i => i.kind === cat);
+      if (catItems.length === 0) return;
+      const div = document.createElement('div');
+      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
+      container.appendChild(div);
+      const grid = document.createElement('div');
+      grid.className = 'group-grid';
+      catItems.forEach(item => grid.appendChild(createCard(item)));
+      container.appendChild(grid);
+    });
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    grid.style.paddingTop = "10px";
+    filteredItems.forEach(item => grid.appendChild(createCard(item)));
+    container.appendChild(grid);
+  }
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  let tagText = "";
+  let tagBg = "#fab460"; // 預設現貨橘
+  let tagColor = "white";
+
+  // 優先判斷 K 欄：受注 (注)
+  if (item.colK !== "") {
+    tagText = "注";
+    tagBg = "#B1DEC1";
+  } 
+  // 規則 1: 飛機 (G=0, I>0)
+  else if (item.colG === "0" && parseFloat(item.colI) > 0) {
+    tagText = "✈︎";
+    tagBg = "#6C95B0";
+  }
+  // 規則 2: 訂購 (G,H,I 皆為 0)
+  else if (item.colG === "0" && item.colH === "0" && item.colI === "0") {
+    tagText = "訂";
+    tagBg = "#C197D2";
+  }
+  // 規則 3: 點名中 (G,H,I 皆空白)
+  else if (item.colG === "" && item.colH === "" && item.colI === "") {
+    tagText = "點名中";
+    tagBg = "#D2EAF1";
+    tagColor = "#666";
+  }
+  // 原有規則: 現貨 (G > 0)
+  else if (parseFloat(item.colG) > 0) {
+    tagText = "現";
+    tagBg = "#fab460";
+  }
+
+  let tagHtml = "";
+  if (tagText) {
+    const isVertical = tagText.length >= 2 ? "vertical" : "";
+    tagHtml = `<div class="stock-tag ${isVertical}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
+  }
+
+  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
+  
+  card.innerHTML = `${tagHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  card.onclick = () => zoomCard(card);
+  return card;
+}
+
+function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function zoomCard(c) {
+  const ov = document.createElement('div'); ov.className = 'card-overlay';
+  const clone = c.cloneNode(true); ov.appendChild(clone);
+  ov.onclick = () => ov.remove(); document.body.appendChild(ov);
+}
+loadData();
+</script>
+</body>
+</html>
