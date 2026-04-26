@@ -14,9 +14,10 @@
       THEME_COLOR: "#FBCC7E",   // 整體色
       ACTIVE_COLOR: "#f5b080",  // 勾選色
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ測試用",                               
+      SHEET_NAME: "ちいかわ",                               
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
-      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
+      LINE_ID: "X6FUFI9" // 你的官賴 ID
     };
   </script>
 
@@ -30,6 +31,7 @@
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
     .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    .top-bar a { text-decoration: none; color: #fff; }
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     
@@ -58,15 +60,23 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
+    /* 購物車標籤（卡片左下角） */
+    .add-cart-tag {
+      position: absolute; bottom: 4px; left: 4px; width: 24px; height: 24px;
+      background: #8DBB9F; color: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: bold; z-index: 20;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
     .stock-tag { 
-      position: absolute; top: 4px; left: 4px; 
+      position: absolute; top: 4px; right: 4px; 
       width: 22px; 
       height: 22px; 
       border-radius: 50%; 
       font-size: 11px; font-weight: bold; 
       display: flex; align-items: center; justify-content: center; 
       z-index: 10; box-sizing: border-box;
-      padding: 0;
     }
 
     .stock-tag.vertical {
@@ -79,20 +89,69 @@
       font-size: 9px;
     }
 
-    .stock-tag.plane-tag {
-      font-size: 14px; 
-      transform: rotate(45deg); 
-    }
-
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
-    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
+    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 22px; overflow: hidden; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
+    
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
+
+    /* --- 🛒 購物車懸浮與面板樣式 --- */
+    #cart-trigger {
+      position: fixed; top: 15px; right: 15px; width: 45px; height: 45px;
+      background: #fff; border-radius: 50%; border: 2px solid var(--theme-color);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1001; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    #cart-trigger img { width: 24px; }
+    #cart-count {
+      position: absolute; top: -5px; right: -5px; background: #ff6b6b;
+      color: white; font-size: 11px; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+    }
+
+    #cart-panel {
+      position: fixed; top: 0; right: -100%; width: 85%; max-width: 320px; height: 100%;
+      background: white; z-index: 1100; transition: 0.4s; display: flex; flex-direction: column;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    }
+    #cart-panel.active { right: 0; }
+    .cart-header { padding: 20px; background: var(--theme-color); color: #fff; font-weight: bold; text-align: left; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 15px; text-align: left; }
+    .cart-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .cart-item img { width: 45px; height: 45px; border-radius: 5px; object-fit: cover; }
+    .cart-info { flex: 1; }
+    .cart-info .n { font-size: 13px; font-weight: bold; }
+    .cart-info .p { font-size: 11px; color: #888; }
+    .remove-btn { color: #ff6b6b; cursor: pointer; font-size: 12px; margin-left: 5px; }
+    
+    .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
+    .total-box { font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: right; }
+    .checkout-btn { width: 100%; padding: 12px; background: #5d4a3a; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1099; }
   </style>
 </head>
 <body>
-  <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
+
+  <div class="top-bar">
+    <a href="https://lin.ee/X6FUFI9" target="_blank">
+      <span class="pulse-text" id="top-msg">載入中...</span>
+    </a>
+  </div>
+
+  <div id="cart-trigger" onclick="toggleCart()">
+    <img src="https://i.postimg.cc/9fkQX8qq/icon021.png" alt="cart">
+    <span id="cart-count">0</span>
+  </div>
+
+  <div id="cart-overlay-bg" onclick="toggleCart()"></div>
+  <div id="cart-panel">
+    <div class="cart-header">🛒 選購清單</div>
+    <div class="cart-items" id="cart-items-list"></div>
+    <div class="cart-footer">
+      <div class="total-box">總計: $<span id="cart-total">0</span></div>
+      <button class="checkout-btn" onclick="sendToLine()">前往官 LINE 結帳</button>
+    </div>
+  </div>
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
@@ -115,6 +174,7 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -145,10 +205,80 @@ function loadData() {
       renderRoleNav();
       renderFilters();
       renderItems();
-    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
+      updateCartUI(); // 初始化購物車數字
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗。"; }
   });
 }
 
+// --- 購物車核心邏輯 ---
+function addToCart(name, price, img) {
+  const cleanPrice = parseInt(price) || 0;
+  cart.push({ name, price: cleanPrice, img });
+  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
+  updateCartUI();
+  
+  // 輕提示
+  const tip = document.createElement('div');
+  tip.style = "position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:white; padding:8px 15px; border-radius:20px; z-index:10000; font-size:12px;";
+  tip.textContent = `已加入: ${name.slice(0,8)}...`;
+  document.body.appendChild(tip);
+  setTimeout(() => tip.remove(), 1500);
+}
+
+function updateCartUI() {
+  const list = document.getElementById('cart-items-list');
+  const count = document.getElementById('cart-count');
+  const total = document.getElementById('cart-total');
+  
+  list.innerHTML = '';
+  let totalSum = 0;
+
+  cart.forEach((item, index) => {
+    totalSum += item.price;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-info">
+        <div class="n">${item.name}</div>
+        <div class="p">$${item.price} <span class="remove-btn" onclick="removeItem(${index})">移除</span></div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+
+  count.textContent = cart.length;
+  count.style.display = cart.length > 0 ? 'block' : 'none';
+  total.textContent = totalSum;
+}
+
+function removeItem(idx) {
+  cart.splice(idx, 1);
+  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+function toggleCart() {
+  const panel = document.getElementById('cart-panel');
+  const overlay = document.getElementById('cart-overlay-bg');
+  const isActive = panel.classList.toggle('active');
+  overlay.style.display = isActive ? 'block' : 'none';
+}
+
+function sendToLine() {
+  if (cart.length === 0) return alert("購物車目前空空的唷！");
+
+  let msg = "【JIWU寶寶目錄 訂購清單】\n\n";
+  cart.forEach((item, i) => {
+    msg += `${i+1}. ${item.name} ($${item.price})\n`;
+  });
+  msg += `\n總計商品：${cart.length} 件\n預估金額：$${document.getElementById('cart-total').textContent}\n\n請問這些還有現貨嗎？ (ฅ'ω'ฅ)`;
+
+  const url = `https://line.me/R/oaMessage/@${CONFIG.LINE_ID}/?${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// --- 原有目錄邏輯 ---
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allCategories.map(cat => {
@@ -214,65 +344,23 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
+  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
+  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+
+  let tagText = "", tagBg = "#fab460", tagColor = "white", extraClass = "";
+  if (item.colK !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
+  else if (item.colG === "" && item.colH === "") { tagText = "點貨中"; tagBg = "#D2EAF1"; tagColor = "#666"; }
+  else if (item.colG === "0" && parseFloat(item.colI) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
+  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
+  else if (parseFloat(item.colG) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
+
+  let tagHtml = tagText ? `<div class="stock-tag ${tagText.length>=2?'vertical':''}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+  let pValue = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   
-  // 角色專屬邊框顏色
-  const roleColors = {
-    "吉伊": "#d77485",
-    "小八": "#6293b8",
-    "兔兔": "#f9be3c",
-    "小桃": "#838BC2",
-    "師傅": "#CCAFA5",
-    "栗子": "#94C973",
-    "獅薩": "#FBAA60",
-    "古本": "#eb9e97",
-    "綜合角色": "#989FC0",
-    "全角色": "#E24C60",
-    "其他角色": "#45818e"
-  };
+  // 注入加入購物車按鈕
+  const cartBtnHtml = `<div class="add-cart-tag" onclick="event.stopPropagation(); addToCart('${item.name.replace(/'/g, "\\'")}', '${item.price}', '${item.img}')">＋</div>`;
 
-  // 判斷邊框顏色：有設定就用設定值，沒設定就抓 CONFIG.THEME_COLOR
-  const borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
-  card.style.borderColor = borderColor;
-
-  let tagText = "";
-  let tagBg = "#fab460"; 
-  let tagColor = "white";
-  let extraClass = "";
-
-  // --- 標籤判斷邏輯 ---
-  if (item.colK !== "") {
-    tagText = "受注";
-    tagBg = "#B1DEC1";
-  } 
-  else if (item.colG === "" && item.colH === "") {
-    // 只要 G 跟 H 是空白，就顯示點貨中 (無視 IJK)
-    tagText = "點貨中";
-    tagBg = "#D2EAF1";
-    tagColor = "#666";
-  }
-  else if (item.colG === "0" && parseFloat(item.colI) > 0) {
-    tagText = "搭機中";
-    tagBg = "#6C95B0";
-  }
-  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
-    tagText = "需預訂";
-    tagBg = "#C197D2";
-  }
-  else if (parseFloat(item.colG) > 0) {
-    tagText = "現貨";
-    tagBg = "#fab460";
-  }
-
-  let tagHtml = "";
-  if (tagText) {
-    const isVertical = tagText.length >= 2 ? "vertical" : "";
-    if (tagText === "✈︎") extraClass = "plane-tag";
-    tagHtml = `<div class="stock-tag ${isVertical} ${extraClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
-  }
-
-  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
-  
-  card.innerHTML = `${tagHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  card.innerHTML = `${tagHtml}${cartBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${pValue}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
@@ -280,7 +368,11 @@ function createCard(item) {
 function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
-  const clone = c.cloneNode(true); ov.appendChild(clone);
+  const clone = c.cloneNode(true);
+  // 移除放大版裡的購物車按鈕與標籤
+  const tags = clone.querySelectorAll('.add-cart-tag, .stock-tag');
+  tags.forEach(t => t.remove());
+  ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 loadData();
