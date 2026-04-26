@@ -22,7 +22,7 @@
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
-      LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?", // 修正為直接指定官LINE的格式
+      LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
       DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
   </script>
@@ -284,7 +284,6 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 生成訊息內容
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
@@ -302,24 +301,24 @@ function generateLineMessage(lineName = "", igAccount = "") {
   return encodeURIComponent(msg);
 }
 
-// 核心修正：結帳跳轉邏輯
+// 核心修正：自動判斷裝置決定跳轉流程
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
-  // 直接生成訊息並跳轉至官LINE，不再判斷裝置，確保文字一定帶入對話框
-  const msg = generateLineMessage();
-  const finalLink = CONFIG.LINE_MSG_URL + msg;
-  
-  // 執行跳轉
-  window.location.href = finalLink;
-  
-  // 延遲清空購物車，確保流程完成
-  setTimeout(() => { 
-    cart = []; 
-    saveCart(); 
-    updateCartUI(); 
-    toggleCart(false); 
-  }, 1500);
+  // 判斷是否為手機 (寬度小於 768 或擁有 touch 特性)
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+  if (isMobile) {
+    // 手機版：直接跳轉官 LINE
+    const msg = generateLineMessage();
+    window.location.href = CONFIG.LINE_MSG_URL + msg;
+    setTimeout(() => { 
+      cart = []; saveCart(); updateCartUI(); toggleCart(false); 
+    }, 1500);
+  } else {
+    // 電腦版：開啟彈窗輸入 LINE/IG
+    openCheckoutModal();
+  }
 }
 
 function openCheckoutModal() {
@@ -371,7 +370,6 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
 
-// 渲染邏輯
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allCategories.map(cat => {
