@@ -23,7 +23,7 @@
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
+      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbzEaZqaGT4HU2sWDUIiBLQ2TljlaW4YCeupcd_yVf0AlboFATxXSKpkwUwfUWbTuovGKA/exec"
     };
   </script>
 
@@ -187,11 +187,12 @@
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
-<div class="modal-content qr-box" id="step-2">
+    <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
       <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•́ฅ ✧ </p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
+  </div>
 
 <script>
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
@@ -354,22 +355,34 @@ async function handleFinalCheckout() {
   btn.disabled = true; 
   btn.textContent = "處理中...";
 
-  // 1. 背景傳送到 GAS
   try {
-    let detail = "";
-    cart.forEach((item, i) => { detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`; });
-    const postData = { lineName, igAccount: igAcc, items: detail, total: document.getElementById('modal-total-price').textContent };
-    fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+    const cartData = cart.map(item => ({
+      kind: item.kind,
+      type: item.type,
+      tagText: item.tagText,
+      name: item.name,
+      price: item.price
+    }));
+
+    const postData = { 
+      lineName: lineName, 
+      igAccount: igAcc, 
+      cartItems: cartData 
+    };
+
+    fetch(CONFIG.DEPLOY_URL, { 
+      method: 'POST', 
+      mode: 'no-cors', 
+      body: JSON.stringify(postData) 
+    });
   } catch (e) {
     console.error("GAS 傳送失敗", e);
   }
 
-  // 2. 清空購物車與更新 UI
   cart = []; 
   saveCart(); 
   updateCartUI();
   
-  // 3. 原地切換到 QR Code 畫面 (Step 2)
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
