@@ -293,10 +293,18 @@ function checkoutLine() {
     total += priceVal;
   });
   msg += `\n總金額：$${total}`;
+  
   let lineID = CONFIG.LINE_ID;
   if (!lineID.startsWith('@')) lineID = '@' + lineID;
   const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
+  
   window.open(finalLink, '_blank');
+
+  // 結帳後自動清空購物車
+  cart = [];
+  saveCart();
+  updateCartUI();
+  toggleCart(false); // 可選：結帳後自動關閉側欄
 }
 
 function renderRoleNav() {
