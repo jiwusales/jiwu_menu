@@ -22,7 +22,7 @@
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
-      LINE_MSG_URL: "https://line.me/R/msg/text/?", // 改回這個 18:46 測試 OK 的版本
+      LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?", // 修正為直接指定官LINE的格式
       DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
   </script>
@@ -302,22 +302,24 @@ function generateLineMessage(lineName = "", igAccount = "") {
   return encodeURIComponent(msg);
 }
 
-// 核心判斷：手機直接噴 LINE / 電腦跳視窗
+// 核心修正：結帳跳轉邏輯
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // 直接生成訊息並跳轉至官LINE，不再判斷裝置，確保文字一定帶入對話框
+  const msg = generateLineMessage();
+  const finalLink = CONFIG.LINE_MSG_URL + msg;
   
-  if (isMobile) {
-    // 手機版邏輯：直接跳轉
-    const msg = generateLineMessage();
-    window.location.href = CONFIG.LINE_MSG_URL + msg;
-    // 跳轉後清空
-    setTimeout(() => { cart = []; saveCart(); updateCartUI(); toggleCart(false); }, 1000);
-  } else {
-    // 電腦版邏輯：跳彈窗
-    openCheckoutModal();
-  }
+  // 執行跳轉
+  window.location.href = finalLink;
+  
+  // 延遲清空購物車，確保流程完成
+  setTimeout(() => { 
+    cart = []; 
+    saveCart(); 
+    updateCartUI(); 
+    toggleCart(false); 
+  }, 1500);
 }
 
 function openCheckoutModal() {
@@ -355,7 +357,6 @@ async function handleFinalCheckout() {
 
   const msg = generateLineMessage(lineName, igAcc);
   
-  // 電腦版才執行的備份
   try {
     let detail = "";
     cart.forEach((item, i) => { detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`; });
@@ -363,7 +364,7 @@ async function handleFinalCheckout() {
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
   } catch (e) {}
 
-  window.open(CONFIG.LINE_MSG_URL + msg, '_blank');
+  window.location.href = CONFIG.LINE_MSG_URL + msg;
   
   cart = []; saveCart(); updateCartUI();
   document.getElementById('step-1').style.display = "none";
