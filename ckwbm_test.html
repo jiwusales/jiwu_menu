@@ -14,7 +14,7 @@
       SHEET_NAME: "ちいかわ",                                
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
-      LINE_LINK: "https://lin.ee/X6FUFI9" // 官LINE連結
+      LINE_LINK: "https://lin.ee/X6FUFI9" 
     };
   </script>
 
@@ -78,16 +78,18 @@
     #cart-panel.open { right: 0; }
     #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
 
-    .cart-header { padding: 20px 15px; background: var(--theme-color); color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; }
+    /* 修改 2：購物小車車標題與顏色 */
+    .cart-header { padding: 20px 15px; background: #fdd365; color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; }
+    
     .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
     .cart-footer { padding: 20px 15px; border-top: 1px solid #eee; background: #fafafa; }
     
-    /* 清除按鈕樣式 */
-    .btn-clear { background: #eee; color: #888; border: none; padding: 5px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 11px; margin-bottom: 10px; transition: 0.2s; }
-    .btn-clear:hover { background: #e0e0e0; color: #555; }
+    /* 修改 1：清空文字樣式 */
+    .text-clear { display: block; text-align: right; color: #bbb; font-size: 11px; text-decoration: underline; cursor: pointer; margin-bottom: 8px; }
+    .text-clear:hover { color: #888; }
     
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
   </style>
@@ -118,12 +120,12 @@
   <div id="cart-overlay-bg" onclick="toggleCart(false)"></div>
   <div id="cart-panel">
     <div class="cart-header">
-      <span>購物清單</span>
+      <span>購物小車車</span>
       <span style="cursor:pointer" onclick="toggleCart(false)">✕</span>
     </div>
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
-      <button class="btn-clear" onclick="clearCart()">清除購物車內容</button>
+      <span class="text-clear" onclick="clearCart()">清空小車車內容</span>
       
       <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
         <span>總計金額</span>
@@ -139,8 +141,6 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
-
-// 修改：從 LocalStorage 讀取資料
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
@@ -172,12 +172,11 @@ function loadData() {
       renderRoleNav();
       renderFilters();
       renderItems();
-      updateCartUI(); // 頁面載入後立即更新購物車介面
+      updateCartUI();
     } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
   });
 }
 
-// 修改：新增儲存至 LocalStorage 的功能
 function saveCart() {
   localStorage.setItem('jiwu_cart', JSON.stringify(cart));
 }
@@ -193,7 +192,6 @@ function addToCart(e, item, tagText) {
   setTimeout(() => { btn.style.background = originalBg; }, 100);
 }
 
-// 新增：清除購物車功能
 function clearCart() {
   if (confirm("確定要清空購物車嗎？")) {
     cart = [];
