@@ -14,7 +14,7 @@
       SHEET_NAME: "ちいかわ",                                 
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
-      LINE_ID: "@jiwusales", // 您的官方 LINE ID
+      LINE_ID: "@jiwusales", 
       LINE_LINK: "https://lin.ee/X6FUFI9" 
     };
   </script>
@@ -70,9 +70,9 @@
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
     
-    /* 修改點 1：放大後的標籤比例調整 */
+    /* 修改點 1：分開控制放大後的標籤比例 */
     .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
-    .card-overlay .add-btn-tag { transform: none; } /* ＋標籤尺寸不動 */
+    .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
 
     #cart-trigger { 
       position: fixed; 
@@ -105,6 +105,18 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
+    
+    /* 購物車內貨況標籤樣式 */
+    .cart-tag { 
+      display: inline-block; 
+      font-size: 10px; 
+      padding: 1px 6px; 
+      border-radius: 4px; 
+      color: white; 
+      margin-bottom: 3px; 
+      font-weight: bold; 
+    }
+
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
     .text-clear:hover { color: #888; }
@@ -195,9 +207,14 @@ function loadData() {
 
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function addToCart(e, item, tagText) {
+function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({...item, tagText: tagText || "商品"});
+  cart.push({
+    ...item, 
+    tagText: tagText || "商品",
+    tagBg: tagBg,
+    tagColor: tagColor
+  });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -226,7 +243,7 @@ function toggleCart(isOpen) {
   }
 }
 
-// 修改點 2：購物車內貨況與名稱同列，並改用 ()
+// 修改點 2：貨況移回名稱上方，並搭配原本標籤顏色
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
@@ -238,12 +255,15 @@ function updateCartUI() {
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
+    
+    // 判斷是否需要顯示貨況標籤
+    const tagHtml = item.tagText ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.tagText}</div>` : "";
+    
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
-        <div style="font-weight:bold; line-height:1.4;">
-          (${item.tagText}) ${item.name}
-        </div>
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div>
       </div>
       <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
@@ -261,7 +281,6 @@ function removeFromCart(index) {
   updateCartUI();
 }
 
-// 修改點 3：LINE 訊息版型優化
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
@@ -278,7 +297,6 @@ function checkoutLine() {
   if (!lineID.startsWith('@')) {
     lineID = '@' + lineID;
   }
-  
   const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
   window.open(finalLink, '_blank');
 }
@@ -362,7 +380,10 @@ function createCard(item) {
   else if (parseFloat(item.colG) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}')">＋</div>`;
+  
+  // 修改加入購物車按鈕，帶入標籤顏色
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
