@@ -61,7 +61,6 @@
     .stock-tag { left: 4px; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     
-    /* 修正：移除 transition，避免顏色淡出感 */
     .add-btn-tag { right: 4px; background: #ddd; color: #fff; font-size: 16px; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -70,7 +69,10 @@
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
-    .card-overlay .stock-tag, .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
+    
+    /* 修改點 1：放大後的標籤比例調整 */
+    .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
+    .card-overlay .add-btn-tag { transform: none; } /* ＋標籤尺寸不動 */
 
     #cart-trigger { 
       position: fixed; 
@@ -224,6 +226,7 @@ function toggleCart(isOpen) {
   }
 }
 
+// 修改點 2：購物車內貨況與名稱同列，並改用 ()
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
@@ -235,7 +238,16 @@ function updateCartUI() {
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info"><div style="font-weight:bold; margin-bottom:2px;">[${item.tagText}]</div><div>${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        <div style="font-weight:bold; line-height:1.4;">
+          (${item.tagText}) ${item.name}
+        </div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div>
+      </div>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
+    `;
     list.appendChild(div);
   });
   badge.textContent = cart.length;
@@ -249,28 +261,25 @@ function removeFromCart(index) {
   updateCartUI();
 }
 
-// 修正後的結帳邏輯：解決「找不到用戶」
+// 修改點 3：LINE 訊息版型優化
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
-  let msg = "您好，我想要購買以下商品：\n\n";
+  let msg = "你好，我想詢問跟購買以下寶寶٩(*•̀ᴗ•́*)و：\n\n";
   let total = 0;
   cart.forEach((item, i) => {
-    msg += `${i+1}. [${item.tagText}] ${item.name} - $${item.price}\n`;
+    msg += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
     const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
   });
-  msg += `\n總計金額：$${total}`;
+  msg += `\n總金額：$${total}`;
   
-  // 1. 確保 ID 開頭有 @
   let lineID = CONFIG.LINE_ID;
   if (!lineID.startsWith('@')) {
     lineID = '@' + lineID;
   }
   
-  // 2. 使用標準 oaMessage 格式，路徑中的 ID 不進行額外編碼以維持 @ 的正確性
   const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
-  
   window.open(finalLink, '_blank');
 }
 
