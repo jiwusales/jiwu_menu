@@ -63,25 +63,23 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
-    /* 庫存狀態標籤維持在左上 */
-    .stock-tag { position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
+    .stock-tag, .add-btn-tag { position: absolute; top: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
+    .stock-tag { left: 4px; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     
-    /* 1. 商品卡右下＋標籤改小且位置微調下移 */
-    .add-btn-tag { position: absolute; right: 4px; bottom: 2px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; background: #ddd; color: #fff; font-size: 13px; cursor: pointer; pointer-events: auto; transition: none; }
+    .add-btn-tag { right: 4px; background: #ddd; color: #fff; font-size: 16px; cursor: pointer; pointer-events: auto; transition: none; }
 
-    /* 商品卡圖片高度增加 5px */
-    .card img { height: 95px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
+    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
+    /* 放大後的視窗比例，透過 padding 增加上下留白 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
     
+    /* 分開控制放大後的標籤比例 */
     .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
-    
-    /* 2. 商品卡點開後的＋標籤調大 (scale 從 0.4 改到 0.7) */
-    .card-overlay .add-btn-tag { transform: scale(0.7); transform-origin: bottom right; }
+    .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
 
     #cart-trigger { 
       position: fixed; 
