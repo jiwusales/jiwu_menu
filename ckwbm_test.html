@@ -314,14 +314,15 @@ function removeFromCart(index) {
   }
 }
 
-// 判斷裝置寬度，決定結帳入口
+// 核心修改：判斷裝置類型，而非視窗寬度
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
-  const isMobile = window.innerWidth < 768; // 判斷寬度，768px 以下視為手機版
+  // 偵測 UserAgent 是否包含行動裝置關鍵字
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  if (isMobile) {
-    // 手機版：直接跳轉 LINE
+  if (isMobileDevice) {
+    // 手機/平板版：直接跳轉 LINE
     jumpToLineDirectly();
   } else {
     // 電腦版：開啟填寫資料視窗
@@ -408,7 +409,6 @@ async function handleFinalCheckout() {
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
     
-    // 電腦版嘗試在 1.5 秒後跳轉 (若瀏覽器支援 protocol jump)
     setTimeout(() => {
         const lineID = CONFIG.LINE_ID.replace('@','');
         window.location.href = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
