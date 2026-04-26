@@ -7,14 +7,16 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
   <script>
+    /* ===========================================
+       【這區是你的專屬修改區】
+       =========================================== */
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",
-      ACTIVE_COLOR: "#f5b080",
+      THEME_COLOR: "#FBCC7E",   // 整體色
+      ACTIVE_COLOR: "#f5b080",  // 勾選色
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "ちいかわ",                               
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
-      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
-      LINE_URL: "https://lin.ee/X6FUFI9"
+      FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png"      
     };
   </script>
 
@@ -58,69 +60,230 @@
     
     .stock-tag { 
       position: absolute; top: 4px; left: 4px; 
-      width: 22px; height: 22px; border-radius: 50%; 
+      width: 22px; 
+      height: 22px; 
+      border-radius: 50%; 
       font-size: 11px; font-weight: bold; 
       display: flex; align-items: center; justify-content: center; 
-      z-index: 10; box-sizing: border-box; padding: 0;
+      z-index: 10; box-sizing: border-box;
+      padding: 0;
     }
-    .stock-tag.vertical {
-      writing-mode: vertical-rl; text-orientation: upright;
-      width: 20px; height: auto; border-radius: 10px;
-      padding: 4px 0; font-size: 9px;
-    }
-    .stock-tag.plane-tag { font-size: 14px; transform: rotate(45deg); }
 
-    .add-btn {
-      position: absolute; top: 4px; right: 4px;
-      width: 20px; height: 20px; border-radius: 50%;
-      background: #b0b0b0; color: #fff;
-      font-size: 16px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 11; cursor: pointer; line-height: 1;
-      transition: background 0.15s, transform 0.1s;
-      user-select: none; border: none; padding: 0;
+    .stock-tag.vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      width: 20px;
+      height: auto;
+      border-radius: 10px;
+      padding: 4px 0;
+      font-size: 9px;
     }
-    .add-btn:hover { background: #888; transform: scale(1.15); }
-    .add-btn:active { transform: scale(0.95); }
+
+    .stock-tag.plane-tag {
+      font-size: 14px; 
+      transform: rotate(45deg); 
+    }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
-
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
 
-    #cart-btn {
-      position: fixed; top: 79px; right: 10px; z-index: 997;
-      background: rgba(255,255,255,0.70);
-      border: 2px solid var(--theme-color); border-radius: 50%;
-      width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
-      transition: background 0.2s, transform 0.1s;
-      backdrop-filter: blur(2px);
-    }
-    #cart-btn:hover { background: rgba(255,255,255,0.90); transform: scale(1.08); }
-    #cart-badge {
-      position: absolute; top: -5px; right: -5px;
-      background: #e55; color: #fff; border-radius: 50%;
-      font-size: 10px; font-weight: bold;
-      width: 17px; height: 17px;
-      display: none; align-items: center; justify-content: center;
-    }
-    #cart-badge.show { display: flex; }
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
+    </div>
+    <div class="filter-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="filter-scroll"><div id="filter-bar" style="display: inline-block;"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)">❯</div>
+    </div>
+  </div>
 
-    #cart-panel {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5); z-index: 20000;
-      align-items: flex-end; justify-content: center;
-    }
-    #cart-panel.open { display: flex; }
-    #cart-inner {
-      background: #fff; border-radius: 18px 18px 0 0;
-      width: 100%; max-width: 480px; max-height: 80vh;
-      display: flex; flex-direction: column;
-      overflow: hidden; box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
-    }
-    #cart-header {
-      display: flex; align-
+  <div id="card-container"></div>
+
+<script>
+document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
+document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+
+let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  fetch(url).then(r => r.text()).then(t => {
+    try {
+      const data = JSON.parse(t.substr(47).slice(0,-2));
+      allItems = data.table.rows.map(r => {
+        const getV = (idx) => {
+          const val = r.c[idx]?.v;
+          return (val !== null && val !== undefined) ? val.toString().trim() : "";
+        };
+        return {
+          kind: getV(0) || "其他角色",
+          type: getV(1) || "其他",
+          name: getV(3),
+          price: r.c[5]?.v,
+          colG: getV(6),
+          colH: getV(7),
+          colI: getV(8),
+          colJ: getV(9),
+          colK: getV(10),
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
+        };
+      }).filter(item => item.colJ === "" && item.colG.toLowerCase() !== 'x');
+
+      allCategories = [...new Set(allItems.map(i => i.kind))];
+      allTypes = [...new Set(allItems.map(i => i.type))];
+      renderRoleNav();
+      renderFilters();
+      renderItems();
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
+  });
+}
+
+function renderRoleNav() {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = allCategories.map(cat => {
+    const isSelected = selectedRole === cat;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
+  }).join('');
+}
+
+function toggleRole(cat) {
+  selectedRole = (selectedRole === cat) ? null : cat;
+  renderRoleNav();
+  renderItems();
+}
+
+function renderFilters() {
+  const filterBar = document.getElementById('filter-bar');
+  filterBar.innerHTML = allTypes.map(t => {
+    const isActive = selectedTypes.includes(t);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
+  }).join('');
+}
+
+function toggleType(type) {
+  if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
+  else { selectedTypes.push(type); }
+  renderFilters();
+  renderItems();
+}
+
+function renderItems() {
+  const container = document.getElementById('card-container');
+  container.innerHTML = "";
+  const isFilterMode = selectedTypes.length > 0;
+  let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
+
+  if (filteredItems.length === 0) {
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    return;
+  }
+
+  if (!isFilterMode && !selectedRole) {
+    allCategories.forEach(cat => {
+      const catItems = filteredItems.filter(i => i.kind === cat);
+      if (catItems.length === 0) return;
+      const div = document.createElement('div');
+      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
+      container.appendChild(div);
+      const grid = document.createElement('div');
+      grid.className = 'group-grid';
+      catItems.forEach(item => grid.appendChild(createCard(item)));
+      container.appendChild(grid);
+    });
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    grid.style.paddingTop = "10px";
+    filteredItems.forEach(item => grid.appendChild(createCard(item)));
+    container.appendChild(grid);
+  }
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  // 角色專屬邊框顏色
+  const roleColors = {
+    "吉伊": "#d77485",
+    "小八": "#6293b8",
+    "兔兔": "#f9be3c",
+    "小桃": "#838BC2",
+    "師傅": "#CCAFA5",
+    "栗子": "#94C973",
+    "獅薩": "#FBAA60",
+    "古本": "#eb9e97",
+    "綜合角色": "#989FC0",
+    "全角色": "#E24C60",
+    "其他角色": "#45818e"
+  };
+
+  // 判斷邊框顏色：有設定就用設定值，沒設定就抓 CONFIG.THEME_COLOR
+  const borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+  card.style.borderColor = borderColor;
+
+  let tagText = "";
+  let tagBg = "#fab460"; 
+  let tagColor = "white";
+  let extraClass = "";
+
+  // --- 標籤判斷邏輯 ---
+  if (item.colK !== "") {
+    tagText = "受注";
+    tagBg = "#B1DEC1";
+  } 
+  else if (item.colG === "" && item.colH === "") {
+    // 只要 G 跟 H 是空白，就顯示點貨中 (無視 IJK)
+    tagText = "點貨中";
+    tagBg = "#D2EAF1";
+    tagColor = "#666";
+  }
+  else if (item.colG === "0" && parseFloat(item.colI) > 0) {
+    tagText = "搭機中";
+    tagBg = "#6C95B0";
+  }
+  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) {
+    tagText = "需預訂";
+    tagBg = "#C197D2";
+  }
+  else if (parseFloat(item.colG) > 0) {
+    tagText = "現貨";
+    tagBg = "#fab460";
+  }
+
+  let tagHtml = "";
+  if (tagText) {
+    const isVertical = tagText.length >= 2 ? "vertical" : "";
+    if (tagText === "✈︎") extraClass = "plane-tag";
+    tagHtml = `<div class="stock-tag ${isVertical} ${extraClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
+  }
+
+  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
+  
+  card.innerHTML = `${tagHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  card.onclick = () => zoomCard(card);
+  return card;
+}
+
+function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function zoomCard(c) {
+  const ov = document.createElement('div'); ov.className = 'card-overlay';
+  const clone = c.cloneNode(true); ov.appendChild(clone);
+  ov.onclick = () => ov.remove(); document.body.appendChild(ov);
+}
+loadData();
+</script>
+</body>
+</html>
