@@ -67,9 +67,9 @@
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
-    /* 修改點：放大後的視窗比例，移除寬度限制以恢復長方形 */
+    /* 修改點：放大後的視窗比例，透過 padding 增加上下留白 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-    .card-overlay .card { transform: scale(3.2); background: white; width: auto; min-width: 110px; pointer-events: none; border-width: 1.5px; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: 100px; padding: 15px 0; pointer-events: none; border-width: 1.5px; }
     
     /* 分開控制放大後的標籤比例 */
     .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
@@ -329,7 +329,7 @@ function renderItems() {
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
   if (filteredItems.length === 0) {
-    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ費` )</div>";
     return;
   }
   if (!isFilterMode && !selectedRole) {
