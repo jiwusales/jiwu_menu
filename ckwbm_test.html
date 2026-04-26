@@ -279,7 +279,7 @@ function removeFromCart(index) {
 
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   cart.forEach((item, i) => {
     msg += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
