@@ -14,7 +14,7 @@
       SHEET_NAME: "ちいかわ",                                
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
-      LINE_LINK: "https://lin.ee/X6FUFI9" // 官LINE連結
+      LINE_LINK: "https://lin.ee/X6FUFI9" 
     };
   </script>
 
@@ -56,12 +56,10 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
-    /* 庫存標籤 & +標籤 */
     .stock-tag, .add-btn-tag { position: absolute; top: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .stock-tag { left: 4px; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     
-    /* 修改 1：+標籤改為圓形，與貨況一致 */
     .add-btn-tag { right: 4px; background: #ddd; color: #fff; font-size: 16px; cursor: pointer; pointer-events: auto; }
     .add-btn-tag:active { background: var(--active-color); }
 
@@ -69,16 +67,13 @@
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
-    /* 放大檢視 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
 
-    /* 修改 2：購物車按鈕位置 (右上，勾選bar下面) & 圖示 */
     #cart-trigger { position: fixed; top: 115px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; opacity: 0.7; cursor: pointer; }
     #cart-trigger img { width: 28px; height: 28px; }
     #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
-    /* 修改 3：側拉式購物車面板 */
     #cart-panel { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
     #cart-panel.open { right: 0; }
     #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
@@ -88,8 +83,12 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
-    .cart-footer { padding: 20px 15px; border-top: 1px solid #eee; background: #fafafa; }
-    .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    
+    .cart-footer { padding: 15px; border-top: 1px solid #eee; background: #fafafa; }
+    
+    /* 清除購物車按鈕樣式 */
+    .btn-clear { background: #bbb; color: white; border: none; padding: 5px 0; width: 100%; border-radius: 5px; cursor: pointer; font-size: 11px; margin-bottom: 10px; }
+    .btn-checkout { background: #06C755; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -123,6 +122,8 @@
     </div>
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
+      <button class="btn-clear" onclick="clearCart()">清除購物車內容</button>
+      
       <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
         <span>總計金額</span>
         <span id="cart-total" style="color: #e44d26;">$0</span>
@@ -137,7 +138,8 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
-let cart = [];
+// 初始化時讀取 LocalStorage
+let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -168,6 +170,7 @@ function loadData() {
       renderRoleNav();
       renderFilters();
       renderItems();
+      updateCartUI(); // 確保讀取快取後更新 UI
     } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
   });
 }
@@ -175,11 +178,24 @@ function loadData() {
 function addToCart(e, item, tagText) {
   e.stopPropagation();
   cart.push({...item, tagText: tagText || "商品"});
-  updateCartUI();
+  saveAndUpdateCart(); // 儲存並更新
+  
   const btn = e.target;
   const originalBg = btn.style.background;
-  btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = originalBg; }, 100);
+  btn.style.background = "#f5b080"; // 預設使用你的 ACTIVE_COLOR 示意
+  setTimeout(() => { btn.style.background = originalBg; }, 500);
+}
+
+function clearCart() {
+  if (confirm("確定要清空購物車嗎？")) {
+    cart = [];
+    saveAndUpdateCart();
+  }
+}
+
+function saveAndUpdateCart() {
+  localStorage.setItem('jiwu_cart', JSON.stringify(cart)); // 寫入快取
+  updateCartUI();
 }
 
 function toggleCart(isOpen) {
@@ -227,7 +243,7 @@ function updateCartUI() {
 
 function removeFromCart(index) {
   cart.splice(index, 1);
-  updateCartUI();
+  saveAndUpdateCart();
 }
 
 function checkoutLine() {
@@ -328,7 +344,6 @@ function createCard(item) {
     tagHtml = `<div class="stock-tag ${isVertical}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
   }
 
-  // 修改：右上角標籤改為圓形
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}')">＋</div>`;
 
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
