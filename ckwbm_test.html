@@ -212,19 +212,22 @@ function loadData() {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
+        // 依照妳提供的 Menu 排序: 角色(0) 種類(1) 款式(2) 名稱(3) 原價(4) 售價(5) 庫存(6) 店面(7) 非現(8) 上架(9) 受注(10) 貨號(11) 圖片(12)
         return {
           kind: getV(0) || "其他角色",
           type: getV(1) || "其他",
-          name: getV(3),
-          price: r.c[5]?.v,
-          colG: getV(6),
-          colH: getV(7),
-          colI: getV(8),
-          colJ: getV(9),
-          colK: getV(10),
-          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
+          style: getV(2),      // 款式
+          name: getV(3),       // 名稱
+          price: r.c[5]?.v,    // 售價
+          colStock: getV(6),   // 庫存 (G)
+          colShop: getV(7),    // 店面 (H)
+          colNonStock: getV(8),// 非現 (I)
+          colList: getV(9),    // 上架 (J) - 過濾用
+          colOrder: getV(10),  // 受注 (K)
+          sn: getV(11),        // 貨號 (L)
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" // 圖片
         };
-      }).filter(item => item.colJ === "" && item.colG.toLowerCase() !== 'x');
+      }).filter(item => item.colList === "" && item.colStock.toLowerCase() !== 'x');
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
@@ -240,7 +243,8 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, tagText: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
+  // 將當前的貨況標籤文字存入 cartItem 的 currentStatus
+  cart.push({ ...item, currentStatus: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -270,7 +274,7 @@ function updateCartUI() {
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
-    const tagHtml = item.tagText ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.tagText}</div>` : "";
+    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
     list.appendChild(div);
   });
@@ -289,7 +293,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let total = 0;
   cart.forEach((item, i) => {
     const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-    msg += `${i + 1}. (${item.tagText}) ${item.name} $${item.price}\n`;
+    msg += `${i + 1}. (${item.currentStatus}) ${item.name} $${item.price}\n`;
     total += priceVal;
   });
   msg += `\n總金額：$${total}`;
@@ -333,7 +337,7 @@ function renderCheckoutSummary() {
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
-    const tagHtml = item.tagText ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.tagText}</div>` : "";
+    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div>`;
     summaryList.appendChild(div);
   });
@@ -359,9 +363,11 @@ async function handleFinalCheckout() {
     const cartData = cart.map(item => ({
       kind: item.kind,
       type: item.type,
-      tagText: item.tagText,
+      tagText: item.style,    // 傳送 Menu 裡的「款式」到結帳表 F 欄
       name: item.name,
-      price: item.price
+      price: item.price,
+      sn: item.sn,           // 傳送貨號到結帳表 I 欄
+      status: item.currentStatus // 傳送貨況標籤到結帳表 J 欄
     }));
 
     const postData = { 
@@ -370,7 +376,7 @@ async function handleFinalCheckout() {
       cartItems: cartData 
     };
 
-    fetch(CONFIG.DEPLOY_URL, { 
+    await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
       mode: 'no-cors', 
       body: JSON.stringify(postData) 
@@ -444,11 +450,12 @@ function createCard(item) {
   card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (item.colK !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
-  else if (item.colG === "" && item.colH === "") { tagText = "點貨中"; tagBg = "#D2EAF1"; tagColor = "#666"; }
-  else if (item.colG === "0" && parseFloat(item.colI) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
-  else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
-  else if (parseFloat(item.colG) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
+  // 依照 Menu 欄位重新判斷：受注(K:10), 庫存(G:6), 店面(H:7), 非現(I:8)
+  if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
+  else if (item.colStock === "" && item.colShop === "") { tagText = "點貨中"; tagBg = "#D2EAF1"; tagColor = "#666"; }
+  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
+  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
+  else if (parseFloat(item.colStock) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
