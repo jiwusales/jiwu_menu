@@ -70,8 +70,26 @@
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
     .card-overlay .stock-tag, .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
 
-    /* 改動：購物車標籤現在支援拖曳 */
-    #cart-trigger { position: fixed; bottom: 30px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; opacity: 0.8; cursor: move; touch-action: none; user-select: none; }
+    /* 修改：購物車標籤初始位置與動畫 */
+    #cart-trigger { 
+      position: fixed; 
+      top: 115px;      /* 預設在勾選 bar 下方 */
+      right: 15px; 
+      width: 45px; 
+      height: 45px; 
+      background: #fff; 
+      border-radius: 50%; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+      z-index: 999; 
+      opacity: 0.8; 
+      cursor: move; 
+      touch-action: none; 
+      user-select: none;
+      transition: left 0.3s ease, right 0.3s ease; /* 吸附時的平滑效果 */
+    }
     #cart-trigger img { width: 28px; height: 28px; pointer-events: none; }
     #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
@@ -337,7 +355,7 @@ function zoomCard(c) {
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
-// ---------------- 購物車拖曳邏輯 ----------------
+// ---------------- 購物車拖曳與自動吸附邏輯 ----------------
 (function initDraggableCart() {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
@@ -345,6 +363,7 @@ function zoomCard(c) {
 
   const dragStart = (e) => {
     isDragging = false;
+    el.style.transition = 'none'; // 拖曳時取消動畫
     const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
     startX = clientX;
@@ -369,12 +388,10 @@ function zoomCard(c) {
       if (e.cancelable) e.preventDefault();
       let newX = initialX + dx;
       let newY = initialY + dy;
-      newX = Math.max(0, Math.min(window.innerWidth - 45, newX));
-      newY = Math.max(0, Math.min(window.innerHeight - 45, newY));
       el.style.left = newX + 'px';
       el.style.top = newY + 'px';
-      el.style.bottom = 'auto';
       el.style.right = 'auto';
+      el.style.bottom = 'auto';
     }
   };
 
@@ -383,6 +400,24 @@ function zoomCard(c) {
     document.removeEventListener('touchmove', dragMove);
     document.removeEventListener('mouseup', dragEnd);
     document.removeEventListener('touchend', dragEnd);
+
+    if (isDragging) {
+      el.style.transition = 'left 0.3s ease, right 0.3s ease, top 0.3s ease';
+      const rect = el.getBoundingClientRect();
+      const screenWidth = window.innerWidth;
+      const margin = 10; // 吸附距離側邊的間距
+
+      // 判斷吸附左右
+      if (rect.left + rect.width / 2 < screenWidth / 2) {
+        el.style.left = margin + 'px';
+      } else {
+        el.style.left = (screenWidth - rect.width - margin) + 'px';
+      }
+
+      // 垂直邊界保護
+      if (rect.top < 50) el.style.top = '50px';
+      if (rect.top > window.innerHeight - 60) el.style.top = (window.innerHeight - 60) + 'px';
+    }
   };
 
   el.addEventListener('click', (e) => {
