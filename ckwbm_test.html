@@ -15,7 +15,7 @@
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", // 您的官方 LINE ID
-      LINE_LINK: "https://lin.ee/X6FUFI9" // 頂部導航用的短網址
+      LINE_LINK: "https://lin.ee/X6FUFI9" 
     };
   </script>
 
@@ -61,7 +61,8 @@
     .stock-tag { left: 4px; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     
-    .add-btn-tag { right: 4px; background: #ddd; color: #fff; font-size: 16px; cursor: pointer; pointer-events: auto; transition: background 0.1s; }
+    /* 修正：移除 transition，避免顏色淡出感 */
+    .add-btn-tag { right: 4px; background: #ddd; color: #fff; font-size: 16px; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
@@ -192,7 +193,6 @@ function loadData() {
 
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-// 修改：優化＋標籤點擊反饋時間
 function addToCart(e, item, tagText) {
   e.stopPropagation();
   cart.push({...item, tagText: tagText || "商品"});
@@ -201,7 +201,7 @@ function addToCart(e, item, tagText) {
   const btn = e.target;
   const originalBg = "#ddd";
   btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = originalBg; }, 100); // 改為 100ms 快速恢復
+  setTimeout(() => { btn.style.background = originalBg; }, 50); 
 }
 
 function clearCart() {
@@ -249,9 +249,10 @@ function removeFromCart(index) {
   updateCartUI();
 }
 
-// 修改：更換為強制帶入文字訊息的 LINE 協定網址
+// 修正後的結帳邏輯：解決「找不到用戶」
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
+  
   let msg = "您好，我想要購買以下商品：\n\n";
   let total = 0;
   cart.forEach((item, i) => {
@@ -261,9 +262,15 @@ function checkoutLine() {
   });
   msg += `\n總計金額：$${total}`;
   
-  // 使用 line.me/R/oaMessage 協定來確保訊息帶入
-  const lineID = CONFIG.LINE_ID.replace('@', ''); // 去掉 @ 符號
+  // 1. 確保 ID 開頭有 @
+  let lineID = CONFIG.LINE_ID;
+  if (!lineID.startsWith('@')) {
+    lineID = '@' + lineID;
+  }
+  
+  // 2. 使用標準 oaMessage 格式，路徑中的 ID 不進行額外編碼以維持 @ 的正確性
   const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
+  
   window.open(finalLink, '_blank');
 }
 
