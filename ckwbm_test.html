@@ -12,7 +12,7 @@
 
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
-<script>
+  <script>
     const CONFIG = {
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
@@ -301,14 +301,14 @@ function generateLineMessage(lineName = "", igAccount = "") {
   return encodeURIComponent(msg);
 }
 
-// 核心修正：自動判斷裝置決定跳轉流程
+// 核心修正：改用系統判定 (navigator.userAgent) 而非寬度
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   
-  // 判斷是否為手機 (寬度小於 768 或擁有 touch 特性)
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  // 嚴格判定：檢查是否為常見行動裝置系統
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  if (isMobile) {
+  if (isMobileDevice) {
     // 手機版：直接跳轉官 LINE
     const msg = generateLineMessage();
     window.location.href = CONFIG.LINE_MSG_URL + msg;
