@@ -67,12 +67,13 @@
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
+    /* 修改點：放大後的視窗比例，移除寬度限制以恢復長方形 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-    .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
+    .card-overlay .card { transform: scale(3.2); background: white; width: auto; min-width: 110px; pointer-events: none; border-width: 1.5px; }
     
-    /* 修改點 1：分開控制放大後的標籤比例 */
-    .card-overlay .stock-tag { transform: scale(0.7); transform-origin: center; }
-    .card-overlay .add-btn-tag { transform: scale(0.5); transform-origin: center; }
+    /* 分開控制放大後的標籤比例 */
+    .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
+    .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
 
     #cart-trigger { 
       position: fixed; 
@@ -106,7 +107,6 @@
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
     
-    /* 購物車內貨況標籤樣式 */
     .cart-tag { 
       display: inline-block; 
       font-size: 10px; 
@@ -243,7 +243,6 @@ function toggleCart(isOpen) {
   }
 }
 
-// 修改點 2：貨況移回名稱上方，並搭配原本標籤顏色
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
@@ -255,10 +254,7 @@ function updateCartUI() {
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
-    
-    // 判斷是否需要顯示貨況標籤
     const tagHtml = item.tagText ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.tagText}</div>` : "";
-    
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
@@ -283,7 +279,6 @@ function removeFromCart(index) {
 
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   cart.forEach((item, i) => {
@@ -292,11 +287,8 @@ function checkoutLine() {
     total += priceVal;
   });
   msg += `\n總金額：$${total}`;
-  
   let lineID = CONFIG.LINE_ID;
-  if (!lineID.startsWith('@')) {
-    lineID = '@' + lineID;
-  }
+  if (!lineID.startsWith('@')) lineID = '@' + lineID;
   const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
   window.open(finalLink, '_blank');
 }
@@ -336,12 +328,10 @@ function renderItems() {
   const isFilterMode = selectedTypes.length > 0;
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
-
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
     return;
   }
-
   if (!isFilterMode && !selectedRole) {
     allCategories.forEach(cat => {
       const catItems = filteredItems.filter(i => i.kind === cat);
@@ -380,10 +370,7 @@ function createCard(item) {
   else if (parseFloat(item.colG) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  
-  // 修改加入購物車按鈕，帶入標籤顏色
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
@@ -401,66 +388,41 @@ function zoomCard(c) {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
   let startX, startY, initialX, initialY;
-
   const dragStart = (e) => {
-    isDragging = false;
-    el.style.transition = 'none';
+    isDragging = false; el.style.transition = 'none';
     const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-    startX = clientX;
-    startY = clientY;
+    startX = clientX; startY = clientY;
     const rect = el.getBoundingClientRect();
-    initialX = rect.left;
-    initialY = rect.top;
+    initialX = rect.left; initialY = rect.top;
     document.addEventListener('mousemove', dragMove);
     document.addEventListener('touchmove', dragMove, { passive: false });
     document.addEventListener('mouseup', dragEnd);
     document.addEventListener('touchend', dragEnd);
   };
-
   const dragMove = (e) => {
     const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-    const dx = clientX - startX;
-    const dy = clientY - startY;
-
+    const dx = clientX - startX; const dy = clientY - startY;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      isDragging = true;
-      if (e.cancelable) e.preventDefault();
-      let newX = initialX + dx;
-      let newY = initialY + dy;
-      el.style.left = newX + 'px';
-      el.style.top = newY + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
+      isDragging = true; if (e.cancelable) e.preventDefault();
+      el.style.left = (initialX + dx) + 'px'; el.style.top = (initialY + dy) + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto';
     }
   };
-
   const dragEnd = () => {
-    document.removeEventListener('mousemove', dragMove);
-    document.removeEventListener('touchmove', dragMove);
-    document.removeEventListener('mouseup', dragEnd);
-    document.removeEventListener('touchend', dragEnd);
-
+    document.removeEventListener('mousemove', dragMove); document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('mouseup', dragEnd); document.removeEventListener('touchend', dragEnd);
     if (isDragging) {
       el.style.transition = 'left 0.3s ease, right 0.3s ease, top 0.3s ease';
-      const rect = el.getBoundingClientRect();
-      const screenWidth = window.innerWidth;
-      const margin = 10;
-      if (rect.left + rect.width / 2 < screenWidth / 2) {
-        el.style.left = margin + 'px';
-      } else {
-        el.style.left = (screenWidth - rect.width - margin) + 'px';
-      }
+      const rect = el.getBoundingClientRect(); const screenWidth = window.innerWidth;
+      if (rect.left + rect.width / 2 < screenWidth / 2) el.style.left = '10px';
+      else el.style.left = (screenWidth - rect.width - 10) + 'px';
       if (rect.top < 50) el.style.top = '50px';
       if (rect.top > window.innerHeight - 60) el.style.top = (window.innerHeight - 60) + 'px';
     }
   };
-
-  el.addEventListener('click', (e) => {
-    if (isDragging) e.preventDefault();
-    else toggleCart(true);
-  });
+  el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCart(true); });
   el.addEventListener('mousedown', dragStart);
   el.addEventListener('touchstart', dragStart, { passive: false });
 })();
