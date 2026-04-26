@@ -21,7 +21,7 @@
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
-      LINE_LINK: "https://lin.ee/X6FUFI9",
+      LINE_LINK: "https://line.me/R/ti/p/@jiwusales", // 修改為好友連結
       // --- 請在下方填入你部署 GAS 後得到的網頁應用程式網址 ---
       DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
@@ -185,14 +185,13 @@
       </div>
       <input type="text" id="user-line" class="input-box" placeholder="LINE 名字">
       <input type="text" id="user-ig" class="input-box" placeholder="Instagram 帳號">
-      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認送出並前往 LINE</button>
+      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認送出</button>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
     <div class="modal-content qr-box" id="step-2">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://lin.ee/X6FUFI9" alt="QR">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@jiwusales" alt="QR">
       <p style="font-weight:bold; font-size: 16px; margin: 20px 0;">請至官LINE核對訂單，感謝！</p>
-      <p style="font-size: 13px; color: #888;">（請手動開啟 LINE 並發送訊息）</p>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
   </div>
@@ -314,44 +313,27 @@ function removeFromCart(index) {
   }
 }
 
-// 核心修改：判斷裝置類型，而非視窗寬度
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  
-  // 偵測 UserAgent 是否包含行動裝置關鍵字
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   if (isMobileDevice) {
-    // 手機/平板版：直接跳轉 LINE
     jumpToLineDirectly();
   } else {
-    // 電腦版：開啟填寫資料視窗
     openCheckoutModal();
   }
 }
 
-// 手機版專用：不填表單，直接產出訊息並跳轉
+// 修改點 2：手機版改為跳轉好友網址
 function jumpToLineDirectly() {
   toggleCart(false);
-  let detail = "";
-  let total = 0;
-  cart.forEach((item, i) => {
-    detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
-    total += parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-  });
-
-  const msg = `你好！我想訂購以下寶寶(৹˙꒳​˙ฅ)：\n\n${detail}\n總計：$${total}`;
-  const lineID = CONFIG.LINE_ID.replace('@','');
-  const link = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
-  
-  // 清空購物車並導向
+  const link = CONFIG.LINE_LINK; // 使用好友連結
   cart = [];
   saveCart();
   updateCartUI();
   window.location.href = link;
 }
 
-// 電腦版專用：開啟填表視窗
 function openCheckoutModal() {
   toggleCart(false);
   document.getElementById('step-1').style.display = "block";
@@ -381,6 +363,7 @@ function closeModal() {
   document.getElementById('checkout-modal').style.display = "none";
 }
 
+// 修改點 1：移除自動跳轉代碼
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -400,23 +383,16 @@ async function handleFinalCheckout() {
 
   try {
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-    const msg = `你好！我是 ${lineName} (IG: ${igAcc})，已在網頁下單以下寶寶(৹˙꒳​˙ฅ)：\n\n${detail}\n總計：$${total}`;
-    
     cart = [];
     saveCart();
     updateCartUI();
 
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
-    
-    setTimeout(() => {
-        const lineID = CONFIG.LINE_ID.replace('@','');
-        window.location.href = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
-    }, 1500);
-
+    // 這裡已移除跳轉代碼
   } catch (e) {
     alert("送出失敗，請重試。");
-    btn.disabled = false; btn.textContent = "確認送出並前往 LINE";
+    btn.disabled = false; btn.textContent = "確認送出";
   }
 }
 
