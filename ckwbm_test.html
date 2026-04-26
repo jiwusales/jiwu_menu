@@ -21,7 +21,9 @@
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
-      LINE_LINK: "https://lin.ee/X6FUFI9" 
+      LINE_LINK: "https://lin.ee/X6FUFI9",
+      // --- 請在下方填入你部署 GAS 後得到的網頁應用程式網址 ---
+      DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
   </script>
 
@@ -66,20 +68,17 @@
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     
-    /* 商品卡上的 ＋ 標籤：縮小尺寸 */
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
-    /* 放大後的視窗比例 */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
     
-    /* 分開控制放大後的標籤比例 */
     .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
-    .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } /* 放大後將 ＋ 標籤調大 */
+    .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
 
     #cart-trigger { 
       position: fixed; 
@@ -127,6 +126,14 @@
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
     .text-clear:hover { color: #888; }
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+
+    /* --- 新增：結帳彈窗樣式 --- */
+    #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 85%; max-width: 350px; border-radius: 15px; padding: 20px; position: relative; }
+    .input-box { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+    .summary-box { background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px; max-height: 120px; overflow-y: auto; text-align: left; margin-bottom: 10px; border: 1px solid #eee; }
+    .qr-box { display: none; text-align: center; }
+    .qr-box img { width: 180px; height: 180px; margin: 10px 0; }
   </style>
 </head>
 <body>
@@ -165,7 +172,26 @@
         <span>總計金額</span>
         <span id="cart-total" style="color: #e44d26;">$0</span>
       </div>
-      <button class="btn-checkout" onclick="checkoutLine()">到官LINE結帳</button>
+      <button class="btn-checkout" onclick="openCheckoutModal()">填寫資料結帳</button>
+    </div>
+  </div>
+
+  <div id="checkout-modal">
+    <div class="modal-content" id="step-1">
+      <h3 style="margin-top:0; font-size: 18px;">確認訂購資料</h3>
+      <div class="summary-box" id="modal-summary"></div>
+      <input type="text" id="user-line" class="input-box" placeholder="LINE 名字">
+      <input type="text" id="user-ig" class="input-box" placeholder="Instagram 帳號">
+      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認送出並前往 LINE</button>
+      <p style="font-size:11px; color: #999; margin-top: 10px;">資料將自動匯入試算表排單</p>
+      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
+    </div>
+
+    <div class="modal-content qr-box" id="step-2">
+      <h3 style="color:#f5b080; margin-top:0">訂單已登記成功！</h3>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://lin.ee/X6FUFI9" alt="QR">
+      <p style="font-weight:bold; font-size: 14px;">請至官LINE發送訊息，感謝！</p>
+      <button class="btn-checkout" onclick="jumpToLineFinal()">點我直接跳轉官LINE</button>
     </div>
   </div>
 
@@ -283,28 +309,72 @@ function removeFromCart(index) {
   updateCartUI();
 }
 
-function checkoutLine() {
+/* --- 新增：結帳功能函式 --- */
+function openCheckoutModal() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  let msg = "你好，想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  toggleCart(false);
+  document.getElementById('checkout-modal').style.display = "flex";
+  document.getElementById('modal-summary').innerHTML = cart.map((i,idx)=>`${idx+1}. ${i.name} ($${i.price})`).join('<br>');
+}
+
+function closeModal() {
+  document.getElementById('checkout-modal').style.display = "none";
+}
+
+async function handleFinalCheckout() {
+  const lineName = document.getElementById('user-line').value.trim();
+  const igAcc = document.getElementById('user-ig').value.trim();
+  if(!lineName || !igAcc) return alert("請填寫您的 LINE 名字與 IG 帳號唷！");
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; btn.textContent = "傳送資料中...";
+
+  let detail = "";
   let total = 0;
   cart.forEach((item, i) => {
-    msg += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-    total += priceVal;
+    detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
+    total += parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
   });
-  msg += `\n總金額：$${total}`;
-  
-  let lineID = CONFIG.LINE_ID;
-  if (!lineID.startsWith('@')) lineID = '@' + lineID;
-  const finalLink = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
-  
-  window.open(finalLink, '_blank');
 
-  // 結帳後自動清空購物車
+  const data = {
+    lineName: lineName,
+    igAccount: igAcc,
+    items: detail,
+    total: `$${total}`
+  };
+
+  try {
+    // 傳送到 GAS
+    await fetch(CONFIG.DEPLOY_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(data)
+    });
+    
+    // 設定 LINE 訊息文字
+    const msg = `你好！我是 ${lineName} (IG: ${igAcc})，已在網頁下單以下寶寶(৹˙꒳​˙ฅ)：\n\n${detail}\n總計：$${total}`;
+    sessionStorage.setItem('final_line_msg', msg);
+
+    // 進入下一步 (顯示 QR)
+    document.getElementById('step-1').style.display = "none";
+    document.getElementById('step-2').style.display = "block";
+  } catch (e) {
+    alert("送出失敗，請確認網路或聯繫小幫手。");
+    btn.disabled = false; btn.textContent = "確認送出並前往 LINE";
+  }
+}
+
+function jumpToLineFinal() {
+  const msg = sessionStorage.getItem('final_line_msg');
+  const lineID = CONFIG.LINE_ID.replace('@','');
+  const link = `https://line.me/R/oaMessage/${lineID}/?${encodeURIComponent(msg)}`;
+  
+  // 清空購物車
   cart = [];
   saveCart();
   updateCartUI();
-  toggleCart(false); // 可選：結帳後自動關閉側欄
+  
+  window.location.href = link;
 }
 
 function renderRoleNav() {
