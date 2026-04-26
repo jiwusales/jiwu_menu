@@ -215,16 +215,16 @@ function loadData() {
         return {
           kind: getV(0) || "其他角色",
           type: getV(1) || "其他",
-          style: getV(2),      // 款式
-          name: getV(3),       // 名稱
-          price: r.c[5]?.v,    // 售價
-          colStock: getV(6),   // 庫存 (G)
-          colShop: getV(7),    // 店面 (H)
-          colNonStock: getV(8),// 非現 (I)
-          colList: getV(9),    // 上架 (J)
-          colOrder: getV(10),  // 受注 (K)
-          sn: getV(11),        // 貨號 (L)
-          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png"
+          style: getV(2),      
+          name: getV(3),       
+          price: r.c[5]?.v,    
+          colStock: getV(6),   
+          colShop: getV(7),    
+          colNonStock: getV(8),
+          colList: getV(9),    
+          colOrder: getV(10),  
+          sn: getV(11),        
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" 
         };
       }).filter(item => item.colList === "" && item.colStock.toLowerCase() !== 'x');
 
@@ -355,27 +355,23 @@ async function handleFinalCheckout() {
 
   const btn = document.getElementById('send-btn');
   btn.disabled = true; 
-  btn.textContent = "處理中...";
+  btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
   try {
-    // 判斷裝置類型：如果是電腦版則帶入 "電腦"，否則為空串
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const deviceSource = isMobile ? "" : "電腦";
-
     const cartData = cart.map(item => ({
-      kind: item.kind,
-      type: item.type,
-      style: item.style,
-      name: item.name,
-      price: item.price,
-      sn: item.sn,
-      status: item.currentStatus
+      kind: item.kind,      
+      type: item.type,      
+      style: item.style,    
+      name: item.name,      
+      price: item.price,    
+      sn: item.sn,          
+      status: item.currentStatus 
     }));
 
     const postData = { 
-      source: deviceSource,
-      lineName: lineName,
-      igAccount: igAcc,
+      source: "官網",        
+      lineName: lineName,   
+      igAccount: igAcc,     
       cartItems: cartData 
     };
 
