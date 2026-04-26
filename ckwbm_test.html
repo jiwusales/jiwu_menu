@@ -11,7 +11,7 @@
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                
+      SHEET_NAME: "ちいかわ",                                 
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_LINK: "https://lin.ee/X6FUFI9" 
@@ -49,7 +49,7 @@
     .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
     #card-container { padding: 115px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 300px; color: var(--text-color); font-size: 16px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 120px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
@@ -66,32 +66,27 @@
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
     .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
     
-    /* 修改 4：放大後的標籤縮小 60% */
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 120px; pointer-events: none; border-width: 1.5px; }
     .card-overlay .stock-tag, .card-overlay .add-btn-tag { transform: scale(0.4); transform-origin: center; }
 
-    #cart-trigger { position: fixed; top: 115px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; opacity: 0.7; cursor: pointer; }
-    #cart-trigger img { width: 28px; height: 28px; }
+    /* 改動：購物車標籤現在支援拖曳 */
+    #cart-trigger { position: fixed; bottom: 30px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; opacity: 0.8; cursor: move; touch-action: none; user-select: none; }
+    #cart-trigger img { width: 28px; height: 28px; pointer-events: none; }
     #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
     #cart-panel { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
     #cart-panel.open { right: 0; }
     #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
 
-    /* 修改 2：標題高度、文字與顏色更新 */
     .cart-header { padding: 12px 15px; background: #b8a597; color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-    
     .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
-    
-    /* 修改 1：清空文字對齊左邊並加大 */
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
     .text-clear:hover { color: #888; }
-    
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
   </style>
 </head>
@@ -113,7 +108,7 @@
 
   <div id="card-container"></div>
 
-  <div id="cart-trigger" onclick="toggleCart(true)">
+  <div id="cart-trigger">
     <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" alt="cart">
     <div id="cart-badge">0</div>
   </div>
@@ -127,7 +122,6 @@
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
       <span class="text-clear" onclick="clearCart()">清空購物車</span>
-      
       <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
         <span>總計金額</span>
         <span id="cart-total" style="color: #e44d26;">$0</span>
@@ -178,11 +172,8 @@ function loadData() {
   });
 }
 
-function saveCart() {
-  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
-}
+function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-// 修改 3：＋號點擊後變色維持 6 秒
 function addToCart(e, item, tagText) {
   e.stopPropagation();
   cart.push({...item, tagText: tagText || "商品"});
@@ -239,7 +230,6 @@ function removeFromCart(index) {
   updateCartUI();
 }
 
-// 修改 5：優化 LINE 訊息傳送邏輯
 function checkoutLine() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   let msg = "您好，我想要購買以下商品：\n\n";
@@ -250,11 +240,7 @@ function checkoutLine() {
     total += priceVal;
   });
   msg += `\n總計金額：$${total}`;
-  
-  const finalLink = CONFIG.LINE_LINK.includes('?') 
-    ? `${CONFIG.LINE_LINK}&text=${encodeURIComponent(msg)}` 
-    : `${CONFIG.LINE_LINK}?text=${encodeURIComponent(msg)}`;
-    
+  const finalLink = CONFIG.LINE_LINK.includes('?') ? `${CONFIG.LINE_LINK}&text=${encodeURIComponent(msg)}` : `${CONFIG.LINE_LINK}?text=${encodeURIComponent(msg)}`;
   window.open(finalLink, '_blank');
 }
 
@@ -324,8 +310,7 @@ function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
-  const borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
-  card.style.borderColor = borderColor;
+  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
 
   let tagText = "";
   let tagBg = "#fab460"; 
@@ -337,11 +322,7 @@ function createCard(item) {
   else if (item.colG === "0" && (item.colH === "0" || item.colH === "") && (item.colI === "0" || item.colI === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
   else if (parseFloat(item.colG) > 0) { tagText = "現貨"; tagBg = "#fab460"; }
 
-  let tagHtml = "";
-  if (tagText) {
-    const isVertical = tagText.length >= 2 ? "vertical" : "";
-    tagHtml = `<div class="stock-tag ${isVertical}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
-  }
+  let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}')">＋</div>`;
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
@@ -355,6 +336,63 @@ function zoomCard(c) {
   const clone = c.cloneNode(true); ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
+
+// ---------------- 購物車拖曳邏輯 ----------------
+(function initDraggableCart() {
+  const el = document.getElementById('cart-trigger');
+  let isDragging = false;
+  let startX, startY, initialX, initialY;
+
+  const dragStart = (e) => {
+    isDragging = false;
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    startX = clientX;
+    startY = clientY;
+    const rect = el.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchend', dragEnd);
+  };
+
+  const dragMove = (e) => {
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      isDragging = true;
+      if (e.cancelable) e.preventDefault();
+      let newX = initialX + dx;
+      let newY = initialY + dy;
+      newX = Math.max(0, Math.min(window.innerWidth - 45, newX));
+      newY = Math.max(0, Math.min(window.innerHeight - 45, newY));
+      el.style.left = newX + 'px';
+      el.style.top = newY + 'px';
+      el.style.bottom = 'auto';
+      el.style.right = 'auto';
+    }
+  };
+
+  const dragEnd = () => {
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+    document.removeEventListener('touchend', dragEnd);
+  };
+
+  el.addEventListener('click', (e) => {
+    if (isDragging) e.preventDefault();
+    else toggleCart(true);
+  });
+  el.addEventListener('mousedown', dragStart);
+  el.addEventListener('touchstart', dragStart, { passive: false });
+})();
+
 loadData();
 </script>
 </body>
