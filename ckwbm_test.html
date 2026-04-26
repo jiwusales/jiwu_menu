@@ -314,22 +314,28 @@ function removeFromCart(index) {
   }
 }
 
-// ---------------- 關鍵修改點 1：生成 LINE 明細文字 ----------------
+// ---------------- 關鍵修改點：生成指定格式的 LINE 訊息 ----------------
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "【JIWU 吉物寶寶訂單明細】\n";
-  if (lineName) msg += `LINE：${lineName}\n`;
-  if (igAccount) msg += `IG：${igAccount}\n`;
-  msg += "--------------------------\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   
   let total = 0;
   cart.forEach((item, i) => {
+    // 取得項目金額 (移除所有非數字字符)
+    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
     msg += `${i + 1}. (${item.tagText}) ${item.name} $${item.price}\n`;
-    total += parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    total += priceVal;
   });
   
-  msg += "--------------------------\n";
-  msg += `總計金額：$${total}\n\n`;
-  msg += "花花，我想要訂購以上商品！";
+  msg += `\n總金額：$${total}\n`;
+
+  // 如果有帶入填寫資料，補充在下方
+  if (lineName || igAccount) {
+    msg += "--------------------------\n";
+    if (lineName) msg += `LINE：${lineName}\n`;
+    if (igAccount) msg += `IG：${igAccount}\n`;
+  }
+
+  msg += "\n花花，我想要訂購以上商品！";
   return encodeURIComponent(msg);
 }
 
@@ -341,11 +347,7 @@ function handleCheckoutEntry() {
     // 手機版：直接生成明細並開啟 LINE
     const msg = generateLineMessage();
     window.location.href = CONFIG.LINE_MSG_URL + msg;
-    // 跳轉後清空（可根據需求決定是否保留）
-    cart = [];
-    saveCart();
-    updateCartUI();
-    toggleCart(false);
+    // 為了使用者體驗，手機版跳轉後可以不立即清空，或是由使用者手動清空
   } else {
     openCheckoutModal();
   }
@@ -380,7 +382,7 @@ function closeModal() {
   document.getElementById('checkout-modal').style.display = "none";
 }
 
-// ---------------- 關鍵修改點 2：電腦版送出後跳轉 ----------------
+// ---------------- 電腦版送出後跳轉 ----------------
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -399,25 +401,25 @@ async function handleFinalCheckout() {
   const data = { lineName, igAccount: igAcc, items: detail, total: `$${total}` };
 
   try {
-    // 傳送到 Google Sheets
+    // 傳送到 Google Sheets (這部分需要你的後台 URL 正確)
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
     
     // 生成明細文字並跳轉 LINE
     const msg = generateLineMessage(lineName, igAcc);
     const lineUrl = CONFIG.LINE_MSG_URL + msg;
     
+    // 電腦版跳轉後清空購物車
     cart = [];
     saveCart();
     updateCartUI();
 
-    // 在電腦版會開啟新分頁或是嘗試啟動電腦版 LINE
     window.open(lineUrl, '_blank');
 
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
   } catch (e) {
     alert("送出失敗，請重試。");
-    btn.disabled = false; btn.textContent = "確認送出";
+    btn.disabled = false; btn.textContent = "確認並跳轉 LINE";
   }
 }
 
