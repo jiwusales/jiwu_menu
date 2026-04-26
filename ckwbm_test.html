@@ -21,8 +21,9 @@
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
-      LINE_LINK: "https://line.me/R/ti/p/@tei8245t", // 修改為好友連結
-      // --- 請在下方填入你部署 GAS 後得到的網頁應用程式網址 ---
+      LINE_LINK: "https://line.me/R/ti/p/@tei8245t", // 原好友連結
+      // --- 自動帶入明細的 LINE 連結前綴 ---
+      LINE_MSG_URL: "https://line.me/R/msg/text/?",
       DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
   </script>
@@ -185,7 +186,7 @@
       </div>
       <input type="text" id="user-line" class="input-box" placeholder="LINE 名字">
       <input type="text" id="user-ig" class="input-box" placeholder="Instagram 帳號">
-      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認送出</button>
+      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認並跳轉 LINE</button>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
@@ -313,25 +314,41 @@ function removeFromCart(index) {
   }
 }
 
+// ---------------- 關鍵修改點 1：生成 LINE 明細文字 ----------------
+function generateLineMessage(lineName = "", igAccount = "") {
+  let msg = "【JIWU 吉物寶寶訂單明細】\n";
+  if (lineName) msg += `LINE：${lineName}\n`;
+  if (igAccount) msg += `IG：${igAccount}\n`;
+  msg += "--------------------------\n";
+  
+  let total = 0;
+  cart.forEach((item, i) => {
+    msg += `${i + 1}. (${item.tagText}) ${item.name} $${item.price}\n`;
+    total += parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+  });
+  
+  msg += "--------------------------\n";
+  msg += `總計金額：$${total}\n\n`;
+  msg += "花花，我想要訂購以上商品！";
+  return encodeURIComponent(msg);
+}
+
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   if (isMobileDevice) {
-    jumpToLineDirectly();
+    // 手機版：直接生成明細並開啟 LINE
+    const msg = generateLineMessage();
+    window.location.href = CONFIG.LINE_MSG_URL + msg;
+    // 跳轉後清空（可根據需求決定是否保留）
+    cart = [];
+    saveCart();
+    updateCartUI();
+    toggleCart(false);
   } else {
     openCheckoutModal();
   }
-}
-
-// 修改點 2：手機版改為跳轉好友網址
-function jumpToLineDirectly() {
-  toggleCart(false);
-  const link = CONFIG.LINE_LINK; // 使用好友連結
-  cart = [];
-  saveCart();
-  updateCartUI();
-  window.location.href = link;
 }
 
 function openCheckoutModal() {
@@ -363,14 +380,14 @@ function closeModal() {
   document.getElementById('checkout-modal').style.display = "none";
 }
 
-// 修改點 1：移除自動跳轉代碼
+// ---------------- 關鍵修改點 2：電腦版送出後跳轉 ----------------
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
   if(!lineName || !igAcc) return alert("請填寫您的 LINE 名字與 IG 帳號唷！");
 
   const btn = document.getElementById('send-btn');
-  btn.disabled = true; btn.textContent = "傳送資料中...";
+  btn.disabled = true; btn.textContent = "傳送中...";
 
   let detail = "";
   let total = 0;
@@ -382,21 +399,29 @@ async function handleFinalCheckout() {
   const data = { lineName, igAccount: igAcc, items: detail, total: `$${total}` };
 
   try {
+    // 傳送到 Google Sheets
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+    
+    // 生成明細文字並跳轉 LINE
+    const msg = generateLineMessage(lineName, igAcc);
+    const lineUrl = CONFIG.LINE_MSG_URL + msg;
+    
     cart = [];
     saveCart();
     updateCartUI();
 
+    // 在電腦版會開啟新分頁或是嘗試啟動電腦版 LINE
+    window.open(lineUrl, '_blank');
+
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
-    // 這裡已移除跳轉代碼
   } catch (e) {
     alert("送出失敗，請重試。");
     btn.disabled = false; btn.textContent = "確認送出";
   }
 }
 
-// ---------------- 以下為原有的 UI 渲染邏輯 ----------------
+// ---------------- 原有的 UI 渲染邏輯 ----------------
 
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
