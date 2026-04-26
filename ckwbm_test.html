@@ -21,8 +21,7 @@
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
-      LINE_LINK: "https://line.me/R/ti/p/@tei8245t", // 原好友連結
-      // --- 自動帶入明細的 LINE 連結前綴 ---
+      LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/msg/text/?",
       DEPLOY_URL: "https://script.google.com/macros/s/你的部署ID/exec"
     };
@@ -77,7 +76,6 @@
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.2); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
-    
     .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
     .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
 
@@ -128,7 +126,6 @@
     .text-clear:hover { color: #888; }
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
-    /* --- 結帳彈窗樣式 --- */
     #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 15px; padding: 20px; position: relative; }
     .input-box { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
@@ -184,14 +181,14 @@
       <div style="padding: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px; text-align: right; font-weight: bold; font-size: 14px;">
         總計：<span id="modal-total-price" style="color:#e44d26;">$0</span>
       </div>
-      <input type="text" id="user-line" class="input-box" placeholder="LINE 名字">
-      <input type="text" id="user-ig" class="input-box" placeholder="Instagram 帳號">
+      <input type="text" id="user-line" class="input-box" placeholder="LINE 名字 (選填)">
+      <input type="text" id="user-ig" class="input-box" placeholder="Instagram 帳號 (選填)">
       <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認並跳轉 LINE</button>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
     <div class="modal-content qr-box" id="step-2">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@jiwusales" alt="QR">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
       <p style="font-weight:bold; font-size: 16px; margin: 20px 0;">請至官LINE核對訂單，感謝你 (๑•̀∀•́ฅ ✧</p>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
@@ -243,38 +240,25 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({
-    ...item, 
-    tagText: tagText || "商品",
-    tagBg: tagBg,
-    tagColor: tagColor
-  });
+  cart.push({ ...item, tagText: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
-  const originalBg = "#ddd";
   btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = originalBg; }, 50); 
+  setTimeout(() => { btn.style.background = "#ddd"; }, 50); 
 }
 
 function clearCart() {
   if (confirm("確定要清空購物車嗎？")) {
-    cart = [];
-    saveCart();
-    updateCartUI();
+    cart = []; saveCart(); updateCartUI();
   }
 }
 
 function toggleCart(isOpen) {
   const panel = document.getElementById('cart-panel');
   const bg = document.getElementById('cart-overlay-bg');
-  if(isOpen) {
-    panel.classList.add('open');
-    bg.style.display = 'block';
-  } else {
-    panel.classList.remove('open');
-    bg.style.display = 'none';
-  }
+  if(isOpen) { panel.classList.add('open'); bg.style.display = 'block'; }
+  else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
 function updateCartUI() {
@@ -306,51 +290,32 @@ function updateCartUI() {
 }
 
 function removeFromCart(index) {
-  cart.splice(index, 1);
-  saveCart();
-  updateCartUI();
-  if(document.getElementById('checkout-modal').style.display === "flex") {
-    renderCheckoutSummary();
-  }
+  cart.splice(index, 1); saveCart(); updateCartUI();
+  if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// ---------------- 關鍵修改點：生成指定格式的 LINE 訊息 ----------------
+// --- 核心邏輯：生成指定格式的 LINE 訊息 ---
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
-  
   let total = 0;
   cart.forEach((item, i) => {
-    // 取得項目金額 (移除所有非數字字符)
     const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
     msg += `${i + 1}. (${item.tagText}) ${item.name} $${item.price}\n`;
     total += priceVal;
   });
+  msg += `\n總金額：$${total}`;
   
-  msg += `\n總金額：$${total}\n`;
-
-  // 如果有帶入填寫資料，補充在下方
   if (lineName || igAccount) {
-    msg += "--------------------------\n";
-    if (lineName) msg += `LINE：${lineName}\n`;
-    if (igAccount) msg += `IG：${igAccount}\n`;
+    msg += "\n\n--------------------------";
+    if (lineName) msg += `\nLINE：${lineName}`;
+    if (igAccount) msg += `\nIG：${igAccount}`;
   }
-
-  msg += "\n花花，我想要訂購以上商品！";
   return encodeURIComponent(msg);
 }
 
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  if (isMobileDevice) {
-    // 手機版：直接生成明細並開啟 LINE
-    const msg = generateLineMessage();
-    window.location.href = CONFIG.LINE_MSG_URL + msg;
-    // 為了使用者體驗，手機版跳轉後可以不立即清空，或是由使用者手動清空
-  } else {
-    openCheckoutModal();
-  }
+  openCheckoutModal();
 }
 
 function openCheckoutModal() {
@@ -378,53 +343,40 @@ function renderCheckoutSummary() {
   totalEl.textContent = `$${total}`;
 }
 
-function closeModal() {
-  document.getElementById('checkout-modal').style.display = "none";
-}
+function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
-// ---------------- 電腦版送出後跳轉 ----------------
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
-  if(!lineName || !igAcc) return alert("請填寫您的 LINE 名字與 IG 帳號唷！");
-
   const btn = document.getElementById('send-btn');
-  btn.disabled = true; btn.textContent = "傳送中...";
+  
+  btn.disabled = true; btn.textContent = "跳轉中...";
 
-  let detail = "";
-  let total = 0;
-  cart.forEach((item, i) => {
-    detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`;
-    total += parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-  });
+  // 1. 生成明細文字並組合連結
+  const msg = generateLineMessage(lineName, igAcc);
+  const lineUrl = CONFIG.LINE_MSG_URL + msg;
 
-  const data = { lineName, igAccount: igAcc, items: detail, total: `$${total}` };
-
+  // 2. 嘗試後台備份 (如有串接 GAS)
   try {
-    // 傳送到 Google Sheets (這部分需要你的後台 URL 正確)
-    await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-    
-    // 生成明細文字並跳轉 LINE
-    const msg = generateLineMessage(lineName, igAcc);
-    const lineUrl = CONFIG.LINE_MSG_URL + msg;
-    
-    // 電腦版跳轉後清空購物車
-    cart = [];
-    saveCart();
-    updateCartUI();
+    let detail = "";
+    cart.forEach((item, i) => { detail += `${i+1}. (${item.tagText}) ${item.name} $${item.price}\n`; });
+    const postData = { lineName, igAccount: igAcc, items: detail, total: document.getElementById('modal-total-price').textContent };
+    fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+  } catch (e) {}
 
-    window.open(lineUrl, '_blank');
-
+  // 3. 跳轉並清空
+  window.location.href = lineUrl;
+  
+  // 延遲清空，確保使用者跳轉前資料還在
+  setTimeout(() => {
+    cart = []; saveCart(); updateCartUI();
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
-  } catch (e) {
-    alert("送出失敗，請重試。");
     btn.disabled = false; btn.textContent = "確認並跳轉 LINE";
-  }
+  }, 1000);
 }
 
-// ---------------- 原有的 UI 渲染邏輯 ----------------
-
+// --- 原有渲染邏輯 ---
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allCategories.map(cat => {
@@ -432,13 +384,7 @@ function renderRoleNav() {
     return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
-
-function toggleRole(cat) {
-  selectedRole = (selectedRole === cat) ? null : cat;
-  renderRoleNav();
-  renderItems();
-}
-
+function toggleRole(cat) { selectedRole = (selectedRole === cat) ? null : cat; renderRoleNav(); renderItems(); }
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
   filterBar.innerHTML = allTypes.map(t => {
@@ -446,14 +392,11 @@ function renderFilters() {
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
   }).join('');
 }
-
 function toggleType(type) {
   if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
   else { selectedTypes.push(type); }
-  renderFilters();
-  renderItems();
+  renderFilters(); renderItems();
 }
-
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
@@ -484,17 +427,13 @@ function renderItems() {
     container.appendChild(grid);
   }
 }
-
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
   card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
 
-  let tagText = "";
-  let tagBg = "#fab460"; 
-  let tagColor = "white";
-
+  let tagText = "", tagBg = "#fab460", tagColor = "white";
   if (item.colK !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
   else if (item.colG === "" && item.colH === "") { tagText = "點貨中"; tagBg = "#D2EAF1"; tagColor = "#666"; }
   else if (item.colG === "0" && parseFloat(item.colI) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
@@ -508,7 +447,6 @@ function createCard(item) {
   card.onclick = () => zoomCard(card);
   return card;
 }
-
 function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
@@ -527,15 +465,13 @@ function zoomCard(c) {
     startX = clientX; startY = clientY;
     const rect = el.getBoundingClientRect();
     initialX = rect.left; initialY = rect.top;
-    document.addEventListener('mousemove', dragMove);
-    document.addEventListener('touchmove', dragMove, { passive: false });
-    document.addEventListener('mouseup', dragEnd);
-    document.addEventListener('touchend', dragEnd);
+    document.addEventListener('mousemove', dragMove); document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('mouseup', dragEnd); document.addEventListener('touchend', dragEnd);
   };
   const dragMove = (e) => {
     const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-    const dx = clientX - startX; const dy = clientY - startY;
+    const dx = clientX - startX, dy = clientY - startY;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       isDragging = true; if (e.cancelable) e.preventDefault();
       el.style.left = (initialX + dx) + 'px'; el.style.top = (initialY + dy) + 'px';
@@ -547,7 +483,7 @@ function zoomCard(c) {
     document.removeEventListener('mouseup', dragEnd); document.removeEventListener('touchend', dragEnd);
     if (isDragging) {
       el.style.transition = 'left 0.3s ease, right 0.3s ease, top 0.3s ease';
-      const rect = el.getBoundingClientRect(); const screenWidth = window.innerWidth;
+      const rect = el.getBoundingClientRect(), screenWidth = window.innerWidth;
       if (rect.left + rect.width / 2 < screenWidth / 2) el.style.left = '10px';
       else el.style.left = (screenWidth - rect.width - 10) + 'px';
       if (rect.top < 50) el.style.top = '50px';
@@ -555,8 +491,7 @@ function zoomCard(c) {
     }
   };
   el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCart(true); });
-  el.addEventListener('mousedown', dragStart);
-  el.addEventListener('touchstart', dragStart, { passive: false });
+  el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
 loadData();
