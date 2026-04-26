@@ -14,7 +14,7 @@
       SHEET_NAME: "ちいかわ",                                
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
-      LINE_LINK: "https://lin.ee/X6FUFI9" 
+      LINE_LINK: "https://lin.ee/X6FUFI9" // 官LINE連結
     };
   </script>
 
@@ -83,12 +83,13 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
+    .cart-footer { padding: 20px 15px; border-top: 1px solid #eee; background: #fafafa; }
     
-    .cart-footer { padding: 15px; border-top: 1px solid #eee; background: #fafafa; }
+    /* 清除按鈕樣式 */
+    .btn-clear { background: #eee; color: #888; border: none; padding: 5px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 11px; margin-bottom: 10px; transition: 0.2s; }
+    .btn-clear:hover { background: #e0e0e0; color: #555; }
     
-    /* 清除購物車按鈕樣式 */
-    .btn-clear { background: #bbb; color: white; border: none; padding: 5px 0; width: 100%; border-radius: 5px; cursor: pointer; font-size: 11px; margin-bottom: 10px; }
-    .btn-checkout { background: #06C755; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -138,7 +139,8 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
-// 初始化時讀取 LocalStorage
+
+// 修改：從 LocalStorage 讀取資料
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
@@ -170,32 +172,34 @@ function loadData() {
       renderRoleNav();
       renderFilters();
       renderItems();
-      updateCartUI(); // 確保讀取快取後更新 UI
+      updateCartUI(); // 頁面載入後立即更新購物車介面
     } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗，請檢查分頁名稱。"; }
   });
+}
+
+// 修改：新增儲存至 LocalStorage 的功能
+function saveCart() {
+  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
 }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
   cart.push({...item, tagText: tagText || "商品"});
-  saveAndUpdateCart(); // 儲存並更新
-  
+  saveCart();
+  updateCartUI();
   const btn = e.target;
   const originalBg = btn.style.background;
-  btn.style.background = "#f5b080"; // 預設使用你的 ACTIVE_COLOR 示意
-  setTimeout(() => { btn.style.background = originalBg; }, 500);
+  btn.style.background = "#fdd365";
+  setTimeout(() => { btn.style.background = originalBg; }, 100);
 }
 
+// 新增：清除購物車功能
 function clearCart() {
   if (confirm("確定要清空購物車嗎？")) {
     cart = [];
-    saveAndUpdateCart();
+    saveCart();
+    updateCartUI();
   }
-}
-
-function saveAndUpdateCart() {
-  localStorage.setItem('jiwu_cart', JSON.stringify(cart)); // 寫入快取
-  updateCartUI();
 }
 
 function toggleCart(isOpen) {
@@ -243,7 +247,8 @@ function updateCartUI() {
 
 function removeFromCart(index) {
   cart.splice(index, 1);
-  saveAndUpdateCart();
+  saveCart();
+  updateCartUI();
 }
 
 function checkoutLine() {
