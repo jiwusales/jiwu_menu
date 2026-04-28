@@ -17,7 +17,7 @@
       THEME_COLOR: "#90ADC6",
       ACTIVE_COLOR: "#556890",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ナガノ",                                    
+      SHEET_NAME: "ナガノ",                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -66,7 +66,7 @@
     
     #side-menu { position: fixed; top: 0; left: -250px; width: 220px; height: 100%; background: #fff; z-index: 10001; transition: 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); text-align: left; }
     #side-menu.open { left: 0; }
-    .menu-header { padding: 20px; background: var(--theme-color); color: white; font-weight: bold; }
+    .menu-header { padding: 20px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: block; text-decoration: none; }
     .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
     .menu-item img { width: 36px; height: 36px; object-fit: contain; }
     .menu-item:active { background: #f9f9f9; }
@@ -186,10 +186,8 @@
 
   <div id="menu-overlay" onclick="toggleMenu(false)"></div>
   <div id="side-menu">
-    <div class="menu-header">JIWU 吉物販售</div>
-    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-item">
-      <img src="https://i.postimg.cc/RFfnZkYT/she-jiaoicon.png" alt="Home"> 首頁
-    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">JIWU 吉物販售</a>
+    
     <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
       <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
     </a>
