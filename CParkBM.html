@@ -555,11 +555,7 @@ function createCard(item) {
   card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
-  else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
+  if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
