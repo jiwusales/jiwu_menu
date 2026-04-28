@@ -37,7 +37,6 @@
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
     
-    /* 修改後的 Top Bar 樣式，加入 menu-btn 定位 */
     .top-bar { 
       background: var(--theme-color); 
       color: #fff; 
@@ -65,11 +64,11 @@
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
     
-    /* 側邊菜單面板 */
     #side-menu { position: fixed; top: 0; left: -250px; width: 220px; height: 100%; background: #fff; z-index: 10001; transition: 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); text-align: left; }
     #side-menu.open { left: 0; }
     .menu-header { padding: 20px; background: var(--theme-color); color: white; font-weight: bold; }
-    .menu-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .menu-item img { width: 24px; height: 24px; object-fit: contain; }
     .menu-item:active { background: #f9f9f9; }
     #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; }
 
@@ -185,14 +184,24 @@
     </a>
   </div>
 
-<div id="menu-overlay" onclick="toggleMenu(false)"></div>
+  <div id="menu-overlay" onclick="toggleMenu(false)"></div>
   <div id="side-menu">
     <div class="menu-header">JIWU 吉物販售</div>
-    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-item">回首頁</a>
-    <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">吉伊卡哇</a>
-    <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">吉伊卡哇樂園</a>
-    <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">Nagano白熊</a>
-    <a href="https://jiwusales.github.io/jiwu_menu/WBTBM.html" class="menu-item">小白虎與黑虎蝦</a>
+    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-item">
+      <img src="https://i.postimg.cc/MHqkCxwm/she-jiaoicon-home.png" alt="Home">
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/WBTBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/sXB1pdRc/icon020.png"> 小白虎與黑虎蝦
+    </a>
   </div>
 
   <div class="header-fixed">
@@ -253,7 +262,6 @@
   </div>
 
 <script>
-// 同步顏色設定到 CSS 變數
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
@@ -261,7 +269,6 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
-// 選單開關函數
 function toggleMenu(isOpen) {
   const menu = document.getElementById('side-menu');
   const overlay = document.getElementById('menu-overlay');
