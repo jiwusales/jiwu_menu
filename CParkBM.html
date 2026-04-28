@@ -334,7 +334,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -461,7 +461,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "官網",        
+      source: "電腦",        
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
