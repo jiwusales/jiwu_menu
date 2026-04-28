@@ -554,11 +554,20 @@ function createCard(item) {
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
   card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
 
+  // 1. 保留判斷邏輯，這樣 addToCart 才能抓到狀態
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
+  if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
+  else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; }
+  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
+  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
+  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
-  let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+  // 2. 修改此處：只有「現貨」才產生 tagHtml，其他的雖然有 tagText 但不顯示在卡片上
+  let tagHtml = (tagText === "現貨") ? `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+
+  // 3. 這一行保持不變，它會把正確的 tagText（包含需預訂、搭機中等）傳給購物車
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
