@@ -17,8 +17,8 @@
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                    
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
+      SHEET_NAME: "ちいかわ",                                     
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -29,24 +29,68 @@
 
   <style>
     :root { 
-      --theme-color: #FBCC7E; 
-      --active-color: #f5b080; 
+      --theme-color: ; 
+      --active-color: ;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
     }
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
-    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; left: 0; width: 100%; z-index: 999; font-size: 15px; }
+    
+    .top-bar { 
+      background: var(--theme-color); 
+      color: #fff; 
+      padding: 10px 0; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      z-index: 999; 
+      font-size: 15px; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .top-bar .menu-btn { 
+      position: absolute; 
+      left: 15px; 
+      color: #fff; 
+      font-size: 20px; 
+      cursor: pointer; 
+    }
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
+    
+    #side-menu { position: fixed; top: 0; left: -250px; width: 220px; height: 100%; background: #fff; z-index: 10001; transition: 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); text-align: left; }
+    #side-menu.open { left: 0; }
+    
+    /* 側邊選單標題樣式 */
+    .menu-header { padding: 20px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
+    
+    /* 專門控制標題圖示的尺寸 */
+    .header-icon { 
+      width: 28px; 
+      height: 28px; 
+      object-fit: contain; 
+      margin-right: 10px; 
+    }
+
+    .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    
+    /* 下方選單選項的圖示尺寸（維持原樣） */
+    .menu-item img { width: 36px; height: 36px; object-fit: contain; }
+    
+    .menu-item:active { background: #f9f9f9; }
+    #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; }
+
     .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { color: var(--active-color); font-weight: bold; }
+    .nav-bar a.active-role { font-weight: bold; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
     .nav-bar a:last-child::after { content: ""; }
 
@@ -76,7 +120,19 @@
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
-    .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
+    
+    .card-overlay .stock-tag { 
+      transform: scale(0.6); 
+      transform-origin: top left;
+      writing-mode: horizontal-tb !important; 
+      width: auto !important;
+      height: 16px !important;
+      padding: 0 5px !important;
+      border-radius: 4px !important;
+      top: 3px;
+      left: 3px;
+      font-size: 10px;
+    }
     .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
 
     #cart-trigger { 
@@ -135,7 +191,32 @@
   </style>
 </head>
 <body>
-  <div class="top-bar"><a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;"><span class="pulse-text" id="top-msg">載入中...</span></a></div>
+  <div class="top-bar">
+    <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
+    <a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;">
+      <span class="pulse-text" id="top-msg">載入中...</span>
+    </a>
+  </div>
+
+  <div id="menu-overlay" onclick="toggleMenu(false)"></div>
+  <div id="side-menu">
+    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
+      <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
+    </a>
+    
+    <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
+    </a>
+    <a href="https://jiwusales.github.io/jiwu_menu/WBTBM.html" class="menu-item">
+      <img src="https://i.postimg.cc/sXB1pdRc/icon020.png"> 小白虎與黑虎蝦
+    </a>
+  </div>
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
@@ -195,12 +276,25 @@
   </div>
 
 <script>
+// 此處之後的 JavaScript 邏輯與之前相同，故省略不贅述以保持簡潔
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+
+function toggleMenu(isOpen) {
+  const menu = document.getElementById('side-menu');
+  const overlay = document.getElementById('menu-overlay');
+  if (isOpen) {
+    menu.classList.add('open');
+    overlay.style.display = 'block';
+  } else {
+    menu.classList.remove('open');
+    overlay.style.display = 'none';
+  }
+}
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -394,16 +488,19 @@ async function handleFinalCheckout() {
   
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
+  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
+  
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
+    const activeColor = roleColors[cat] || CONFIG.ACTIVE_COLOR;
+    const activeStyle = isSelected ? `style="color:${activeColor};"` : "";
+    return `<a class="${isSelected ? 'active-role' : ''}" ${activeStyle} onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
-// 修正處：切換角色後頁面跳回最上方
 function toggleRole(cat) { 
   selectedRole = (selectedRole === cat) ? null : cat; 
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   renderRoleNav(); 
   renderItems(); 
 }
@@ -416,11 +513,10 @@ function renderFilters() {
   }).join('');
 }
 
-// 建議處：切換分類篩選後也跳回最上方
 function toggleType(type) {
   if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
   else { selectedTypes.push(type); }
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   renderFilters(); renderItems();
 }
 
