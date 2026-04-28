@@ -179,16 +179,8 @@
     <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
       <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
     </a>
-    
-    <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
-    </a>
-    <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
-    </a>
-    <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
-    </a>
+    <div id="side-menu-items">
+      </div>
   </div>
 
   <div class="header-fixed">
@@ -249,6 +241,7 @@
   </div>
 
 <script>
+// 初始化設定
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
@@ -256,6 +249,7 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
+// 側邊選單開關
 function toggleMenu(isOpen) {
   const menu = document.getElementById('side-menu');
   const overlay = document.getElementById('menu-overlay');
@@ -268,6 +262,7 @@ function toggleMenu(isOpen) {
   }
 }
 
+// 載入試算表資料
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -296,6 +291,8 @@ function loadData() {
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
+      
+      renderSideMenu(); // 自動生成側邊選單
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -304,6 +301,24 @@ function loadData() {
   });
 }
 
+// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
+function renderSideMenu() {
+  const menuContainer = document.getElementById('side-menu-items');
+  // 這裡可以手動定義你想在選單顯示的其他頁面連結
+  const links = [
+    { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
+    { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
+    { name: "Nagano白熊", url: "https://jiwusales.github.io/jiwu_menu/NGNBM.html", img: "https://i.postimg.cc/hP8v81NH/icon019.png" }
+  ];
+  
+  menuContainer.innerHTML = links.map(link => `
+    <a href="${link.url}" class="menu-item">
+      <img src="${link.img}"> ${link.name}
+    </a>
+  `).join('');
+}
+
+// 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
@@ -352,6 +367,7 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
+// 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
@@ -435,7 +451,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "官網",        
+      source: "電腦",         
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -458,6 +474,7 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
   
+// 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
@@ -492,16 +509,19 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
+// 渲染商品卡片
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
   const isFilterMode = selectedTypes.length > 0;
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
+  
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
     return;
   }
+
   if (!isFilterMode && !selectedRole) {
     allCategories.forEach(cat => {
       const catItems = filteredItems.filter(i => i.kind === cat);
@@ -522,6 +542,7 @@ function renderItems() {
     container.appendChild(grid);
   }
 }
+
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -542,13 +563,16 @@ function createCard(item) {
   card.onclick = () => zoomCard(card);
   return card;
 }
+
 function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true); ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
+// 懸浮購物車拖動邏輯
 (function initDraggableCart() {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
@@ -589,6 +613,7 @@ function zoomCard(c) {
   el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
+// 啟動資料載入
 loadData();
 </script>
 </body>
