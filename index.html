@@ -11,27 +11,32 @@
   <style>
     body { margin: 0; padding: 0; font-family: Arial, sans-serif; color: #333333; background: #fff; }
     a { text-decoration: none !important; -webkit-tap-highlight-color: transparent; }
+    
     .control-btn { position: fixed; top: 20px; left: 10px; width: 45px; height: 45px; border: none; border-radius: 50%; background-color: #E7D4C0; opacity: 0.5; box-shadow: 0 0 6px rgba(0, 0, 0, 0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 999; }
     .control-btn img { width: 65%; height: auto; object-fit: contain; }
+    
     .logo-container { text-align: center; margin: 20px 0; }
     .logo-container img { width: 160px; height: auto; }
     .section-title { text-align: center; margin: 15px auto 20px auto; font-weight: bold; font-size: 1.2em; color: #5d4a3a; letter-spacing: 2px; }
 
-    /* 輪播容器 */
+    /* 輪播容器：回復原生滑動 */
     .carousel-wrapper {
       width: 100%;
-      overflow-x: hidden; /* 改為 hidden 由 JS 控制捲動 */
+      overflow-x: auto; /* 必須為 auto 手機才能滑動 */
+      scroll-snap-type: x mandatory; /* 讓圖片自動對齊 */
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
       cursor: grab;
       user-select: none;
     }
+    .carousel-wrapper::-webkit-scrollbar { display: none; }
     .carousel-wrapper:active { cursor: grabbing; }
 
     .carousel {
       display: flex;
-      padding: 0;
+      padding: 0 10px;
       gap: 12px;
       width: max-content;
-      transition: transform 0.3s ease; /* 讓點擊與自動捲動平滑 */
     }
 
     .carousel a {
@@ -39,6 +44,7 @@
       width: 31vw; 
       max-width: 180px; 
       flex-shrink: 0;
+      scroll-snap-align: center; /* 對齊中間 */
       text-align: center;
     }
 
@@ -52,11 +58,13 @@
     .section-divider { width: 100%; padding: 12px 0; font-weight: bold; font-size: 1.1em; text-align: center; background-color: #dac7b7; color: #ffffff; margin-bottom: 25px; }
     .social-divider { background-color: #F9F6F0; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 20px; padding: 15px 0; margin-top: 40px; }
     .social-divider a img { width: 40px; }
+    
     .role-buttons { max-width: 960px; margin: 20px auto 40px auto; padding: 0 10px; }
     .role-buttons .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
     .role-buttons .item { width: 100px; text-align: center; }
     .role-buttons .item img { width: 100%; border-radius: 10px; transition: transform 0.2s; }
     .role-buttons .item span { display: block; font-size: 0.85em; color: #333; margin-top: 8px; font-weight: bold; }
+    
     footer { text-align: center; padding: 20px 10px; font-size: 1em; color: #333333; }
   </style>
 </head>
@@ -122,7 +130,6 @@
   const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
   let originalCount = 0;
-  let isTransitioning = false;
 
   async function fetchSheetData() {
     const res = await fetch(API_URL);
@@ -135,20 +142,10 @@
     const imgUrl = row.c[1]?.v;
     const captionText = row.c[2]?.v || ""; 
     const customLink = row.c[3]?.v || 'https://lin.ee/X6FUFI9';
-
     const a = document.createElement('a');
     a.href = customLink;
     a.target = '_blank';
-    
-    const img = document.createElement('img');
-    img.src = imgUrl;
-    
-    const cap = document.createElement('div');
-    cap.classList.add('item-caption');
-    cap.textContent = captionText;
-
-    a.appendChild(img);
-    a.appendChild(cap);
+    a.innerHTML = `<img src="${imgUrl}" /><div class="item-caption">${captionText}</div>`;
     return a;
   }
 
@@ -164,110 +161,83 @@
     originalCount = filteredRows.length;
     if (originalCount === 0) return;
 
-    // 製作三份以實現無限循環 [A][B][C] -> [A][B][C] -> [A][B][C]
+    // 製作三份 [1,2,3] [1,2,3] [1,2,3]
     const tripleRows = [...filteredRows, ...filteredRows, ...filteredRows];
 
     tripleRows.forEach((row, index) => {
       inner.appendChild(createItem(row));
-      // 只為中間那一組建立導覽點
       if (index >= originalCount && index < originalCount * 2) {
         const dot = document.createElement('div');
         dot.classList.add('dot');
         if (index === originalCount) dot.classList.add('active');
-        dot.addEventListener('click', () => scrollToItem(index));
+        dot.onclick = () => {
+          const item = inner.children[index];
+          wrapper.scrollTo({ left: item.offsetLeft - (wrapper.offsetWidth / 2) + (item.offsetWidth / 2), behavior: 'smooth' });
+        };
         dotsContainer.appendChild(dot);
       }
     });
 
-    // 初始定位到中間那組的第一個
+    // 初始跳轉到中間那組
     setTimeout(() => {
-      const firstRealItem = inner.children[originalCount];
-      wrapper.scrollLeft = firstRealItem.offsetLeft - (wrapper.offsetWidth - firstRealItem.offsetWidth) / 2;
+      const middleItem = inner.children[originalCount];
+      wrapper.scrollLeft = middleItem.offsetLeft - (wrapper.offsetWidth / 2) + (middleItem.offsetWidth / 2);
     }, 100);
   }
 
-  function scrollToItem(index) {
-    const item = inner.children[index];
-    const target = item.offsetLeft - (wrapper.offsetWidth - item.offsetWidth) / 2;
-    wrapper.scrollTo({ left: target, behavior: 'smooth' });
-  }
-
-  // 核心邏輯：檢測邊界並瞬間跳轉
+  // 循環監聽
   wrapper.addEventListener('scroll', () => {
     const scrollLeft = wrapper.scrollLeft;
     const singleSetWidth = inner.scrollWidth / 3;
 
-    // 如果捲動到第一組（左邊邊界），瞬間跳到第二組對應位置
-    if (scrollLeft <= 0) {
-      wrapper.scrollLeft = singleSetWidth;
-    } 
-    // 如果捲動到第三組（右邊邊界），瞬間跳到第二組對應位置
-    else if (scrollLeft >= singleSetWidth * 2) {
+    // 瞬間跳轉（肉眼不可見）
+    if (scrollLeft <= 10) {
+      wrapper.scrollLeft = singleSetWidth + 10;
+    } else if (scrollLeft >= singleSetWidth * 2) {
       wrapper.scrollLeft = singleSetWidth;
     }
-
     updateDots();
   });
 
   function updateDots() {
-    const items = Array.from(inner.children);
     const dots = dotsContainer.querySelectorAll('.dot');
+    if (!dots.length) return;
+    const items = Array.from(inner.children);
     let activeIndex = 0;
     let minDiff = Infinity;
 
     items.forEach((item, i) => {
-      const centerOfItem = item.offsetLeft + item.offsetWidth / 2;
-      const centerOfWrapper = wrapper.scrollLeft + wrapper.offsetWidth / 2;
-      const diff = Math.abs(centerOfItem - centerOfWrapper);
-      if (diff < minDiff) {
-        minDiff = diff;
-        activeIndex = i;
-      }
+      const diff = Math.abs((item.offsetLeft + item.offsetWidth/2) - (wrapper.scrollLeft + wrapper.offsetWidth/2));
+      if (diff < minDiff) { minDiff = diff; activeIndex = i; }
     });
 
-    // 將 index 對應回 0 ~ originalCount-1
     const dotIndex = activeIndex % originalCount;
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === dotIndex);
-    });
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === dotIndex));
   }
 
-  // 拖拽支援
-  function enableDrag(el) {
-    let isDown = false, startX, scrollLeft;
-    el.addEventListener('mousedown', (e) => {
-      isDown = true;
-      startX = e.pageX - el.offsetLeft;
-      scrollLeft = el.scrollLeft;
-    });
-    el.addEventListener('mouseleave', () => isDown = false);
-    el.addEventListener('mouseup', () => isDown = false);
-    el.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - el.offsetLeft;
-      const walk = (x - startX) * 2;
-      el.scrollLeft = scrollLeft - walk;
-    });
-  }
+  // 桌面端拖拽支援
+  let isDown = false, startX, scrollLeft;
+  wrapper.addEventListener('mousedown', (e) => {
+    isDown = true; startX = e.pageX - wrapper.offsetLeft; scrollLeft = wrapper.scrollLeft;
+    wrapper.style.scrollSnapType = 'none';
+  });
+  wrapper.addEventListener('mouseleave', () => { isDown = false; wrapper.style.scrollSnapType = 'x mandatory'; });
+  wrapper.addEventListener('mouseup', () => { isDown = false; wrapper.style.scrollSnapType = 'x mandatory'; });
+  wrapper.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - wrapper.offsetLeft;
+    wrapper.scrollLeft = scrollLeft - (x - startX) * 1.5;
+  });
 
   async function init() {
     try {
       const rows = await fetchSheetData();
       renderCarousel(rows.slice(1));
-      enableDrag(wrapper);
     } catch (e) { console.error('載入失敗', e); }
   }
 
   init();
-  // 每一分鐘檢查一次資料更新（這不會影響當前滑動位置）
-  setInterval(async () => {
-     const rows = await fetchSheetData();
-     // 簡單比對數量，若有變動才重新渲染，避免捲動中斷
-     if (rows.slice(1).filter(r => r.c[0]?.v?.toLowerCase() !== 'x').length !== originalCount) {
-        init();
-     }
-  }, 60000);
 })();
 </script>
 </body>
