@@ -68,24 +68,15 @@
     #side-menu.open { left: 0; }
     
     .menu-header { padding: 10px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
-    
-    .header-icon { 
-      width: 28px; 
-      height: 28px; 
-      object-fit: contain; 
-      margin-right: 10px; 
-    }
-
+    .header-icon { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
     .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
     .menu-item img { width: 36px; height: 36px; object-fit: contain; }
-    .menu-item:active { background: #f9f9f9; }
-    #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; }
-
+    
     .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { font-weight: bold; }
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color) !important; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
     .nav-bar a:last-child::after { content: ""; }
 
@@ -105,7 +96,9 @@
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
-    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
+    .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
+    
+    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
@@ -172,7 +165,6 @@
 
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
-    .text-clear:hover { color: #888; }
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
     #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
@@ -194,7 +186,6 @@
     <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
       <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
     </a>
-    
     <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
       <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
     </a>
@@ -326,7 +317,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, currentStatus: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -431,12 +422,10 @@ function closeModal() { document.getElementById('checkout-modal').style.display 
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
-  
   if (!lineName) {
     alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )");
     return;
   }
-
   const btn = document.getElementById('send-btn');
   btn.disabled = true; 
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
@@ -451,27 +440,11 @@ async function handleFinalCheckout() {
       sn: item.sn,          
       status: item.currentStatus 
     }));
+    const postData = { source: "官網", lineName: lineName, igAccount: igAcc, cartItems: cartData };
+    await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+  } catch (e) { console.error("GAS 傳送失敗", e); }
 
-    const postData = { 
-      source: "電腦",        
-      lineName: lineName,   
-      igAccount: igAcc,     
-      cartItems: cartData 
-    };
-
-    await fetch(CONFIG.DEPLOY_URL, { 
-      method: 'POST', 
-      mode: 'no-cors', 
-      body: JSON.stringify(postData) 
-    });
-  } catch (e) {
-    console.error("GAS 傳送失敗", e);
-  }
-
-  cart = []; 
-  saveCart(); 
-  updateCartUI();
-  
+  cart = []; saveCart(); updateCartUI();
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
@@ -480,9 +453,7 @@ function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    const activeColor = CONFIG.ACTIVE_COLOR;
-    const activeStyle = isSelected ? `style="color:${activeColor};"` : "";
-    return `<a class="${isSelected ? 'active-role' : ''}" ${activeStyle} onclick="toggleRole('${cat}')">${cat}</a>`;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
@@ -542,6 +513,7 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
+  // 移除角色專屬色設定，統一使用主題色
   card.style.borderColor = CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
@@ -551,15 +523,15 @@ function createCard(item) {
   else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
   else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
+  // 核心邏輯：除了「現貨」，其餘標籤在卡片上不顯示
   let tagHtml = (tagText === "現貨") ? `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
-
 function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
