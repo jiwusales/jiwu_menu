@@ -67,22 +67,11 @@
     #side-menu { position: fixed; top: 0; left: -250px; width: 220px; height: 100%; background: #fff; z-index: 10001; transition: 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); text-align: left; }
     #side-menu.open { left: 0; }
     
-    /* 側邊選單標題樣式 */
     .menu-header { padding: 10px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
-    
-    /* 專門控制標題圖示的尺寸 */
-    .header-icon { 
-      width: 28px; 
-      height: 28px; 
-      object-fit: contain; 
-      margin-right: 10px; 
-    }
+    .header-icon { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
 
     .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-    
-    /* 下方選單選項的圖示尺寸（維持原樣） */
     .menu-item img { width: 36px; height: 36px; object-fit: contain; }
-    
     .menu-item:active { background: #f9f9f9; }
     #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; }
 
@@ -108,10 +97,8 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
-    
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
-    
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -166,16 +153,7 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
-    
-    .cart-tag { 
-      display: inline-block; 
-      font-size: 10px; 
-      padding: 1px 6px; 
-      border-radius: 4px; 
-      color: white; 
-      margin-bottom: 3px; 
-      font-weight: bold; 
-    }
+    .cart-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; color: white; margin-bottom: 3px; font-weight: bold; }
 
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
@@ -271,7 +249,6 @@
   </div>
 
 <script>
-// 此處之後的 JavaScript 邏輯與之前相同，故省略不贅述以保持簡潔
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
