@@ -454,6 +454,12 @@ function renderItems() {
     container.appendChild(grid);
   }
 }
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const roleColors = { "白熊": "#eca4b1", "巴哥": "#C3CEDA", "可樂餅": "#FBAA60", "馬來熊": "#87ACA3", "食物": "#fdd365", "動物": "#b1dec1", "水族": "#989fc0", "綜合角色": "#989FC0", "其他角色": "#b8a597" };
+  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+
   let tagText = "", tagBg = "#fab460", tagColor = "white";
   if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
   else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; }
