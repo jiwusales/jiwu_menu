@@ -17,8 +17,8 @@
       THEME_COLOR: "#90ADC6",
       ACTIVE_COLOR: "#556890",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ナガノ",                                     
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！訂購找花花 (৹˙꒳˙ฅ )",
+      SHEET_NAME: "ナガノ",                                    
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -68,7 +68,7 @@
     #side-menu.open { left: 0; }
     
     /* 側邊選單標題樣式 */
-    .menu-header { padding: 20px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
+    .menu-header { padding: 10px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
     
     /* 專門控制標題圖示的尺寸 */
     .header-icon { 
@@ -191,30 +191,11 @@
   </style>
 </head>
 <body>
-  <div class="top-bar">
+ <div class="top-bar">
     <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
-    <a href="https://lin.ee/X6FUFI9" target="_blank" style="color: #fff; text-decoration: none;">
-      <span class="pulse-text" id="top-msg">載入中...</span>
-    </a>
+    <span class="pulse-text" id="top-msg" style="color: #fff;">載入中...</span>
   </div>
-
-  <div id="menu-overlay" onclick="toggleMenu(false)"></div>
-  <div id="side-menu">
-    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
-      <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
-    </a>
-    
-    <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
-    </a>
-    <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
-    </a>
-    <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
-      <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
-    </a>
-  </div>
-
+  
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
       <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
