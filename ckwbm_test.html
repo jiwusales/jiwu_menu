@@ -399,7 +399,15 @@ function renderRoleNav() {
     return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
-function toggleRole(cat) { selectedRole = (selectedRole === cat) ? null : cat; renderRoleNav(); renderItems(); }
+
+// 修正處：切換角色後頁面跳回最上方
+function toggleRole(cat) { 
+  selectedRole = (selectedRole === cat) ? null : cat; 
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
+  renderRoleNav(); 
+  renderItems(); 
+}
+
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
   filterBar.innerHTML = allTypes.map(t => {
@@ -407,11 +415,15 @@ function renderFilters() {
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
   }).join('');
 }
+
+// 建議處：切換分類篩選後也跳回最上方
 function toggleType(type) {
   if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
   else { selectedTypes.push(type); }
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
   renderFilters(); renderItems();
 }
+
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
