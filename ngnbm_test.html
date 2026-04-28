@@ -29,8 +29,8 @@
 
   <style>
     :root { 
-      --theme-color: #FBCC7E; 
-      --active-color: #f5b080; 
+      --theme-color: #90ADC6; 
+      --active-color: #556890;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
     }
@@ -76,7 +76,20 @@
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
-    .card-overlay .stock-tag { transform: scale(0.8); transform-origin: center; }
+    
+    /* 修改處：放大後的標籤轉為橫式 */
+    .card-overlay .stock-tag { 
+      transform: scale(0.6); 
+      transform-origin: top left;
+      writing-mode: horizontal-tb !important; 
+      width: auto !important;
+      height: 16px !important;
+      padding: 0 5px !important;
+      border-radius: 4px !important;
+      top: 3px;
+      left: 3px;
+      font-size: 10px;
+    }
     .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
 
     #cart-trigger { 
@@ -195,6 +208,7 @@
   </div>
 
 <script>
+// 同步顏色設定到 CSS 變數
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
@@ -400,10 +414,9 @@ function renderRoleNav() {
   }).join('');
 }
 
-// 修正處：切換角色後頁面跳回最上方
 function toggleRole(cat) { 
   selectedRole = (selectedRole === cat) ? null : cat; 
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   renderRoleNav(); 
   renderItems(); 
 }
@@ -416,11 +429,10 @@ function renderFilters() {
   }).join('');
 }
 
-// 建議處：切換分類篩選後也跳回最上方
 function toggleType(type) {
   if (selectedTypes.includes(type)) { selectedTypes = selectedTypes.filter(t => t !== type); }
   else { selectedTypes.push(type); }
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // 加入此行
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   renderFilters(); renderItems();
 }
 
