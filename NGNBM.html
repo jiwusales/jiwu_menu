@@ -371,25 +371,25 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
+  
+  // 定義不需要顯示角色名稱的清單
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   cart.forEach((item, i) => {
-    // 價格處理
-    const isNumeric = /^[0-9]+$/.test(item.price.toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price.toString().replace(/[^0-9]/g, '')) : 0;
-    const displayPrice = isNumeric ? `$${item.price}` : "詢問報價";
-    total += priceVal;
-
-    // 角色名稱處理
+    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    
+    // 判斷是否需要加上角色前綴
     let displayName = item.name;
     if (item.kind && !excludeRoles.includes(item.kind)) {
       displayName = `${item.kind} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${displayPrice}\n`;
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} $${item.price}\n`;
+    total += priceVal;
   });
   
   msg += `\n總金額：$${total}`;
+  
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
@@ -426,15 +426,12 @@ function renderCheckoutSummary() {
   summaryList.innerHTML = "";
   let total = 0;
   cart.forEach((item) => {
-    const isNumeric = /^[0-9]+$/.test(item.price.toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price.toString().replace(/[^0-9]/g, '')) : 0;
-    const displayPrice = isNumeric ? `$${item.price}` : "詢問報價";
-    
+    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">${displayPrice}</div></div>`;
+    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div>`;
     summaryList.appendChild(div);
   });
   totalEl.textContent = `$${total}`;
