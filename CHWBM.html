@@ -342,24 +342,55 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 處理顯示價格的通用邏輯
+function getDisplayPrice(price) {
+  if (price === '-') return "組合出售";
+  if (!price) return "詢問花花";
+  // 如果是純數字就加 $
+  if (/^[0-9]+$/.test(price.toString().trim())) return `$${price}`;
+  return price;
+}
+
+// 處理 LINE 訊息的價格轉換邏輯
+function getLinePriceText(price) {
+  if (price === '-') return "詢問組合";
+  if (!price) return "詢問報價";
+  if (/^[0-9]+$/.test(price.toString().trim())) return `$${price}`;
+  return price;
+}
+
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
   const totalEl = document.getElementById('cart-total');
   list.innerHTML = "";
   let total = 0;
+  let hasInquiry = false;
+
   cart.forEach((item, index) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
     total += priceVal;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
+    
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
+    `;
     list.appendChild(div);
   });
   badge.textContent = cart.length;
   badge.style.display = cart.length > 0 ? "flex" : "none";
-  totalEl.textContent = `$${total}`;
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 }
 
 function removeFromCart(index) {
@@ -371,24 +402,25 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
+  let hasInquiry = false;
   
-  // 定義不需要顯示角色名稱的清單
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   cart.forEach((item, i) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
     
-    // 判斷是否需要加上角色前綴
     let displayName = item.name;
     if (item.kind && !excludeRoles.includes(item.kind)) {
       displayName = `${item.kind} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} $${item.price}\n`;
-    total += priceVal;
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
   });
   
-  msg += `\n總金額：$${total}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
   
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
@@ -425,16 +457,28 @@ function renderCheckoutSummary() {
   const totalEl = document.getElementById('modal-total-price');
   summaryList.innerHTML = "";
   let total = 0;
+  let hasInquiry = false;
+
   cart.forEach((item) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
     total += priceVal;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div>`;
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+    `;
     summaryList.appendChild(div);
   });
-  totalEl.textContent = `$${total}`;
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 }
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
@@ -464,7 +508,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "電腦",         
+      source: "電腦",          
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -478,6 +522,10 @@ async function handleFinalCheckout() {
   } catch (e) {
     console.error("GAS 傳送失敗", e);
   }
+
+  // 電腦版傳送後也直接嘗試開 LINE（這部分維持原邏輯，或是由用戶掃碼）
+  const msg = generateLineMessage(lineName, igAcc);
+  window.location.href = CONFIG.LINE_MSG_URL + msg;
 
   cart = []; 
   saveCart(); 
@@ -571,8 +619,8 @@ function createCard(item) {
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
