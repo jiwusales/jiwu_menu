@@ -371,12 +371,25 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
+  
+  // 定義不需要顯示角色名稱的清單
+  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
+
   cart.forEach((item, i) => {
     const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
-    msg += `${i + 1}. (${item.currentStatus}) ${item.name} $${item.price}\n`;
+    
+    // 判斷是否需要加上角色前綴
+    let displayName = item.name;
+    if (item.kind && !excludeRoles.includes(item.kind)) {
+      displayName = `${item.kind} ${item.name}`;
+    }
+
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} $${item.price}\n`;
     total += priceVal;
   });
+  
   msg += `\n總金額：$${total}`;
+  
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
