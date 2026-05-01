@@ -14,10 +14,10 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",
-      ACTIVE_COLOR: "#f5b080",
+      THEME_COLOR: "#f2c2d5",
+      ACTIVE_COLOR: "#f06490",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                     
+      SHEET_NAME: "ちいかわ樂園",                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -27,10 +27,12 @@
     };
   </script>
 
+  <script src="common.js"></script>
+
   <style>
     :root { 
-      --theme-color: #FBCC7E; 
-      --active-color: #f5b080;
+      --theme-color: #f2c2d5; 
+      --active-color: #f06490;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
     }
@@ -69,7 +71,6 @@
     
     .menu-header { padding: 10px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
     .header-icon { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
-
     .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
     .menu-item img { width: 36px; height: 36px; object-fit: contain; }
     .menu-item:active { background: #f9f9f9; }
@@ -98,7 +99,6 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
-    .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -108,20 +108,6 @@
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
     
-    .card-overlay .stock-tag { 
-      transform: scale(0.6); 
-      transform-origin: top left;
-      writing-mode: horizontal-tb !important; 
-      width: auto !important;
-      height: 16px !important;
-      padding: 0 5px !important;
-      border-radius: 4px !important;
-      top: 3px;
-      left: 3px;
-      font-size: 10px;
-    }
-    .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
-
     #cart-trigger { 
       position: fixed; 
       top: 115px;
@@ -153,11 +139,19 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
-    .cart-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; color: white; margin-bottom: 3px; font-weight: bold; }
+    
+    .cart-tag { 
+      display: inline-block; 
+      font-size: 10px; 
+      padding: 1px 6px; 
+      border-radius: 4px; 
+      color: white; 
+      margin-bottom: 3px; 
+      font-weight: bold; 
+    }
 
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
-    .text-clear:hover { color: #888; }
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
     #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
@@ -172,15 +166,6 @@
  <div class="top-bar">
     <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
     <span class="pulse-text" id="top-msg" style="color: #fff;">載入中...</span>
-  </div>
-
-  <div id="menu-overlay" onclick="toggleMenu(false)"></div>
-  <div id="side-menu">
-    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
-      <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
-    </a>
-    <div id="side-menu-items">
-      </div>
   </div>
 
   <div class="header-fixed">
@@ -241,7 +226,6 @@
   </div>
 
 <script>
-// 初始化設定
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
@@ -249,20 +233,8 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
-// 側邊選單開關
-function toggleMenu(isOpen) {
-  const menu = document.getElementById('side-menu');
-  const overlay = document.getElementById('menu-overlay');
-  if (isOpen) {
-    menu.classList.add('open');
-    overlay.style.display = 'block';
-  } else {
-    menu.classList.remove('open');
-    overlay.style.display = 'none';
-  }
-}
+// 原本的 toggleMenu 函式已刪除，改為共用 common.js 裡的定義
 
-// 載入試算表資料
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -291,8 +263,6 @@ function loadData() {
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
-      
-      renderSideMenu(); // 自動生成側邊選單
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -301,29 +271,11 @@ function loadData() {
   });
 }
 
-// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
-function renderSideMenu() {
-  const menuContainer = document.getElementById('side-menu-items');
-  // 這裡可以手動定義你想在選單顯示的其他頁面連結
-  const links = [
-    { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
-    { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
-    { name: "Nagano白熊", url: "https://jiwusales.github.io/jiwu_menu/NGNBM.html", img: "https://i.postimg.cc/hP8v81NH/icon019.png" }
-  ];
-  
-  menuContainer.innerHTML = links.map(link => `
-    <a href="${link.url}" class="menu-item">
-      <img src="${link.img}"> ${link.name}
-    </a>
-  `).join('');
-}
-
-// 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -487,7 +439,6 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
   
-// 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
@@ -522,19 +473,16 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
-// 渲染商品卡片
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
   const isFilterMode = selectedTypes.length > 0;
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
-  
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
     return;
   }
-
   if (!isFilterMode && !selectedRole) {
     allCategories.forEach(cat => {
       const catItems = filteredItems.filter(i => i.kind === cat);
@@ -569,23 +517,22 @@ function createCard(item) {
   else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
   else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
-  let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+  let tagHtml = (tagText === "現貨") ? `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
-
 function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
-
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true); ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
-// 懸浮購物車拖動邏輯
 (function initDraggableCart() {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
@@ -626,7 +573,6 @@ function zoomCard(c) {
   el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
-// 啟動資料載入
 loadData();
 </script>
 </body>
