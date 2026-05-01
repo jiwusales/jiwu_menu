@@ -344,19 +344,20 @@ function toggleCart(isOpen) {
 
 // 處理顯示價格的通用邏輯
 function getDisplayPrice(price) {
-  if (price === '組合') return "組合出售";
-  if (!price) return "詢問花花";
-  // 如果是純數字就加 $
-  if (/^[0-9]+$/.test(price.toString().trim())) return `$${price}`;
-  return price;
+  const p = (price || "").toString().trim();
+  if (p.indexOf('組合') !== -1) return "組合出售";
+  if (p === "") return "詢問花花";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
+  return p;
 }
 
 // 處理 LINE 訊息的價格轉換邏輯
 function getLinePriceText(price) {
-  if (price === '組合') return "詢問組合";
-  if (!price) return "詢問報價";
-  if (/^[0-9]+$/.test(price.toString().trim())) return `$${price}`;
-  return price;
+  const p = (price || "").toString().trim();
+  if (p.indexOf('組合') !== -1) return "詢問組合";
+  if (p === "") return "詢問報價";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
+  return p;
 }
 
 function updateCartUI() {
