@@ -14,8 +14,8 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#e78790",
-      ACTIVE_COLOR: "#f06490",
+      THEME_COLOR: "#f2c2d5",
+      ACTIVE_COLOR: "#1f6cb0",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "サンリオ",                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
@@ -80,7 +80,8 @@
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { font-weight: bold; }
+    /* 移除角色色，統一使用 ACTIVE_COLOR */
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color) !important; }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
     .nav-bar a:last-child::after { content: ""; }
 
@@ -97,6 +98,7 @@
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
+    /* 邊框統一使用主題色 */
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
@@ -273,7 +275,6 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  // 捕捉點擊當下的文字標籤
   cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
@@ -300,15 +301,10 @@ function updateCartUI() {
   list.innerHTML = "";
   let total = 0;
   cart.forEach((item, index) => {
-    // 判斷價格顯示與計算
     let displayPrice = item.price;
-    if (item.price === '-') {
-        displayPrice = "組合出售";
-    } else if (!item.price || item.price.toString().trim() === "") {
-        displayPrice = "私訊花花";
-    } else {
-        displayPrice = `$${item.price}`;
-    }
+    if (item.price === '-') { displayPrice = "組合出售"; } 
+    else if (!item.price || item.price.toString().trim() === "") { displayPrice = "私訊花花"; } 
+    else { displayPrice = `$${item.price}`; }
 
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
@@ -329,34 +325,21 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
-
   cart.forEach((item, i) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
-    
-    // 處理 LINE 訊息中的價格字樣
     let linePrice = `$${item.price}`;
-    if (item.price === '-') {
-        linePrice = "詢問組合";
-    } else if (!item.price || item.price.toString().trim() === "") {
-        linePrice = "詢問報價";
-    }
-
+    if (item.price === '-') linePrice = "詢問組合";
+    else if (!item.price || item.price.toString().trim() === "") linePrice = "詢問報價";
     let displayName = item.name;
-    if (item.kind && !excludeRoles.includes(item.kind)) {
-      displayName = `${item.kind} ${item.name}`;
-    }
-
+    if (item.kind && !excludeRoles.includes(item.kind)) displayName = `${item.kind} ${item.name}`;
     msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${linePrice}\n`;
     total += priceVal;
   });
-  
   msg += `\n總金額：$${total}`;
-  
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
@@ -371,12 +354,8 @@ function handleCheckoutEntry() {
   if (isMobileDevice) {
     const msg = generateLineMessage();
     window.location.href = CONFIG.LINE_MSG_URL + msg;
-    setTimeout(() => { 
-      cart = []; saveCart(); updateCartUI(); toggleCart(false); 
-    }, 1500);
-  } else {
-    openCheckoutModal();
-  }
+    setTimeout(() => { cart = []; saveCart(); updateCartUI(); toggleCart(false); }, 1500);
+  } else { openCheckoutModal(); }
 }
 
 function openCheckoutModal() {
@@ -410,67 +389,32 @@ function closeModal() { document.getElementById('checkout-modal').style.display 
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
-  
-  if (!lineName) {
-    alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )");
-    return;
-  }
-
+  if (!lineName) { alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )"); return; }
   const btn = document.getElementById('send-btn');
-  btn.disabled = true; 
-  btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
-
+  btn.disabled = true; btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
   try {
-    const cartData = cart.map(item => ({
-      kind: item.kind,      
-      type: item.type,      
-      style: item.style,    
-      name: item.name,      
-      price: item.price,    
-      sn: item.sn,          
-      status: item.currentStatus 
-    }));
-
-    const postData = { 
-      source: "電腦",          
-      lineName: lineName,   
-      igAccount: igAcc,     
-      cartItems: cartData 
-    };
-
-    await fetch(CONFIG.DEPLOY_URL, { 
-      method: 'POST', 
-      mode: 'no-cors', 
-      body: JSON.stringify(postData) 
-    });
-  } catch (e) {
-    console.error("GAS 傳送失敗", e);
-  }
-
-  cart = []; 
-  saveCart(); 
-  updateCartUI();
-  
+    const cartData = cart.map(item => ({ kind: item.kind, type: item.type, style: item.style, name: item.name, price: item.price, sn: item.sn, status: item.currentStatus }));
+    const postData = { source: "電腦", lineName: lineName, igAccount: igAcc, cartItems: cartData };
+    await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+  } catch (e) { console.error("GAS 傳送失敗", e); }
+  cart = []; saveCart(); updateCartUI();
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
   
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
-  
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    const activeColor = roleColors[cat] || CONFIG.ACTIVE_COLOR;
-    const activeStyle = isSelected ? `style="color:${activeColor};"` : "";
-    return `<a class="${isSelected ? 'active-role' : ''}" ${activeStyle} onclick="toggleRole('${cat}')">${cat}</a>`;
+    // 移除 roleColors 對照表，選中時不帶額外 style (由 CSS 控制顏色)
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
 function toggleRole(cat) { 
   selectedRole = (selectedRole === cat) ? null : cat; 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  renderRoleNav(); 
-  renderItems(); 
+  renderRoleNav(); renderItems(); 
 }
 
 function renderFilters() {
@@ -522,7 +466,8 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+  // 移除 roleColors 對照表，固定使用 CONFIG.THEME_COLOR
+  card.style.borderColor = CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
   if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
@@ -532,10 +477,7 @@ function createCard(item) {
   else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
   let tagHtml = (tagText === "現貨") ? `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  
-  // 網頁卡片顯示判斷：維持「組合出售」與「私訊花花」
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
