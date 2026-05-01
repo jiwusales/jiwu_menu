@@ -233,8 +233,6 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
-// 原本的 toggleMenu 函式已刪除，改為共用 common.js 裡的定義
-
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -275,6 +273,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
+  // 捕捉點擊當下的文字標籤
   cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
@@ -301,12 +300,23 @@ function updateCartUI() {
   list.innerHTML = "";
   let total = 0;
   cart.forEach((item, index) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    // 判斷價格顯示與計算
+    let displayPrice = item.price;
+    if (item.price === '-') {
+        displayPrice = "組合出售";
+    } else if (!item.price || item.price.toString().trim() === "") {
+        displayPrice = "私訊花花";
+    } else {
+        displayPrice = `$${item.price}`;
+    }
+
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
+    
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
+    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">${displayPrice}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
     list.appendChild(div);
   });
   badge.textContent = cart.length;
@@ -323,20 +333,25 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
-  
-  // 定義不需要顯示角色名稱的清單
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   cart.forEach((item, i) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     
-    // 判斷是否需要加上角色前綴
+    // 處理 LINE 訊息中的價格字樣
+    let linePrice = `$${item.price}`;
+    if (item.price === '-') {
+        linePrice = "詢問組合";
+    } else if (!item.price || item.price.toString().trim() === "") {
+        linePrice = "詢問報價";
+    }
+
     let displayName = item.name;
     if (item.kind && !excludeRoles.includes(item.kind)) {
       displayName = `${item.kind} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} $${item.price}\n`;
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${linePrice}\n`;
     total += priceVal;
   });
   
@@ -378,12 +393,13 @@ function renderCheckoutSummary() {
   summaryList.innerHTML = "";
   let total = 0;
   cart.forEach((item) => {
-    const priceVal = parseInt(item.price.toString().replace(/[^0-9]/g, '')) || 0;
+    let displayPrice = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : `$${item.price}`);
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">$${item.price}</div></div>`;
+    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">${displayPrice}</div></div>`;
     summaryList.appendChild(div);
   });
   totalEl.textContent = `$${total}`;
@@ -416,7 +432,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "電腦",         
+      source: "電腦",          
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -521,6 +537,7 @@ function createCard(item) {
 
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   
+  // 網頁卡片顯示判斷：維持「組合出售」與「私訊花花」
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
