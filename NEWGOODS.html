@@ -35,13 +35,11 @@
       --text-color: #333333; 
     }
 
-    /* 新增：初始狀態隱藏，避免顏色閃爍 */
     .top-bar, .header-fixed, #card-container, #cart-trigger {
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
-    /* 載入完成後顯示 */
     .data-loaded .top-bar, 
     .data-loaded .header-fixed, 
     .data-loaded #card-container, 
@@ -115,9 +113,11 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
       z-index: 999; 
       opacity: 0.9; 
-      cursor: pointer; 
-      touch-action: none; 
+      cursor: grab; 
+      touch-action: none;
+      transition: opacity 0.3s ease;
     }
+    #cart-trigger:active { cursor: grabbing; }
     #cart-trigger img { width: 28px; height: 28px; pointer-events: none; }
     #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
@@ -220,15 +220,12 @@ function loadData() {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
-
         const currentBanner = getV(0) || lastBanner;
         const currentColor = getV(1) || lastColor;
         const currentGroup = getV(2) || lastGroup;
-
         lastBanner = currentBanner;
         lastColor = currentColor;
         lastGroup = currentGroup;
-
         return {
           banner: currentBanner,
           color: currentColor,
@@ -247,8 +244,16 @@ function loadData() {
       }).filter(item => item.name !== ""); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
-      if (allGroups.length > 0) {
+      
+      // 讀取上次紀錄的團購，若無則預設第一團
+      const savedGroup = localStorage.getItem('jiwu_last_group');
+      if (savedGroup && allGroups.includes(savedGroup)) {
+        selectedGroup = savedGroup;
+      } else if (allGroups.length > 0) {
         selectedGroup = allGroups[0];
+      }
+
+      if (selectedGroup) {
         updateThemeColorByGroup(selectedGroup);
       }
 
@@ -256,9 +261,15 @@ function loadData() {
       renderItems();
       updateCartUI();
       
-      // 資料處理完畢且顏色設定好後，顯示畫面
-      document.body.classList.add('data-loaded');
+      // 自動捲動導覽列到選中的項目
+      setTimeout(() => {
+        const activeNav = document.querySelector('.nav-bar a.active-role');
+        if (activeNav) {
+          activeNav.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+        }
+      }, 100);
 
+      document.body.classList.add('data-loaded');
     } catch (e) { 
         console.error(e); 
         document.getElementById('card-container').innerHTML = "載入失敗。";
@@ -285,6 +296,7 @@ function renderGroupNav() {
 
 function toggleGroup(group) { 
   selectedGroup = group;
+  localStorage.setItem('jiwu_last_group', group); // 儲存當前選中的團購
   updateThemeColorByGroup(group);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderGroupNav(); 
@@ -294,10 +306,8 @@ function toggleGroup(group) {
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  
   const groupItems = allItems.filter(i => i.group === selectedGroup);
   if (groupItems.length === 0) return;
-
   const bannerImg = groupItems[0].banner;
   if (bannerImg) {
     const bannerDiv = document.createElement('div');
@@ -306,7 +316,6 @@ function renderItems() {
     bannerDiv.innerHTML = `<img src="${bannerImg}" alt="banner">`;
     container.appendChild(bannerDiv);
   }
-
   const grid = document.createElement('div');
   grid.className = 'group-grid';
   groupItems.forEach(item => grid.appendChild(createCard(item)));
@@ -317,14 +326,10 @@ function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
   card.style.borderColor = CONFIG.THEME_COLOR;
-
   const hasStock = item.stock !== "" && item.stock !== "0" && item.stock.toLowerCase() !== "x";
   let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR}; color:#fff;">有庫存</div>` : "";
-  
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
-  
   let displayPrice = item.price ? `$${item.price}` : "詢問花花";
-  
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
     <img src="${item.img}">
@@ -375,7 +380,6 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
-    
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
@@ -438,23 +442,72 @@ async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
   if (!lineName) { alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )"); return; }
-  
   const btn = document.getElementById('send-btn');
   btn.disabled = true; btn.textContent = "傳送中...";
-  
   try {
     const cartData = cart.map(item => ({ group: item.group, name: item.name, price: item.price, size: item.size }));
     const postData = { source: "網頁目錄", lineName: lineName, igAccount: igAcc, cartItems: cartData };
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
   } catch (e) { console.error(e); }
-  
   cart = []; saveCart(); updateCartUI();
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
 
+(function makeCartDraggable() {
+  const cartBtn = document.getElementById('cart-trigger');
+  let isDragging = false;
+  let startX, startY, initialX, initialY;
+  let hasMoved = false;
+  const onStart = (e) => {
+    isDragging = true;
+    hasMoved = false;
+    const touch = e.type === 'touchstart' ? e.touches[0] : e;
+    startX = touch.clientX;
+    startY = touch.clientY;
+    const rect = cartBtn.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+    cartBtn.style.transition = 'none';
+  };
+  const onMove = (e) => {
+    if (!isDragging) return;
+    const touch = e.type === 'touchmove' ? e.touches[0] : e;
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
+    let newX = initialX + dx;
+    let newY = initialY + dy;
+    newX = Math.max(0, Math.min(window.innerWidth - 45, newX));
+    newY = Math.max(40, Math.min(window.innerHeight - 45, newY));
+    cartBtn.style.left = newX + 'px';
+    cartBtn.style.top = newY + 'px';
+    cartBtn.style.right = 'auto';
+  };
+  const onEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    cartBtn.style.transition = 'all 0.3s ease';
+    const rect = cartBtn.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    if (centerX < window.innerWidth / 2) {
+      cartBtn.style.left = '10px';
+    } else {
+      cartBtn.style.left = (window.innerWidth - 55) + 'px';
+    }
+    if (!hasMoved) {
+      toggleCart(true);
+    }
+  };
+  cartBtn.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+  cartBtn.addEventListener('touchstart', onStart, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+})();
+
 loadData();
-document.getElementById('cart-trigger').addEventListener('click', () => toggleCart(true));
 </script>
 </body>
 </html>
