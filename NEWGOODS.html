@@ -14,7 +14,7 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#f2c2d5",
+      THEME_COLOR: "#ffffff", // 預設改為白色，避免閃爍
       ACTIVE_COLOR: "#1f6cb0",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
       SHEET_NAME: "最新開團",                                     
@@ -29,10 +29,24 @@
 
   <style>
     :root { 
-      --theme-color: #f2c2d5; 
+      --theme-color: #ffffff; 
       --active-color: #1f6cb0;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
+    }
+
+    /* 新增：初始狀態隱藏，避免顏色閃爍 */
+    .top-bar, .header-fixed, #card-container, #cart-trigger {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    /* 載入完成後顯示 */
+    .data-loaded .top-bar, 
+    .data-loaded .header-fixed, 
+    .data-loaded #card-container, 
+    .data-loaded #cart-trigger {
+      opacity: 1;
     }
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
@@ -69,7 +83,6 @@
 
     #card-container { padding: 90px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; }
     
-    /* 修改：Banner 寬度限制到 720 */
     .banner-container { width: 100%; max-width: 720px; margin: 0 auto; line-height: 0; scroll-margin-top: 85px; }
     .banner-container img { width: 100%; height: auto; display: block; }
 
@@ -117,7 +130,6 @@
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
     .cart-item-info { flex: 1; }
-    .cart-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; color: white; margin-bottom: 3px; font-weight: bold; }
 
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; }
@@ -243,7 +255,15 @@ function loadData() {
       renderGroupNav();
       renderItems();
       updateCartUI();
-    } catch (e) { console.error(e); document.getElementById('card-container').innerHTML = "載入失敗。"; }
+      
+      // 資料處理完畢且顏色設定好後，顯示畫面
+      document.body.classList.add('data-loaded');
+
+    } catch (e) { 
+        console.error(e); 
+        document.getElementById('card-container').innerHTML = "載入失敗。";
+        document.body.classList.add('data-loaded');
+    }
   });
 }
 
@@ -354,8 +374,6 @@ function updateCartUI() {
   cart.forEach((item, index) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
-    
-    // 修改：如果售價空白，字樣顯示詢問花花
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
     
     const div = document.createElement('div');
@@ -400,10 +418,7 @@ function renderCheckoutSummary() {
   cart.forEach((item) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
-
-    // 修改：結帳清單同步顯示邏輯
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
-
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
@@ -439,7 +454,6 @@ async function handleFinalCheckout() {
 }
 
 loadData();
-
 document.getElementById('cart-trigger').addEventListener('click', () => toggleCart(true));
 </script>
 </body>
