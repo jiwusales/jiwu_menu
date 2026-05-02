@@ -22,10 +22,9 @@
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "" // 您的 GAS 部署網址
+      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbx609ZylPltwSDVVvbwraDI_eNgEEWT75aIr2DjbN3zjpRYFmkb6tAheRZjjePxSn74/exec"
     };
 
-    // 取得網址參數中的分頁名稱，若無則預設為第一頁（後續由程式自動偵測）
     let urlParams = new URLSearchParams(window.location.search);
     let currentSheetName = urlParams.get('sheet');
   </script>
@@ -121,11 +120,6 @@
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; }
     .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
-
-    #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
-    .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 15px; padding: 20px; position: relative; }
-    .input-box { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-    .summary-box { background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px; max-height: 200px; overflow-y: auto; text-align: left; margin-bottom: 10px; border: 1px solid #eee; }
   </style>
 </head>
 <body>
@@ -134,10 +128,9 @@
     <span class="pulse-text" id="top-msg">載入中...</span>
   </div>
 
-  <!-- 左側伸縮選單 -->
   <div id="menu-overlay" onclick="toggleMenu(false)"></div>
   <div id="side-menu">
-    <div class="menu-header">JIWU 吉物其他團</div>
+    <div class="menu-header">JIWU 吉物最新開團</div>
     <div id="sheet-list"></div>
   </div>
 
@@ -173,48 +166,40 @@
     </div>
   </div>
 
-  <div id="checkout-modal">
-    <div class="modal-content" id="step-1">
-      <h3 style="margin-top:0;">確認訂購資料</h3>
-      <div class="summary-box" id="modal-summary-list"></div>
-      <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
-      <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式">
-      <button class="btn-checkout" onclick="handleFinalCheckout()">確認訂購</button>
-      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
-    </div>
-  </div>
-
 <script>
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
-document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
-let allItems = [], allCategories = [], selectedRole = null, cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+let allItems = [], allCategories = [], allSheetNames = [], cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function toggleMenu(open) {
   document.getElementById('side-menu').classList.toggle('open', open);
   document.getElementById('menu-overlay').style.display = open ? 'block' : 'none';
 }
 
-async function loadData() {
-  // 1. 自動偵測分頁名稱
-  const metaUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/edit#gid=0`;
-  // 透過 GAS 或簡單的 fetch 獲取分頁有難度時，我們用 Google Visualization API 嘗試抓取
-  // 這裡使用一個技巧：如果沒有指定 sheetName，就預設用導覽列顯示切換
-  
-  const sheetListUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`;
-  
-  fetch(sheetListUrl).then(r => r.text()).then(t => {
-    const data = JSON.parse(t.substr(47).slice(0,-2));
-    // 雖然無法直接拿分頁清單，但可以從 URLParams 控制。
-    // 如果您需要「自動偵測目前分頁」，建議在此手動輸入您目前有的分頁名稱陣列，或者維持由 URL 進入。
-    // 這裡我們暫定由抓取的內容來決定。
-  });
+async function init() {
+  document.getElementById('top-msg').textContent = "正在掃描試算表...";
+  try {
+    // 1. 透過 GAS 獲取分頁名稱清單
+    const response = await fetch(CONFIG.DEPLOY_URL);
+    allSheetNames = await response.json();
+    
+    if (!currentSheetName) currentSheetName = allSheetNames[0];
+    document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+    
+    // 2. 渲染導覽與側邊欄
+    renderSheetNavs();
+    
+    // 3. 讀取商品資料
+    await loadData(currentSheetName);
+  } catch (e) {
+    document.getElementById('top-msg').textContent = "連線失敗，請檢查部署網址";
+    console.error(e);
+  }
+}
 
-  // 改用當前分頁或預設
-  if(!currentSheetName) currentSheetName = "Sheet1"; // 預設
-
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(currentSheetName)}`;
+async function loadData(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   
   try {
     const r = await fetch(url);
@@ -226,85 +211,76 @@ async function loadData() {
         const val = r.c[idx]?.v;
         return (val !== null && val !== undefined) ? val.toString().trim() : "";
       };
-      // 欄位：0首圖、1色系、2角色、3種類、4名稱、5原價、6售價、7庫存、8圖片、9商品網址、10備註
+      // A欄(0)首圖, B欄(1)色系, C欄(2)角色, E欄(4)名稱, G欄(6)售價, H欄(7)庫存
       return {
         mainPic: getV(0),
-        themeColor: getV(1) || CONFIG.THEME_COLOR,
+        themeColor: getV(1),
         kind: getV(2) || "其他",
-        type: getV(3),
         name: getV(4),
         price: getV(6),
-        stock: parseInt(getV(7)) || 0,
-        img: getV(8) || getV(0) || "https://i.postimg.cc/bv5xRs04/image.png"
+        stock: parseInt(getV(7)) || 0
       };
-    }).filter(i => i.name !== "");
+    }).filter(i => i.name !== "" && i.name !== "名稱");
 
     allCategories = [...new Set(allItems.map(i => i.kind))];
-    renderRoleNav();
     renderItems();
     updateCartUI();
-    renderSheetList(); // 渲染側邊欄
   } catch (e) { 
-    document.getElementById('card-container').innerHTML = "載入中或分頁名稱不正確，請確認試算表名稱。"; 
+    document.getElementById('card-container').innerHTML = "資料讀取失敗，請確認分頁名稱正確且權限已開放。"; 
   }
 }
 
-function renderSheetList() {
-    // 這裡建議手動更新您的分頁名稱清單，因為 Google API 限制無法直接抓取分頁清單
-    const sheets = ["分頁1", "分頁2"]; // 請在此填入您的分頁名稱
-    const list = document.getElementById('sheet-list');
-    list.innerHTML = sheets.map(s => `<a href="?sheet=${encodeURIComponent(s)}" class="menu-item ${currentSheetName===s?'active':''}">${s}</a>`).join('');
-}
-
-function renderRoleNav() {
+function renderSheetNavs() {
+  // 上方滾動導覽
   const nav = document.getElementById('dynamic-nav');
-  nav.innerHTML = allCategories.map(cat => `<a class="${selectedRole === cat ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`).join('');
-}
+  nav.innerHTML = allSheetNames.map(name => `
+    <a class="${currentSheetName === name ? 'active-role' : ''}" href="?sheet=${encodeURIComponent(name)}">${name}</a>
+  `).join('');
 
-function toggleRole(cat) {
-  selectedRole = (selectedRole === cat) ? null : cat;
-  renderRoleNav(); renderItems();
+  // 左側伸縮選單
+  const list = document.getElementById('sheet-list');
+  list.innerHTML = allSheetNames.map(name => `
+    <a href="?sheet=${encodeURIComponent(name)}" class="menu-item ${currentSheetName === name ? 'active' : ''}">${name}</a>
+  `).join('');
 }
 
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  let filtered = selectedRole ? allItems.filter(i => i.kind === selectedRole) : allItems;
 
-  if (!selectedRole) {
-    allCategories.forEach(cat => {
-      const catItems = filtered.filter(i => i.kind === cat);
-      if (catItems.length === 0) return;
-      const div = document.createElement('div');
-      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
-      container.appendChild(div);
-      const grid = document.createElement('div');
-      grid.className = 'group-grid';
-      catItems.forEach(item => grid.appendChild(createCard(item)));
-      container.appendChild(grid);
-    });
-  } else {
+  allCategories.forEach(cat => {
+    const catItems = allItems.filter(i => i.kind === cat);
+    if (catItems.length === 0) return;
+
+    const div = document.createElement('div');
+    div.className = 'type-divider'; div.textContent = cat;
+    container.appendChild(div);
+
     const grid = document.createElement('div');
     grid.className = 'group-grid';
-    filtered.forEach(item => grid.appendChild(createCard(item)));
+    catItems.forEach(item => grid.appendChild(createCard(item)));
     container.appendChild(grid);
-  }
+  });
 }
 
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  card.style.borderColor = item.themeColor;
+  
+  // 色系處理
+  const color = item.themeColor.startsWith('#') ? item.themeColor : (item.themeColor ? '#' + item.themeColor : CONFIG.THEME_COLOR);
+  card.style.borderColor = color;
 
   let tagText = "需預訂", tagBg = "#C197D2", tagColor = "white";
-  if (item.stock > 0) { 
-    tagText = "有庫存"; tagBg = "#FFF4BD"; tagColor = "#333"; 
-  }
+  if (item.stock > 0) { tagText = "有庫存"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
-  let tagHtml = `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  const tagHtml = `<div class="stock-tag" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>`;
+  const addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${item.name}</div><div class="price">$${item.price}</div>`;
+  // 只抓 A 欄圖片，若為空則顯示空白佔位
+  const imgHtml = item.mainPic ? `<img src="${item.mainPic}">` : `<div style="height:90px; display:flex; align-items:center; justify-content:center; color:#ccc; font-size:10px;">無圖片</div>`;
+
+  card.innerHTML = `${tagHtml}${addBtnHtml}${imgHtml}<div class="name">${item.name}</div><div class="price">$${item.price}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
@@ -333,7 +309,8 @@ function updateCartUI() {
     total += parseInt(item.price) || 0;
     const div = document.createElement('div');
     div.className = 'cart-item';
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info"><div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor}">${item.currentStatus}</div><div style="font-weight:bold;">${item.name}</div><div style="color:#e44d26;">$${item.price}</div></div><span onclick="removeFromCart(${index})" style="cursor:pointer; color:#ccc;">✕</span>`;
+    const imgUrl = item.mainPic || "https://i.postimg.cc/bv5xRs04/image.png";
+    div.innerHTML = `<img src="${imgUrl}"><div class="cart-item-info"><div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor}">${item.currentStatus}</div><div style="font-weight:bold;">${item.name}</div><div style="color:#e44d26;">$${item.price}</div></div><span onclick="removeFromCart(${index})" style="cursor:pointer; color:#ccc;">✕</span>`;
     list.appendChild(div);
   });
   badge.textContent = cart.length;
@@ -342,18 +319,19 @@ function updateCartUI() {
 }
 
 function removeFromCart(index) { cart.splice(index, 1); saveCart(); updateCartUI(); }
-function clearCart() { if(confirm("清空？")) { cart = []; saveCart(); updateCartUI(); } }
+function clearCart() { if(confirm("確定要清空購物車嗎？")) { cart = []; saveCart(); updateCartUI(); } }
 function toggleCart(open) { 
     document.getElementById('cart-panel').classList.toggle('open', open); 
     document.getElementById('cart-overlay-bg').style.display = open ? 'block' : 'none';
 }
 
 function handleCheckoutEntry() {
+    if(cart.length === 0) return alert("購物車是空的唷！");
     const msg = encodeURIComponent("你好，我想購買：\n" + cart.map(i => `- ${i.name} ($${i.price})`).join("\n"));
     window.location.href = CONFIG.LINE_MSG_URL + msg;
 }
 
-loadData();
+init();
 </script>
 </body>
 </html>
