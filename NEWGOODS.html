@@ -475,14 +475,24 @@ async function handleFinalCheckout() {
   if (!lineName) { alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )"); return; }
   const btn = document.getElementById('send-btn');
   btn.disabled = true; btn.textContent = "傳送中...";
+  
   try {
-    const cartData = cart.map(item => ({ group: item.group, name: item.name, price: item.price, size: item.size }));
+    const cartData = cart.map(item => ({ 
+      role: item.role, 
+      type: item.type, 
+      name: item.name, 
+      price: item.price, 
+      size: item.size,
+      note: item.group 
+    }));
+    
     const postData = { source: "網頁目錄", lineName: lineName, igAccount: igAcc, cartItems: cartData };
     await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+    
+    cart = []; saveCart(); updateCartUI();
+    document.getElementById('step-1').style.display = "none";
+    document.getElementById('step-2').style.display = "block";
   } catch (e) { console.error(e); }
-  cart = []; saveCart(); updateCartUI();
-  document.getElementById('step-1').style.display = "none";
-  document.getElementById('step-2').style.display = "block";
 }
 
 (function makeCartDraggable() {
