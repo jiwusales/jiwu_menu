@@ -323,7 +323,7 @@ function createCard(item) {
   
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   
-  let displayPrice = item.price ? `$${item.price}` : "私訊詢價";
+  let displayPrice = item.price ? `$${item.price}` : "詢問花花";
   
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
