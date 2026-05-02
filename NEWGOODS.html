@@ -1,236 +1,237 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JIWU吉物寶寶目錄</title>
-
-  <meta property="og:title" content="JIWU吉物寶寶目錄" />
-  <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
-  <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
-  <meta property="og:type" content="website" />
-
-  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
+  <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png">
   
   <script>
     const CONFIG = {
-      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
+      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
     };
   </script>
 
   <style>
-    :root { 
-      --theme-color: #f2c2d5; 
-      --text-color: #333333; 
-    }
-
-    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
+    :root { --theme-color: #f2c2d5; --text-color: #333333; }
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; }
     
-    .top-bar { 
-      background: var(--theme-color); 
-      color: #fff; 
-      padding: 10px 0; 
-      position: fixed; 
-      top: 0; left: 0; width: 100%; 
-      z-index: 1000; 
-      font-size: 15px; 
-    }
+    /* 頂部通知 */
+    .top-bar { background: var(--theme-color); color: #fff; padding: 10px 0; position: fixed; top: 0; width: 100%; z-index: 2000; font-size: 14px; font-weight: bold; }
     
-    /* 1. Banner 尺寸限制 1200px 並置中 */
-    .banner-container { margin-top: 40px; width: 100%; background: #fff; display: flex; justify-content: center; }
-    #page-banner { width: 100%; max-width: 1200px; display: block; object-fit: contain; }
-
-    .header-fixed { position: sticky; top: 40px; width: 100%; background: #fff; z-index: 998; border-bottom: 1px solid #eee; }
-    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; height: 45px; }
-    
-    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    /* 修正：自動偵測的分頁列，放在 Banner 上方 */
+    .header-fixed { position: fixed; top: 38px; width: 100%; background: #fff; z-index: 1900; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 10px; height: 50px; }
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
     .scroll-container::-webkit-scrollbar { display: none; }
-    .nav-bar { display: inline-block; padding: 10px 0; }
     .nav-bar a { 
-      color: var(--text-color); 
-      text-decoration: none; 
-      padding: 8px 15px; 
-      margin: 0 5px;
-      display: inline-block; 
-      cursor: pointer; 
-      font-weight: bold;
-      border-radius: 20px;
+      display: inline-block; padding: 8px 18px; margin: 0 5px; border-radius: 25px; 
+      background: #f0f0f0; color: var(--text-color); text-decoration: none; font-weight: bold; cursor: pointer; transition: 0.3s;
     }
     .nav-bar a.active { background: var(--theme-color); color: #fff; }
 
-    #card-container { padding: 10px; }
-    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 1200px; margin: 0 auto; }
-    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
-    
-    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; position: relative; }
-    .stock-tag { position: absolute; top: 4px; left: 4px; width: 45px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; }
-    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: #ddd; color: #fff; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
+    /* 修正：Banner 寬度限制 1200px 並置中 */
+    .banner-container { margin-top: 88px; width: 100%; background: #fff; display: flex; justify-content: center; }
+    #page-banner { width: 100%; max-width: 1200px; height: auto; display: block; object-fit: contain; }
 
-    .card img { height: 90px; width: auto; max-width: 95%; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
-    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 22px; overflow: hidden; margin-top: 2px; }
-    .card .price { font-size: 10px; margin-bottom: 5px; color: #666; }
-    
-    #cart-trigger { position: fixed; top: 115px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; }
-    #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; }
+    /* 商品區域與分類標題 */
+    #card-container { padding: 15px; max-width: 1200px; margin: 0 auto; text-align: left; }
+    .category-title { 
+      display: inline-block; padding: 5px 20px; background: var(--theme-color); 
+      color: #fff; border-radius: 20px; font-weight: bold; margin: 20px 0 10px 0; font-size: 14px;
+    }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .group-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; } }
 
-    #cart-panel { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
+    /* 完整的商品卡片樣式 */
+    .card { 
+      border: 2px solid var(--theme-color); border-radius: 12px; background: #fff; 
+      overflow: hidden; position: relative; transition: transform 0.2s; display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .stock-tag { position: absolute; top: 6px; left: 6px; background: #FFF4BD; color: #333; font-size: 10px; padding: 2px 6px; border-radius: 5px; font-weight: bold; z-index: 10; }
+    .add-btn { 
+      position: absolute; top: 6px; right: 6px; background: #eee; color: #999; 
+      width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; 
+      justify-content: center; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 11;
+    }
+    .add-btn:hover { background: var(--theme-color); color: #fff; }
+
+    .card img { width: 85%; height: 100px; object-fit: contain; margin: 35px auto 5px auto; }
+    .card-info { padding: 5px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .card .name { font-size: 11px; font-weight: bold; line-height: 1.3; height: 2.6em; overflow: hidden; margin-bottom: 4px; }
+    .card .price { font-size: 12px; color: #777; font-weight: bold; padding-bottom: 5px; }
+
+    /* 原本完整的購物車與面板 */
+    #cart-trigger { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2100; cursor: pointer; }
+    #cart-badge { position: absolute; top: 0; right: 0; background: #ff4d4f; color: white; font-size: 12px; border-radius: 50%; width: 22px; height: 22px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
+    
+    #cart-panel { position: fixed; top: 0; right: -350px; width: 320px; height: 100%; background: #fff; z-index: 3000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; box-shadow: -5px 0 20px rgba(0,0,0,0.1); }
     #cart-panel.open { right: 0; }
-    #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
-    .cart-header { padding: 12px 15px; background: var(--theme-color); color: white; font-weight: bold; display: flex; justify-content: space-between; }
-    .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; font-size: 13px; }
+    .cart-header { padding: 20px; background: var(--theme-color); color: #fff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 15px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+    .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
+    .checkout-btn { background: var(--theme-color); color: #fff; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    #cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; }
   </style>
 </head>
 <body>
-  <div class="top-bar"><span id="top-msg">載入中...</span></div>
 
-  <div class="banner-container">
-    <img id="page-banner" src="">
+<div class="top-bar" id="top-msg">載入中...</div>
+
+<div class="header-fixed">
+  <div class="nav-bar-wrapper">
+    <div class="scroll-container"><div class="nav-bar" id="dynamic-nav"></div></div>
   </div>
+</div>
 
-  <div class="header-fixed">
-    <div class="nav-bar-wrapper">
-      <div class="scroll-container"><div class="nav-bar" id="dynamic-nav"></div></div>
-    </div>
+<div class="banner-container"><img id="page-banner" src=""></div>
+
+<div id="card-container"></div>
+
+<!-- 完整購物車功能 -->
+<div id="cart-trigger" onclick="toggleCart(true)">
+  <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" width="30">
+  <div id="cart-badge">0</div>
+</div>
+
+<div id="cart-overlay" onclick="toggleCart(false)"></div>
+<div id="cart-panel">
+  <div class="cart-header"><span>我的購物車</span><span onclick="toggleCart(false)" style="cursor:pointer;font-size:24px;">×</span></div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div id="cart-total" style="margin-bottom:15px; font-weight:bold; font-size:18px; text-align:right;">總計：$0</div>
+    <button class="checkout-btn" onclick="sendToLine()">確認購買並送出</button>
   </div>
-
-  <div id="card-container"></div>
-
-  <div id="cart-trigger" onclick="toggleCart(true)">
-    <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" width="25">
-    <div id="cart-badge">0</div>
-  </div>
-
-  <div id="cart-overlay-bg" onclick="toggleCart(false)"></div>
-  <div id="cart-panel">
-    <div class="cart-header"><span>購物車</span><span onclick="toggleCart(false)" style="cursor:pointer">✕</span></div>
-    <div class="cart-list" id="cart-list"></div>
-    <div style="padding:15px; border-top:1px solid #eee;">
-      <button style="background:var(--theme-color); color:white; border:none; width:100%; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="handleCheckout()">確認結帳</button>
-    </div>
-  </div>
+</div>
 
 <script>
-document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
-let currentSheet = "";
 let cart = [];
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
-// 偵測所有分頁名稱
+// 【修正重點】自動偵測試算表網址內的所有分頁
 async function init() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tqx?tqx=out:html`;
   try {
-    // 使用 HTML 格式抓取試算表首頁，解析其中的分頁標籤
-    const res = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:html`);
-    const html = await res.text();
+    const response = await fetch(url);
+    const html = await response.text();
+    // 這裡利用可視化接口抓取分頁標籤清單
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const doc = parser.parseFromString(html, "text/html");
+    const tabs = Array.from(doc.querySelectorAll("li")).map(li => li.textContent.trim());
     
-    // 嘗試從表格結構中抓取分頁名稱，如果失敗則預設第一個
-    let tabs = ["吉物開開團"]; 
-    // 若要真正偵測多個分頁，由於 Google 限制，通常建議在 CONFIG 手動列出
-    // 這裡我們先執行第一次載入
-    renderNav(tabs);
-    loadSheetData(tabs[0]);
+    // 如果自動偵測失敗，至少保留一個預設值
+    const finalTabs = tabs.length > 0 ? tabs : ["吉物開開團"];
+    renderNav(finalTabs);
+    loadSheetData(finalTabs[0]);
   } catch (e) {
+    console.error("分頁偵測失敗", e);
+    renderNav(["吉物開開團"]);
     loadSheetData("吉物開開團");
   }
 }
 
 function renderNav(tabs) {
   const nav = document.getElementById('dynamic-nav');
-  nav.innerHTML = tabs.map(tab => `<a onclick="loadSheetData('${tab}')">${tab}</a>`).join('');
+  nav.innerHTML = tabs.map(tab => `<a onclick="loadSheetData('${tab}')" class="nav-item" data-name="${tab}">${tab}</a>`).join('');
 }
 
 async function loadSheetData(sheetName) {
-  currentSheet = sheetName;
-  const navLinks = document.querySelectorAll('.nav-bar a');
-  navLinks.forEach(a => {
-    a.classList.toggle('active', a.textContent === sheetName);
-  });
-
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.name === sheetName));
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   
-  try {
-    const r = await fetch(url);
-    const t = await r.text();
-    const data = JSON.parse(t.substr(47).slice(0, -2));
-    const rows = data.table.rows;
+  const response = await fetch(url);
+  const text = await response.text();
+  const data = JSON.parse(text.substr(47).slice(0, -2));
+  const rows = data.table.rows;
 
-    // A2 (第一列第一欄) -> Banner
-    const bannerUrl = rows[0]?.c[0]?.v;
-    if (bannerUrl) document.getElementById('page-banner').src = bannerUrl;
+  // A2 Banner & B2 Theme Color
+  const banner = rows[0]?.c[0]?.v;
+  if(banner) document.getElementById('page-banner').src = banner;
+  const color = rows[0]?.c[1]?.v;
+  if(color) document.documentElement.style.setProperty('--theme-color', color);
 
-    // B2 (第一列第二欄) -> Color
-    const themeColor = rows[0]?.c[1]?.v;
-    if (themeColor) {
-      document.documentElement.style.setProperty('--theme-color', themeColor);
-    }
-
-    // 商品過濾邏輯：排除首圖行、排除分類標題行(Col J)
-    const items = rows.map(r => ({
-      name: r.c[3]?.v || "",
-      price: r.c[5]?.v || "0",
-      isCategory: r.c[9]?.v || "", // J欄位
-      img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
-    })).filter(i => i.name !== "" && i.name !== "商品名稱" && i.name !== "首圖" && i.isCategory === "");
-
-    renderCards(items);
-  } catch (err) {
-    console.error("資料載入出錯:", err);
-  }
-}
-
-function renderCards(items) {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  if(items.length === 0) {
-    container.innerHTML = "<p style='padding:20px;'>此分頁尚無商品</p>";
-    return;
-  }
+  let currentGrid = null;
 
-  const grid = document.createElement('div');
-  grid.className = 'group-grid';
-  
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    card.innerHTML = `
-      <div class="stock-tag" style="background:#FFF4BD; color:#333;">有庫存</div>
-      <div class="add-btn-tag" onclick="addToCart(event, '${item.name}', '${item.price}')">＋</div>
-      <img src="${item.img}">
-      <div class="name">${item.name}</div>
-      <div class="price">$${item.price}</div>
-    `;
-    grid.appendChild(card);
+  rows.forEach(r => {
+    const name = r.c[3]?.v;
+    const price = r.c[5]?.v;
+    const category = r.c[9]?.v; // J欄分類標題
+    const img = r.c[12]?.v;
+
+    if (category) {
+      const title = document.createElement('div');
+      title.className = 'category-title';
+      title.textContent = category;
+      container.appendChild(title);
+      currentGrid = document.createElement('div');
+      currentGrid.className = 'group-grid';
+      container.appendChild(currentGrid);
+    } else if (name && name !== "商品名稱" && name !== "首圖") {
+      if (!currentGrid) {
+        currentGrid = document.createElement('div');
+        currentGrid.className = 'group-grid';
+        container.appendChild(currentGrid);
+      }
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => window.open(img, '_blank');
+      card.innerHTML = `
+        <div class="stock-tag">現貨</div>
+        <div class="add-btn" onclick="addToCart(event, '${name}', '${price}')">＋</div>
+        <img src="${img || 'https://i.postimg.cc/bv5xRs04/image.png'}">
+        <div class="card-info">
+          <div class="name">${name}</div>
+          <div class="price">$${price || '私訊'}</div>
+        </div>
+      `;
+      currentGrid.appendChild(card);
+    }
   });
-  container.appendChild(grid);
 }
 
 function addToCart(e, name, price) {
   e.stopPropagation();
-  cart.push({name, price});
-  updateCartUI();
+  cart.push({ name, price: parseInt(price) || 0 });
+  updateCart();
 }
 
-function updateCartUI() {
+function updateCart() {
   const badge = document.getElementById('cart-badge');
   badge.textContent = cart.length;
   badge.style.display = cart.length > 0 ? 'flex' : 'none';
-  const list = document.getElementById('cart-list');
-  list.innerHTML = cart.map(i => `<div style="border-bottom:1px solid #eee; padding:5px 0;">${i.name} - $${i.price}</div>`).join('');
+  
+  const list = document.getElementById('cart-items');
+  let total = 0;
+  list.innerHTML = cart.map((item, index) => {
+    total += item.price;
+    return `<div class="cart-item">
+              <span>${item.name}</span>
+              <span>$${item.price} <button onclick="removeItem(${index})" style="border:none;background:none;color:red;cursor:pointer">✕</button></span>
+            </div>`;
+  }).join('');
+  document.getElementById('cart-total').textContent = `總計：$${total}`;
+}
+
+function removeItem(index) {
+  cart.splice(index, 1);
+  updateCart();
 }
 
 function toggleCart(open) {
   document.getElementById('cart-panel').classList.toggle('open', open);
-  document.getElementById('cart-overlay-bg').style.display = open ? 'block' : 'none';
+  document.getElementById('cart-overlay').style.display = open ? 'block' : 'none';
 }
 
-function handleCheckout() {
-  if(cart.length === 0) return alert("購物車是空的唷！");
-  let text = "你好，我想購買：\n";
-  cart.forEach((i, idx) => text += `${idx+1}. ${i.name} ($${i.price})\n`);
-  window.open(CONFIG.LINE_MSG_URL + encodeURIComponent(text), '_blank');
+function sendToLine() {
+  if (cart.length === 0) return alert("購物車是空的唷！");
+  let msg = "你好！我想購買以下商品：\n" + cart.map((i, idx) => `${idx+1}. ${i.name} ($${i.price})`).join("\n");
+  window.open(CONFIG.LINE_MSG_URL + encodeURIComponent(msg), "_blank");
 }
 
 init();
