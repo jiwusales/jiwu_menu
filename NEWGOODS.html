@@ -477,22 +477,41 @@ async function handleFinalCheckout() {
   btn.disabled = true; btn.textContent = "傳送中...";
   
   try {
-    const cartData = cart.map(item => ({ 
-      role: item.role, 
-      type: item.type, 
-      name: item.name, 
-      price: item.price, 
-      size: item.size,
-      note: item.group 
-    }));
+    const cartData = cart.map(item => {
+      // 判斷角色：如果是「綜合角色」就回傳空字串，否則回傳原本的角色名
+      const roleValue = (item.role === "綜合角色") ? "" : item.role;
+
+      return { 
+        role: roleValue,     // 對應 D欄(角色) -> 傳給後端後寫入 F欄
+        type: item.type,     // 對應 E欄(種類)
+        name: item.name, 
+        price: item.price, 
+        size: item.size,     // 對應 J欄(尺寸)
+        note: item.group     // 把團名塞進備註，對應 K欄(備註)
+      };
+    });
     
-    const postData = { source: "網頁目錄", lineName: lineName, igAccount: igAcc, cartItems: cartData };
-    await fetch(CONFIG.DEPLOY_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(postData) });
+    const postData = { 
+      source: "網頁目錄", 
+      lineName: lineName, 
+      igAccount: igAcc, 
+      cartItems: cartData 
+    };
+    
+    await fetch(CONFIG.DEPLOY_URL, { 
+      method: 'POST', 
+      mode: 'no-cors', 
+      body: JSON.stringify(postData) 
+    });
     
     cart = []; saveCart(); updateCartUI();
     document.getElementById('step-1').style.display = "none";
     document.getElementById('step-2').style.display = "block";
-  } catch (e) { console.error(e); }
+  } catch (e) { 
+    console.error(e); 
+    btn.disabled = false;
+    btn.textContent = "確認訂購";
+  }
 }
 
 (function makeCartDraggable() {
