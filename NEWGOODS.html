@@ -69,7 +69,8 @@
 
     #card-container { padding: 90px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; }
     
-    .banner-container { width: 100%; max-width: 1080px; margin: 0 auto; line-height: 0; scroll-margin-top: 85px; }
+    /* 修改：Banner 寬度限制到 720 */
+    .banner-container { width: 100%; max-width: 720px; margin: 0 auto; line-height: 0; scroll-margin-top: 85px; }
     .banner-container img { width: 100%; height: auto; display: block; }
 
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; padding: 10px; width: 100%; box-sizing: border-box; max-width: 1080px; }
@@ -200,7 +201,7 @@ function loadData() {
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      let lastBanner = "", lastColor = "", lastGroup = ""; // 用來記錄上一行的資料
+      let lastBanner = "", lastColor = "", lastGroup = ""; 
       
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
@@ -208,12 +209,10 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
-        // 如果目前這格是空的，就沿用上一行的資料 (處理合併儲存格)
         const currentBanner = getV(0) || lastBanner;
         const currentColor = getV(1) || lastColor;
         const currentGroup = getV(2) || lastGroup;
 
-        // 更新暫存值供下一行使用
         lastBanner = currentBanner;
         lastColor = currentColor;
         lastGroup = currentGroup;
@@ -233,7 +232,7 @@ function loadData() {
           size: getV(11),
           note: getV(12)
         };
-      }).filter(item => item.name !== ""); // 只要名稱不是空的就顯示
+      }).filter(item => item.name !== ""); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       if (allGroups.length > 0) {
@@ -279,7 +278,6 @@ function renderItems() {
   const groupItems = allItems.filter(i => i.group === selectedGroup);
   if (groupItems.length === 0) return;
 
-  // 1. 加入 Banner
   const bannerImg = groupItems[0].banner;
   if (bannerImg) {
     const bannerDiv = document.createElement('div');
@@ -289,7 +287,6 @@ function renderItems() {
     container.appendChild(bannerDiv);
   }
 
-  // 2. 加入商品 Grid (照試算表順序，移除分隔線)
   const grid = document.createElement('div');
   grid.className = 'group-grid';
   groupItems.forEach(item => grid.appendChild(createCard(item)));
@@ -301,7 +298,6 @@ function createCard(item) {
   card.className = 'card';
   card.style.borderColor = CONFIG.THEME_COLOR;
 
-  // 貨況邏輯：只保留有庫存
   const hasStock = item.stock !== "" && item.stock !== "0" && item.stock.toLowerCase() !== "x";
   let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR}; color:#fff;">有庫存</div>` : "";
   
@@ -309,7 +305,6 @@ function createCard(item) {
   
   let displayPrice = item.price ? `$${item.price}` : "私訊詢價";
   
-  // 排序：圖片、名稱、售價、尺寸
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
     <img src="${item.img}">
@@ -359,13 +354,17 @@ function updateCartUI() {
   cart.forEach((item, index) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
+    
+    // 修改：如果售價空白，字樣顯示詢問花花
+    const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+    
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
-        <div style="color:#e44d26; font-weight:bold;">$${item.price || 0}</div>
+        <div style="color:#e44d26; font-weight:bold;">${cartPriceDisplay}</div>
       </div>
       <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
     list.appendChild(div);
@@ -401,13 +400,17 @@ function renderCheckoutSummary() {
   cart.forEach((item) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
+
+    // 修改：結帳清單同步顯示邏輯
+    const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
         <div style="font-weight:bold;">${item.name}</div>
-        <div style="color:#e44d26;">$${item.price || 0}</div>
+        <div style="color:#e44d26;">${cartPriceDisplay}</div>
       </div>`;
     summaryList.appendChild(div);
   });
@@ -437,7 +440,6 @@ async function handleFinalCheckout() {
 
 loadData();
 
-// 購物車按鈕點擊
 document.getElementById('cart-trigger').addEventListener('click', () => toggleCart(true));
 </script>
 </body>
