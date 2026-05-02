@@ -36,6 +36,7 @@
 
     .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 0 10px; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 15px; display: inline-block; cursor: pointer; border-radius: 20px; margin: 0 4px; font-size: 14px; transition: 0.3s; }
     .nav-bar a.active-role { font-weight: bold; color: #fff !important; background-color: var(--active-color); }
 
@@ -122,19 +123,29 @@
   let cart = JSON.parse(localStorage.getItem('jiwu_cart_v2')) || [];
   let allSheetNames = [];
 
-  // 自動偵測分頁名稱
+  // 【核心更新】真正自動偵測所有分頁名稱
   async function fetchSheetNames() {
-    const listUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pubhtml`;
+    // 必須使用 pubhtml 路徑才能抓到分頁選單
+    const listUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/pubhtml?gid=0`;
     try {
       const hResp = await fetch(listUrl);
       const hText = await hResp.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(hText, 'text/html');
+      
+      // 抓取 Google 試算表底部的分頁頁籤
       const tabs = doc.querySelectorAll('#sheet-menu li a');
-      const names = Array.from(tabs).map(t => t.textContent);
-      return names.length > 0 ? names : null;
+      if (tabs.length > 0) {
+        return Array.from(tabs).map(t => t.textContent.trim());
+      }
+      
+      // 備案：如果只有單一分頁且沒顯示選單，嘗試抓取標題
+      const title = doc.querySelector('.sheet-name');
+      if (title) return [title.textContent.trim()];
+
+      return null;
     } catch(e) { 
-      console.warn("無法自動偵測分頁，請確保試算表已『發佈到網路』。");
+      console.warn("自動偵測失敗:", e);
       return null; 
     }
   }
@@ -142,14 +153,16 @@
   async function init() {
     document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
     
-    // 偵測分頁，失敗則手動填寫作為備案
+    // 1. 自動偵測分頁
     const detectedNames = await fetchSheetNames();
-    allSheetNames = detectedNames || ["サンリオ", "吉伊卡哇", "其他"]; 
+    
+    // 2. 如果偵測成功就使用，失敗才用備案
+    allSheetNames = detectedNames || ["0524收單⛔️呪術廻戦 × nhutoons"]; 
     
     renderNavs(allSheetNames);
-    loadSheet(allSheetNames[0]);
+    loadSheet(allSheetNames[0]); // 自動載入第一個分頁
     updateCartUI();
-    initDrag(); // 初始化購物車拖拽
+    initDrag(); 
   }
 
   function renderNavs(names) {
@@ -160,34 +173,39 @@
   }
 
   async function loadSheet(name) {
+    // 更新 UI 狀態
     document.querySelectorAll('.nav-bar a').forEach(a => a.classList.remove('active-role'));
     const activeNav = document.getElementById(`nav-${name}`);
     if(activeNav) activeNav.classList.add('active-role');
 
+    // 抓取該分頁資料
     const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
-    const resp = await fetch(url);
-    const text = await resp.text();
-    const data = JSON.parse(text.substr(47).slice(0, -2));
-    const rows = data.table.rows;
+    try {
+      const resp = await fetch(url);
+      const text = await resp.text();
+      const data = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = data.table.rows;
 
-    // Banner B1, Color B2
-    const bannerImg = rows[0]?.c[1]?.v || ""; 
-    const themeColor = rows[1]?.c[1]?.v || CONFIG.DEFAULT_COLOR; 
-    
-    document.documentElement.style.setProperty('--theme-color', themeColor);
-    document.getElementById('banner-area').innerHTML = bannerImg ? `<img src="${bannerImg}">` : "";
+      const bannerImg = rows[0]?.c[1]?.v || ""; 
+      const themeColor = rows[1]?.c[1]?.v || CONFIG.DEFAULT_COLOR; 
+      
+      document.documentElement.style.setProperty('--theme-color', themeColor);
+      document.getElementById('banner-area').innerHTML = bannerImg ? `<img src="${bannerImg}">` : "";
 
-    const items = rows.slice(2).map(r => {
-      const getV = (i) => r.c[i]?.v?.toString() || "";
-      return { 
-        role: getV(0), type: getV(1), name: getV(2), 
-        oldPrice: getV(3), price: getV(4), stock: getV(5), 
-        img: getV(6) || "https://i.postimg.cc/bv5xRs04/image.png", 
-        url: getV(7), note: getV(8), sheet: name 
-      };
-    }).filter(i => i.name);
+      const items = rows.slice(2).map(r => {
+        const getV = (i) => r.c[i]?.v?.toString() || "";
+        return { 
+          role: getV(0), type: getV(1), name: getV(2), 
+          oldPrice: getV(3), price: getV(4), stock: getV(5), 
+          img: getV(6) || "https://i.postimg.cc/bv5xRs04/image.png", 
+          url: getV(7), note: getV(8), sheet: name 
+        };
+      }).filter(i => i.name);
 
-    renderItems(items);
+      renderItems(items);
+    } catch (e) {
+      console.error("載入分頁失敗:", e);
+    }
   }
 
   function renderItems(items) {
@@ -252,7 +270,6 @@
     window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(msg);
   }
 
-  // 購物車球拖拽邏輯
   function initDrag() {
     const el = document.getElementById('cart-trigger');
     let isD = false, sx, sy, ix, iy;
