@@ -100,7 +100,7 @@
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
     .stock-tag { position: absolute; top: 4px; left: 4px; padding: 0 4px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; color: var(--contrast-color); }
-    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
+    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 2px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 2px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 4px; color: #333; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
@@ -361,10 +361,14 @@ function createCard(item) {
   let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   let displayPrice = item.price ? `$${item.price}` : "詢問花花";
+  
+  // 角色空白就不加，中間不留空白
+  const displayName = item.role ? `${item.role}${item.name}` : item.name;
+
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
     <img src="${item.img}">
-    <div class="name">${item.name}</div>
+    <div class="name">${displayName}</div>
     <div class="price">${displayPrice}</div>
     <div class="size">${item.size || ''}</div>
   `;
@@ -411,12 +415,16 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+    
+    // 購物車清單也同步角色名稱邏輯
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
-        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="font-weight:bold; margin-bottom:2px;">${displayName}</div>
         <div style="color:#e44d26; font-weight:bold;">${cartPriceDisplay}</div>
       </div>
       <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
@@ -454,12 +462,16 @@ function renderCheckoutSummary() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+    
+    // 結帳清單也同步角色名稱邏輯
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
-        <div style="font-weight:bold;">${item.name}</div>
+        <div style="font-weight:bold;">${displayName}</div>
         <div style="color:#e44d26;">${cartPriceDisplay}</div>
       </div>`;
     summaryList.appendChild(div);
