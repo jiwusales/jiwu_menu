@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物寶寶目錄</title>
+  <title>JIWU吉物最新開團</title>
 
-  <meta property="og:title" content="JIWU吉物寶寶目錄" />
+  <meta property="og:title" content="JIWU吉物最新開團" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -14,11 +14,11 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#ffffff", // 預設改為白色，避免閃爍
+      THEME_COLOR: "#ffffff", 
       ACTIVE_COLOR: "#1f6cb0",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
       SHEET_NAME: "最新開團",                                     
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
+      TOP_BAR_TEXT: "載入中...", // 預設值，之後會被 note 取代
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -30,6 +30,7 @@
   <style>
     :root { 
       --theme-color: #ffffff; 
+      --contrast-color: #333333; /* 新增：根據背景色自動調整的字色 */
       --active-color: #1f6cb0;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
@@ -51,7 +52,7 @@
     
     .top-bar { 
       background: var(--theme-color); 
-      color: #fff; 
+      color: var(--contrast-color); /* 自動字色 */
       padding: 10px 0; 
       position: fixed; 
       top: 0; 
@@ -62,9 +63,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      font-weight: bold;
     }
     .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
@@ -88,7 +90,7 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); justify-content: center; } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
-    .stock-tag { position: absolute; top: 4px; left: 4px; padding: 0 4px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
+    .stock-tag { position: absolute; top: 4px; left: 4px; padding: 0 4px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; color: var(--contrast-color); }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 2px; object-fit: contain; pointer-events: none; }
@@ -125,7 +127,7 @@
     #cart-panel.open { right: 0; }
     #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
 
-    .cart-header { padding: 12px 15px; background: var(--theme-color); color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .cart-header { padding: 12px 15px; background: var(--theme-color); color: var(--contrast-color); font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
     .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
@@ -133,7 +135,7 @@
 
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; }
-    .btn-checkout { background: var(--theme-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-checkout { background: var(--theme-color); color: var(--contrast-color); border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
     #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 15px; padding: 20px; position: relative; }
@@ -201,9 +203,18 @@
   </div>
 
 <script>
+// 偵測背景深淺決定字色 (YIQ演算法)
+function getContrastColor(hex) {
+  if (!hex || hex === "#ffffff") return "#333333";
+  const r = parseInt(hex.substring(1, 3), 16);
+  const g = parseInt(hex.substring(3, 5), 16);
+  const b = parseInt(hex.substring(5, 7), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? "#333333" : "#ffffff";
+}
+
 document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
-document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allGroups = [], selectedGroup = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
@@ -213,7 +224,7 @@ function loadData() {
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      let lastBanner = "", lastColor = "", lastGroup = ""; 
+      let lastBanner = "", lastColor = "", lastGroup = "", lastNote = ""; 
       
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
@@ -223,9 +234,13 @@ function loadData() {
         const currentBanner = getV(0) || lastBanner;
         const currentColor = getV(1) || lastColor;
         const currentGroup = getV(2) || lastGroup;
+        const currentNote = getV(12) || lastNote; // M欄 備註
+
         lastBanner = currentBanner;
         lastColor = currentColor;
         lastGroup = currentGroup;
+        lastNote = currentNote;
+
         return {
           banner: currentBanner,
           color: currentColor,
@@ -239,13 +254,12 @@ function loadData() {
           img: getV(9) || "https://i.postimg.cc/bv5xRs04/image.png",
           link: getV(10),
           size: getV(11),
-          note: getV(12)
+          note: currentNote
         };
       }).filter(item => item.name !== ""); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       
-      // 讀取上次紀錄的團購，若無則預設第一團
       const savedGroup = localStorage.getItem('jiwu_last_group');
       if (savedGroup && allGroups.includes(savedGroup)) {
         selectedGroup = savedGroup;
@@ -261,7 +275,6 @@ function loadData() {
       renderItems();
       updateCartUI();
       
-      // 自動捲動導覽列到選中的項目
       setTimeout(() => {
         const activeNav = document.querySelector('.nav-bar a.active-role');
         if (activeNav) {
@@ -279,10 +292,17 @@ function loadData() {
 }
 
 function updateThemeColorByGroup(groupName) {
-  const firstItem = allItems.find(i => i.group === groupName);
-  if (firstItem && firstItem.color) {
-    document.documentElement.style.setProperty('--theme-color', firstItem.color);
-    CONFIG.THEME_COLOR = firstItem.color;
+  const groupData = allItems.find(i => i.group === groupName);
+  if (groupData) {
+    const color = groupData.color || "#ffffff";
+    const contrast = getContrastColor(color);
+    document.documentElement.style.setProperty('--theme-color', color);
+    document.documentElement.style.setProperty('--contrast-color', contrast);
+    CONFIG.THEME_COLOR = color;
+    
+    // 更新頂部備註文字
+    const topMsg = document.getElementById('top-msg');
+    topMsg.textContent = groupData.note || "點擊卡片可放大圖片唷！";
   }
 }
 
@@ -296,7 +316,7 @@ function renderGroupNav() {
 
 function toggleGroup(group) { 
   selectedGroup = group;
-  localStorage.setItem('jiwu_last_group', group); // 儲存當前選中的團購
+  localStorage.setItem('jiwu_last_group', group);
   updateThemeColorByGroup(group);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderGroupNav(); 
@@ -327,7 +347,7 @@ function createCard(item) {
   card.className = 'card';
   card.style.borderColor = CONFIG.THEME_COLOR;
   const hasStock = item.stock !== "" && item.stock !== "0" && item.stock.toLowerCase() !== "x";
-  let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR}; color:#fff;">有庫存</div>` : "";
+  let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   let displayPrice = item.price ? `$${item.price}` : "詢問花花";
   card.innerHTML = `
