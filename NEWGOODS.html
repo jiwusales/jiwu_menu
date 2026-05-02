@@ -498,7 +498,6 @@ async function handleFinalCheckout() {
         type: item.type,       // 傳給後端 type，會寫入 E 欄
         name: item.name,
         price: item.price,
-        status: cleanSize,     // 傳給後端 status，會寫入 J 欄
         note: item.group,      // 團名傳給後端 note，會寫入 K 欄
         sn: item.sn || ""      // 貨號傳給後端 sn，會寫入 I 欄
       };
