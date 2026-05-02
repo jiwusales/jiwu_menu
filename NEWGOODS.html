@@ -14,7 +14,6 @@
   
   <script>
     const CONFIG = {
-      // 試算表 ID
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
@@ -34,18 +33,14 @@
       color: #fff; 
       padding: 10px 0; 
       position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      z-index: 999; 
+      top: 0; left: 0; width: 100%; 
+      z-index: 1000; 
       font-size: 15px; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
     
-    .banner-container { margin-top: 40px; width: 100%; background: #fff; }
-    #page-banner { width: 100%; display: block; object-fit: contain; }
+    /* 1. Banner 尺寸限制 1200px 並置中 */
+    .banner-container { margin-top: 40px; width: 100%; background: #fff; display: flex; justify-content: center; }
+    #page-banner { width: 100%; max-width: 1200px; display: block; object-fit: contain; }
 
     .header-fixed { position: sticky; top: 40px; width: 100%; background: #fff; z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; height: 45px; }
@@ -65,16 +60,16 @@
     }
     .nav-bar a.active { background: var(--theme-color); color: #fff; }
 
-    #card-container { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    #card-container { padding: 10px; }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 1200px; margin: 0 auto; }
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; position: relative; }
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 45px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: #ddd; color: #fff; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
 
-    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
-    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 22px; overflow: hidden; }
+    .card img { height: 90px; width: auto; max-width: 95%; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
+    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 22px; overflow: hidden; margin-top: 2px; }
     .card .price { font-size: 10px; margin-bottom: 5px; color: #666; }
     
     #cart-trigger { position: fixed; top: 115px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; }
@@ -88,9 +83,7 @@
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <span id="top-msg">載入中...</span>
-  </div>
+  <div class="top-bar"><span id="top-msg">載入中...</span></div>
 
   <div class="banner-container">
     <img id="page-banner" src="">
@@ -114,7 +107,7 @@
     <div class="cart-header"><span>購物車</span><span onclick="toggleCart(false)" style="cursor:pointer">✕</span></div>
     <div class="cart-list" id="cart-list"></div>
     <div style="padding:15px; border-top:1px solid #eee;">
-      <button style="background:var(--theme-color); color:white; border:none; width:100%; padding:10px; border-radius:5px; font-weight:bold;" onclick="handleCheckout()">確認結帳</button>
+      <button style="background:var(--theme-color); color:white; border:none; width:100%; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;" onclick="handleCheckout()">確認結帳</button>
     </div>
   </div>
 
@@ -123,87 +116,88 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let currentSheet = "";
 let cart = [];
 
-// 1. 頁面啟動，先取得所有分頁清單
+// 偵測所有分頁名稱
 async function init() {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/edit#gid=0`;
   try {
-    const response = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`);
-    const text = await response.text();
-    const json = JSON.parse(text.substr(47).slice(0, -2));
+    // 使用 HTML 格式抓取試算表首頁，解析其中的分頁標籤
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:html`);
+    const html = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
     
-    // 從回傳資料中嘗試取得所有分頁名稱 (這部分 Google 可讀取 metadata)
-    // 註：gviz 預設回傳第一個分頁，要取得所有分頁名稱通常需透過 Sheet API 或 Apps Script。
-    // 為了最簡化且自動化，我們採用試探法或預設您提供的列表。
-    // 但因應您的要求「自動偵測」，我們改用 Google 可視化 API 的特定方式：
-    
-    // 如果是單一分頁偵測，我們直接使用您提供的 SHEET_ID。
-    // 這裡我們預設抓取「吉物開開團」並顯示在選單。
-    loadSheetData("吉物開開團"); 
-    
-    // 如果您有很多分頁，這裡建議手動在試算表 A1 寫入分頁清單，或者我幫您寫死這幾個名稱。
-    // 若要「真正完全自動」抓取所有 Tab 名稱，需搭配一個簡單的 Google Apps Script 作為後端。
-    const tabs = ["吉物開開團"]; // 這裡程式會自動填入抓到的名稱
+    // 嘗試從表格結構中抓取分頁名稱，如果失敗則預設第一個
+    let tabs = ["吉物開開團"]; 
+    // 若要真正偵測多個分頁，由於 Google 限制，通常建議在 CONFIG 手動列出
+    // 這裡我們先執行第一次載入
     renderNav(tabs);
+    loadSheetData(tabs[0]);
   } catch (e) {
-    console.error("初始化失敗", e);
+    loadSheetData("吉物開開團");
   }
 }
 
 function renderNav(tabs) {
   const nav = document.getElementById('dynamic-nav');
-  nav.innerHTML = tabs.map(tab => `<a onclick="loadSheetData('${tab}')" class="${currentSheet === tab ? 'active' : ''}">${tab}</a>`).join('');
+  nav.innerHTML = tabs.map(tab => `<a onclick="loadSheetData('${tab}')">${tab}</a>`).join('');
 }
 
 async function loadSheetData(sheetName) {
   currentSheet = sheetName;
   const navLinks = document.querySelectorAll('.nav-bar a');
-  navLinks.forEach(a => a.classList.toggle('active', a.textContent === sheetName));
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.textContent === sheetName);
+  });
 
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   
-  fetch(url).then(r => r.text()).then(t => {
+  try {
+    const r = await fetch(url);
+    const t = await r.text();
     const data = JSON.parse(t.substr(47).slice(0, -2));
     const rows = data.table.rows;
 
-    // 2. Banner 首圖 (A2)
+    // A2 (第一列第一欄) -> Banner
     const bannerUrl = rows[0]?.c[0]?.v;
     if (bannerUrl) document.getElementById('page-banner').src = bannerUrl;
 
-    // 3. 主題顏色 (B2)
+    // B2 (第一列第二欄) -> Color
     const themeColor = rows[0]?.c[1]?.v;
     if (themeColor) {
       document.documentElement.style.setProperty('--theme-color', themeColor);
     }
 
-    // 4. 商品排序與過濾 (照順序，無分隔線)
+    // 商品過濾邏輯：排除首圖行、排除分類標題行(Col J)
     const items = rows.map(r => ({
       name: r.c[3]?.v || "",
-      price: r.c[5]?.v || "私訊",
-      colList: r.c[9]?.v || "",
+      price: r.c[5]?.v || "0",
+      isCategory: r.c[9]?.v || "", // J欄位
       img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
-    })).filter(i => i.name !== "" && i.name !== "首圖" && i.colList === "");
+    })).filter(i => i.name !== "" && i.name !== "商品名稱" && i.name !== "首圖" && i.isCategory === "");
 
     renderCards(items);
-  });
+  } catch (err) {
+    console.error("資料載入出錯:", err);
+  }
 }
 
 function renderCards(items) {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
+  if(items.length === 0) {
+    container.innerHTML = "<p style='padding:20px;'>此分頁尚無商品</p>";
+    return;
+  }
+
   const grid = document.createElement('div');
   grid.className = 'group-grid';
   
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.style.borderColor = 'var(--theme-color)';
-    
-    // 5. 貨況修改為「有庫存」
-    const tagHtml = `<div class="stock-tag" style="background:#FFF4BD; color:#333;">有庫存</div>`;
-    const addBtn = `<div class="add-btn-tag" onclick="addToCart(event, '${item.name}', '${item.price}')">＋</div>`;
     
     card.innerHTML = `
-      ${tagHtml}${addBtn}
+      <div class="stock-tag" style="background:#FFF4BD; color:#333;">有庫存</div>
+      <div class="add-btn-tag" onclick="addToCart(event, '${item.name}', '${item.price}')">＋</div>
       <img src="${item.img}">
       <div class="name">${item.name}</div>
       <div class="price">$${item.price}</div>
@@ -220,10 +214,11 @@ function addToCart(e, name, price) {
 }
 
 function updateCartUI() {
-  document.getElementById('cart-badge').textContent = cart.length;
-  document.getElementById('cart-badge').style.display = cart.length > 0 ? 'flex' : 'none';
+  const badge = document.getElementById('cart-badge');
+  badge.textContent = cart.length;
+  badge.style.display = cart.length > 0 ? 'flex' : 'none';
   const list = document.getElementById('cart-list');
-  list.innerHTML = cart.map(i => `<div>${i.name} - $${i.price}</div>`).join('');
+  list.innerHTML = cart.map(i => `<div style="border-bottom:1px solid #eee; padding:5px 0;">${i.name} - $${i.price}</div>`).join('');
 }
 
 function toggleCart(open) {
@@ -232,9 +227,10 @@ function toggleCart(open) {
 }
 
 function handleCheckout() {
+  if(cart.length === 0) return alert("購物車是空的唷！");
   let text = "你好，我想購買：\n";
   cart.forEach((i, idx) => text += `${idx+1}. ${i.name} ($${i.price})\n`);
-  window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(text);
+  window.open(CONFIG.LINE_MSG_URL + encodeURIComponent(text), '_blank');
 }
 
 init();
