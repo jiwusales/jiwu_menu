@@ -15,7 +15,7 @@
   <script>
     const CONFIG = {
       THEME_COLOR: "#ffffff", 
-      CONTRAST_COLOR: "#333333",
+      CONTRAST_COLOR: "#333333", // 由輔色系決定
       ACTIVE_COLOR: "#EF9D7F",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
       SHEET_NAME: "最新開團",                                     
@@ -50,6 +50,7 @@
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
     
+    /* 備註列：確保一行，自動縮小字體 */
     .top-bar { 
       background: var(--theme-color); 
       color: var(--contrast-color);
@@ -69,7 +70,7 @@
     .top-bar-content {
       white-space: nowrap;
       font-weight: bold;
-      font-size: clamp(10px, 4vw, 15px); 
+      font-size: clamp(10px, 4vw, 15px); /* 根據螢幕寬度自動縮放字體 */
       display: inline-block;
       animation: pulse 1.5s infinite;
     }
@@ -127,6 +128,7 @@
       touch-action: none;
       transition: opacity 0.3s ease;
     }
+    #cart-trigger:active { cursor: grabbing; }
     #cart-trigger img { width: 28px; height: 28px; pointer-events: none; }
     #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
@@ -214,15 +216,11 @@ let allItems = [], allGroups = [], selectedGroup = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
-  // 檢查預覽模式
-  const urlParams = new URLSearchParams(window.location.search);
-  const isPreviewMode = urlParams.get('preview') === 'true';
-
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = "show"; 
+      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
       
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
@@ -230,18 +228,14 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
+        // 欄位對應
+        // 0:上架, 1:首圖, 2:主色系, 3:輔色系, 4:團名, 5:角色, 6:種類, 7:名稱, 8:原價, 9:售價, 10:庫存, 11:圖片, 12:商品網址, 13:尺寸, 14:備註
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
+        // 如果團名有更換，重設上架狀態
         if(groupName !== "" && groupName !== lastGroup) {
-            // v 為預覽模式可見, x 為絕對不見, 空白或其他為正常上架
-            if (activeFlag === 'x') {
-                currentIsActive = "hidden";
-            } else if (activeFlag === 'v') {
-                currentIsActive = isPreviewMode ? "show" : "hidden";
-            } else {
-                currentIsActive = "show";
-            }
+            currentIsActive = (activeFlag !== 'x');
         }
 
         const currentBanner = getV(1) || lastBanner;
@@ -257,7 +251,7 @@ function loadData() {
         lastNote = currentNote;
 
         return {
-          displayStatus: currentIsActive,
+          isActive: currentIsActive,
           banner: currentBanner,
           color: currentColor,
           subColor: currentSubColor,
@@ -273,7 +267,7 @@ function loadData() {
           size: getV(13),
           note: currentNote
         };
-      }).filter(item => item.name !== "" && item.displayStatus === "show"); 
+      }).filter(item => item.name !== "" && item.isActive === true); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       
@@ -292,12 +286,6 @@ function loadData() {
       renderItems();
       updateCartUI();
       
-      if (isPreviewMode) {
-          const topMsg = document.getElementById('top-msg');
-          topMsg.textContent = "⚠️ 目前處於預覽模式，可看見標記為 v 的商品";
-          topMsg.style.color = "red";
-      }
-
       setTimeout(() => {
         const activeNav = document.querySelector('.nav-bar a.active-role');
         if (activeNav) {
@@ -318,17 +306,14 @@ function updateThemeColorByGroup(groupName) {
   const groupData = allItems.find(i => i.group === groupName);
   if (groupData) {
     const color = groupData.color || "#ffffff";
-    const subColor = groupData.subColor || "#333333"; 
+    const subColor = groupData.subColor || "#333333"; // 輔色系
     
     document.documentElement.style.setProperty('--theme-color', color);
     document.documentElement.style.setProperty('--contrast-color', subColor);
     CONFIG.THEME_COLOR = color;
     
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('preview') !== 'true') {
-        const topMsg = document.getElementById('top-msg');
-        topMsg.textContent = groupData.note || "點擊卡片可放大圖片唷！";
-    }
+    const topMsg = document.getElementById('top-msg');
+    topMsg.textContent = groupData.note || "點擊卡片可放大圖片唷！";
   }
 }
 
@@ -377,7 +362,10 @@ function createCard(item) {
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   let displayPrice = item.price ? `$${item.price}` : "詢問花花";
   
+  // 角色空白就不加，中間不留空白
   const displayName = item.role ? `${item.role}${item.name}` : item.name;
+
+  // 修改這裡：如果 item.size 是空的，就塞入一個空格佔位，確保那一行依然存在
   const sizeText = item.size ? item.size : '&nbsp;';
 
   card.innerHTML = `
@@ -430,6 +418,8 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+    
+    // 購物車清單也同步角色名稱邏輯
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
@@ -475,6 +465,8 @@ function renderCheckoutSummary() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
+    
+    // 結帳清單也同步角色名稱邏輯
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
@@ -500,16 +492,26 @@ async function handleFinalCheckout() {
   const btn = document.getElementById('send-btn');
   btn.disabled = true; btn.textContent = "傳送中...";
 
+  // 定義尺寸格式化邏輯（因為後端不改，前端先轉好）
+  const formatSize = (str) => {
+    if (!str) return "";
+    const numbers = str.toString().match(/\d+(\.\d+)?/g);
+    return numbers ? numbers.join('x') : str;
+  };
+
   try {
     const cartData = cart.map(item => {
+      // 1. 處理角色：最新開團 F 欄 (item.role) -> 傳給後端 kind (D 欄)
+      // 排除「綜合角色」
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
+
       return {
-        kind: roleValue,
-        type: item.type,
+        kind: roleValue,       // 傳給後端 kind，會寫入 D 欄
+        type: item.type,       // 傳給後端 type，會寫入 E 欄
         name: item.name,
         price: item.price,
-        note: item.group,
-        sn: item.sn || ""
+        note: item.group,      // 團名傳給後端 note，會寫入 K 欄
+        sn: item.sn || ""      // 貨號傳給後端 sn，會寫入 I 欄
       };
     });
 
