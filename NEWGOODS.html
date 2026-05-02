@@ -15,10 +15,10 @@
   <script>
     const CONFIG = {
       THEME_COLOR: "#ffffff", 
+      CONTRAST_COLOR: "#333333", // 由輔色系決定
       ACTIVE_COLOR: "#1f6cb0",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
       SHEET_NAME: "最新開團",                                     
-      TOP_BAR_TEXT: "載入中...", // 預設值，之後會被 note 取代
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -30,7 +30,7 @@
   <style>
     :root { 
       --theme-color: #ffffff; 
-      --contrast-color: #333333; /* 新增：根據背景色自動調整的字色 */
+      --contrast-color: #333333; 
       --active-color: #1f6cb0;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
@@ -50,22 +50,31 @@
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
     
+    /* 備註列：確保一行，自動縮小字體 */
     .top-bar { 
       background: var(--theme-color); 
-      color: var(--contrast-color); /* 自動字色 */
-      padding: 10px 0; 
+      color: var(--contrast-color);
+      padding: 10px 5px; 
       position: fixed; 
       top: 0; 
       left: 0; 
       width: 100%; 
       z-index: 999; 
-      font-size: 15px; 
+      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-weight: bold;
+      box-sizing: border-box;
+      overflow: hidden;
     }
-    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
+    .top-bar-content {
+      white-space: nowrap;
+      font-weight: bold;
+      font-size: clamp(10px, 4vw, 15px); /* 根據螢幕寬度自動縮放字體 */
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+    
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
@@ -147,7 +156,7 @@
 </head>
 <body>
  <div class="top-bar">
-    <span class="pulse-text" id="top-msg">載入中...</span>
+    <span class="top-bar-content" id="top-msg">載入中...</span>
   </div>
 
   <div class="header-fixed">
@@ -203,19 +212,6 @@
   </div>
 
 <script>
-// 偵測背景深淺決定字色 (YIQ演算法)
-function getContrastColor(hex) {
-  if (!hex || hex === "#ffffff") return "#333333";
-  const r = parseInt(hex.substring(1, 3), 16);
-  const g = parseInt(hex.substring(3, 5), 16);
-  const b = parseInt(hex.substring(5, 7), 16);
-  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-  return (yiq >= 128) ? "#333333" : "#ffffff";
-}
-
-document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
-document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
-
 let allItems = [], allGroups = [], selectedGroup = null;
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
@@ -224,39 +220,54 @@ function loadData() {
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      let lastBanner = "", lastColor = "", lastGroup = "", lastNote = ""; 
+      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
       
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
-        const currentBanner = getV(0) || lastBanner;
-        const currentColor = getV(1) || lastColor;
-        const currentGroup = getV(2) || lastGroup;
-        const currentNote = getV(12) || lastNote; // M欄 備註
+
+        // 欄位對應
+        // 0:上架, 1:首圖, 2:主色系, 3:輔色系, 4:團名, 5:角色, 6:種類, 7:名稱, 8:原價, 9:售價, 10:庫存, 11:圖片, 12:商品網址, 13:尺寸, 14:備註
+        const activeFlag = getV(0).toLowerCase();
+        const groupName = getV(4);
+        
+        // 如果團名有更換，重設上架狀態
+        if(groupName !== "" && groupName !== lastGroup) {
+            currentIsActive = (activeFlag !== 'x');
+        }
+
+        const currentBanner = getV(1) || lastBanner;
+        const currentColor = getV(2) || lastColor;
+        const currentSubColor = getV(3) || lastSubColor;
+        const currentGroup = groupName || lastGroup;
+        const currentNote = getV(14) || lastNote; 
 
         lastBanner = currentBanner;
         lastColor = currentColor;
+        lastSubColor = currentSubColor;
         lastGroup = currentGroup;
         lastNote = currentNote;
 
         return {
+          isActive: currentIsActive,
           banner: currentBanner,
           color: currentColor,
+          subColor: currentSubColor,
           group: currentGroup,
-          role: getV(3),
-          type: getV(4),
-          name: getV(5),
-          originalPrice: getV(6),
-          price: getV(7),
-          stock: getV(8),
-          img: getV(9) || "https://i.postimg.cc/bv5xRs04/image.png",
-          link: getV(10),
-          size: getV(11),
+          role: getV(5),
+          type: getV(6),
+          name: getV(7),
+          originalPrice: getV(8),
+          price: getV(9),
+          stock: getV(10),
+          img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png",
+          link: getV(12),
+          size: getV(13),
           note: currentNote
         };
-      }).filter(item => item.name !== ""); 
+      }).filter(item => item.name !== "" && item.isActive === true); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       
@@ -295,12 +306,12 @@ function updateThemeColorByGroup(groupName) {
   const groupData = allItems.find(i => i.group === groupName);
   if (groupData) {
     const color = groupData.color || "#ffffff";
-    const contrast = getContrastColor(color);
+    const subColor = groupData.subColor || "#333333"; // 輔色系
+    
     document.documentElement.style.setProperty('--theme-color', color);
-    document.documentElement.style.setProperty('--contrast-color', contrast);
+    document.documentElement.style.setProperty('--contrast-color', subColor);
     CONFIG.THEME_COLOR = color;
     
-    // 更新頂部備註文字
     const topMsg = document.getElementById('top-msg');
     topMsg.textContent = groupData.note || "點擊卡片可放大圖片唷！";
   }
