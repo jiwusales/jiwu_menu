@@ -200,31 +200,42 @@ function loadData() {
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
+      let lastBanner = "", lastColor = "", lastGroup = ""; // 用來記錄上一行的資料
+      
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
-        return {
-          banner: getV(0),   // A 欄 首圖
-          color: getV(1),    // B 欄 色系
-          group: getV(2),    // C 欄 團名
-          role: getV(3),     // D 欄 角色
-          type: getV(4),     // E 欄 種類
-          name: getV(5),     // F 欄 名稱
-          originalPrice: getV(6), // G 欄 原價
-          price: getV(7),    // H 欄 售價
-          stock: getV(8),    // I 欄 庫存
-          img: getV(9) || "https://i.postimg.cc/bv5xRs04/image.png", // J 欄 圖片
-          link: getV(10),    // K 欄 商品網址
-          size: getV(11),    // L 欄 尺寸
-          note: getV(12)     // M 欄 備註
-        };
-      }).filter(item => item.name !== "" && item.group !== "");
 
-      // 取得所有團名(不重複)
+        // 如果目前這格是空的，就沿用上一行的資料 (處理合併儲存格)
+        const currentBanner = getV(0) || lastBanner;
+        const currentColor = getV(1) || lastColor;
+        const currentGroup = getV(2) || lastGroup;
+
+        // 更新暫存值供下一行使用
+        lastBanner = currentBanner;
+        lastColor = currentColor;
+        lastGroup = currentGroup;
+
+        return {
+          banner: currentBanner,
+          color: currentColor,
+          group: currentGroup,
+          role: getV(3),
+          type: getV(4),
+          name: getV(5),
+          originalPrice: getV(6),
+          price: getV(7),
+          stock: getV(8),
+          img: getV(9) || "https://i.postimg.cc/bv5xRs04/image.png",
+          link: getV(10),
+          size: getV(11),
+          note: getV(12)
+        };
+      }).filter(item => item.name !== ""); // 只要名稱不是空的就顯示
+
       allGroups = [...new Set(allItems.map(i => i.group))];
-      
       if (allGroups.length > 0) {
         selectedGroup = allGroups[0];
         updateThemeColorByGroup(selectedGroup);
@@ -233,7 +244,7 @@ function loadData() {
       renderGroupNav();
       renderItems();
       updateCartUI();
-    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗。"; }
+    } catch (e) { console.error(e); document.getElementById('card-container').innerHTML = "載入失敗。"; }
   });
 }
 
