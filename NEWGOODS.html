@@ -490,9 +490,6 @@ async function handleFinalCheckout() {
       // 排除「綜合角色」
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
 
-      // 2. 處理尺寸：前端先轉好格式，傳給後端 status (J 欄)
-      const cleanSize = formatSize(item.size);
-
       return {
         kind: roleValue,       // 傳給後端 kind，會寫入 D 欄
         type: item.type,       // 傳給後端 type，會寫入 E 欄
