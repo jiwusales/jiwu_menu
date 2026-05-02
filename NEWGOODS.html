@@ -365,12 +365,15 @@ function createCard(item) {
   // 角色空白就不加，中間不留空白
   const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
+  // 修改這裡：如果 item.size 是空的，就塞入一個空格佔位，確保那一行依然存在
+  const sizeText = item.size ? item.size : '&nbsp;';
+
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
     <img src="${item.img}">
     <div class="name">${displayName}</div>
     <div class="price">${displayPrice}</div>
-    <div class="size">${item.size || ''}</div>
+    <div class="size">${sizeText}</div>
   `;
   card.onclick = () => zoomCard(card);
   return card;
