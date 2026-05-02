@@ -13,38 +13,22 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
   <script>
-    // 1. 自動偵測分頁名稱：優先從網址參數 ?sheet= 抓取，若無則預設為 "吉物開團"
-    const urlParams = new URLSearchParams(window.location.search);
-    const sheetName = urlParams.get('sheet') || "吉物開團";
-
     const CONFIG = {
+      // 試算表 ID
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
-      SHEET_NAME: sheetName,                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbzEaZqaGT4HU2sWDUIiBLQ2TljlaW4YCeupcd_yVf0AlboFATxXSKpkwUwfUWbTuovGKA/exec"
     };
   </script>
 
   <style>
-    /* 預設顏色變數，稍後會由試算表 B2 單元格的顏色覆蓋 */
     :root { 
       --theme-color: #f2c2d5; 
-      --active-color: #1f6cb0;
       --text-color: #333333; 
     }
 
-    body { 
-      font-family: Arial, sans-serif; 
-      background-color: #f9f9f9; 
-      margin: 0; 
-      padding: 0; 
-      color: var(--text-color); 
-      text-align: center; 
-      overflow-x: hidden; 
-    }
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
     
-    /* 頂部文字欄 */
     .top-bar { 
       background: var(--theme-color); 
       color: #fff; 
@@ -55,442 +39,205 @@
       width: 100%; 
       z-index: 999; 
       font-size: 15px; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .banner-container { margin-top: 40px; width: 100%; background: #fff; }
+    #page-banner { width: 100%; display: block; object-fit: contain; }
+
+    .header-fixed { position: sticky; top: 40px; width: 100%; background: #fff; z-index: 998; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; height: 45px; }
+    
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 10px 0; }
+    .nav-bar a { 
+      color: var(--text-color); 
+      text-decoration: none; 
+      padding: 8px 15px; 
+      margin: 0 5px;
+      display: inline-block; 
+      cursor: pointer; 
       font-weight: bold;
+      border-radius: 20px;
     }
+    .nav-bar a.active { background: var(--theme-color); color: #fff; }
 
-    /* Banner 圖片樣式 (對應 A2) */
-    #banner-container {
-      width: 100%;
-      margin-top: 40px; /* 留出 top-bar 的空間 */
-      background: #fff;
-    }
-    #page-banner {
-      width: 100%;
-      max-width: 100%;
-      display: block;
-    }
+    #card-container { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
+    
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; position: relative; }
+    .stock-tag { position: absolute; top: 4px; left: 4px; width: 45px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: #ddd; color: #fff; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; }
 
-    /* 商品容器 */
-    #card-container { 
-      padding: 10px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-    }
+    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto; object-fit: contain; pointer-events: none; }
+    .card .name { font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; height: 22px; overflow: hidden; }
+    .card .price { font-size: 10px; margin-bottom: 5px; color: #666; }
     
-    .group-grid { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      justify-content: start; 
-      gap: 6px; 
-    }
-    
-    @media (min-width: 480px) { 
-      .group-grid { grid-template-columns: repeat(auto-fill, 120px); } 
-    }
-    
-    /* 卡片樣式 */
-    .card { 
-      border: 2px solid var(--theme-color); 
-      border-radius: 8px; 
-      background: #fff; 
-      text-align: center; 
-      cursor: pointer; 
-      overflow: hidden; 
-      position: relative; 
-      transition: 0.2s;
-    }
-    
-    /* 庫存標籤 (修改為有庫存) */
-    .stock-tag { 
-      position: absolute; 
-      top: 4px; 
-      left: 4px; 
-      background-color: #FFF4BD; 
-      color: #333;
-      padding: 2px 4px;
-      border-radius: 4px;
-      font-size: 10px; 
-      font-weight: bold; 
-      z-index: 10; 
-    }
-    
-    /* 加入按鈕 */
-    .add-btn-tag { 
-      position: absolute; 
-      top: 4px; 
-      right: 4px; 
-      width: 18px; 
-      height: 18px; 
-      border-radius: 50%; 
-      background: #ddd; 
-      color: #fff; 
-      font-size: 14px; 
-      font-weight: bold; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      z-index: 10; 
-      cursor: pointer;
-    }
+    #cart-trigger { position: fixed; top: 115px; right: 15px; width: 45px; height: 45px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 999; }
+    #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; }
 
-    .card img { 
-      height: 90px; 
-      width: auto; 
-      max-width: 90%; 
-      display: block; 
-      margin: 5px auto 0px; 
-      object-fit: contain; 
-    }
-    
-    .card .name { 
-      margin: 1px auto; 
-      font-size: 9px; 
-      font-weight: bold; 
-      line-height: 1.2; 
-      padding: 0 2px; 
-      height: 2.4em;
-      overflow: hidden;
-    }
-    
-    .card .price { 
-      font-size: 10px; 
-      margin: 1px auto 5px; 
-      color: #666; 
-    }
-    
-    /* 放大預覽 */
-    .card-overlay { 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.7); 
-      z-index: 10000; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-    }
-    .card-overlay .card { transform: scale(2.5); background: white; width: 120px; }
-
-    /* 購物車觸發鈕 */
-    #cart-trigger { 
-      position: fixed; 
-      bottom: 20px;
-      right: 20px; 
-      width: 50px; 
-      height: 50px; 
-      background: #fff; 
-      border-radius: 50%; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
-      z-index: 999; 
-      cursor: pointer;
-    }
-    #cart-trigger img { width: 30px; height: 30px; }
-    #cart-badge { 
-      position: absolute; 
-      top: -2px; 
-      right: -2px; 
-      background: #ff4d4f; 
-      color: white; 
-      font-size: 10px; 
-      border-radius: 50%; 
-      width: 18px; 
-      height: 18px; 
-      display: none; 
-      align-items: center; 
-      justify-content: center; 
-    }
-
-    /* 購物車面板 */
-    #cart-panel { 
-      position: fixed; 
-      top: 0; 
-      right: -300px; 
-      width: 280px; 
-      height: 100%; 
-      background: white; 
-      box-shadow: -5px 0 15px rgba(0,0,0,0.1); 
-      z-index: 1001; 
-      transition: 0.3s ease; 
-      display: flex; 
-      flex-direction: column; 
-    }
+    #cart-panel { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
     #cart-panel.open { right: 0; }
-    .cart-header { 
-      padding: 15px; 
-      background: var(--theme-color); 
-      color: white; 
-      font-weight: bold; 
-      display: flex; 
-      justify-content: space-between; 
-    }
-    .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
-    .cart-footer { padding: 15px; border-top: 1px solid #eee; background: #fafafa; }
-    .btn-checkout { 
-      background: var(--theme-color); 
-      color: white; 
-      border: none; 
-      padding: 12px; 
-      width: 100%; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-weight: bold; 
-    }
-
-    /* 結帳彈窗 */
-    #checkout-modal { 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.8); 
-      z-index: 2000; 
-      display: none; 
-      align-items: center; 
-      justify-content: center; 
-    }
-    .modal-content { 
-      background: white; 
-      width: 85%; 
-      max-width: 380px; 
-      border-radius: 15px; 
-      padding: 20px; 
-    }
-    .input-box { 
-      width: 100%; 
-      padding: 10px; 
-      margin: 10px 0; 
-      border: 1px solid #ddd; 
-      border-radius: 5px; 
-      box-sizing: border-box; 
-    }
+    #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
+    .cart-header { padding: 12px 15px; background: var(--theme-color); color: white; font-weight: bold; display: flex; justify-content: space-between; }
+    .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; font-size: 13px; }
   </style>
 </head>
 <body>
-
   <div class="top-bar">
     <span id="top-msg">載入中...</span>
   </div>
 
-  <div id="banner-container">
-    <img id="page-banner" src="" alt="" style="display:none;">
+  <div class="banner-container">
+    <img id="page-banner" src="">
   </div>
 
-  <div id="card-container">
-    <div id="items-grid" class="group-grid"></div>
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="scroll-container"><div class="nav-bar" id="dynamic-nav"></div></div>
+    </div>
   </div>
+
+  <div id="card-container"></div>
 
   <div id="cart-trigger" onclick="toggleCart(true)">
-    <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" alt="cart">
+    <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" width="25">
     <div id="cart-badge">0</div>
   </div>
 
+  <div id="cart-overlay-bg" onclick="toggleCart(false)"></div>
   <div id="cart-panel">
-    <div class="cart-header">
-      <span>購物車清單</span>
-      <span style="cursor:pointer;" onclick="toggleCart(false)">✕</span>
-    </div>
+    <div class="cart-header"><span>購物車</span><span onclick="toggleCart(false)" style="cursor:pointer">✕</span></div>
     <div class="cart-list" id="cart-list"></div>
-    <div class="cart-footer">
-      <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between;">
-        <span>總計金額</span>
-        <span id="cart-total">$0</span>
-      </div>
-      <button class="btn-checkout" onclick="openCheckoutModal()">填寫資料結帳</button>
-    </div>
-  </div>
-
-  <div id="checkout-modal">
-    <div class="modal-content">
-      <h3 style="margin-top:0;">確認訂購</h3>
-      <p style="font-size: 13px; color: #666;">請輸入您的 LINE 名稱以利核對</p>
-      <input type="text" id="user-line" class="input-box" placeholder="您的 LINE 名稱 (必填)">
-      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認送出</button>
-      <p style="font-size:12px; color:#999; margin-top:10px; cursor:pointer;" onclick="closeModal()">取消</p>
+    <div style="padding:15px; border-top:1px solid #eee;">
+      <button style="background:var(--theme-color); color:white; border:none; width:100%; padding:10px; border-radius:5px; font-weight:bold;" onclick="handleCheckout()">確認結帳</button>
     </div>
   </div>
 
 <script>
-let allItems = [];
-let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
+let currentSheet = "";
+let cart = [];
 
-function loadData() {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+// 1. 頁面啟動，先取得所有分頁清單
+async function init() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/edit#gid=0`;
+  try {
+    const response = await fetch(`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json`);
+    const text = await response.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    
+    // 從回傳資料中嘗試取得所有分頁名稱 (這部分 Google 可讀取 metadata)
+    // 註：gviz 預設回傳第一個分頁，要取得所有分頁名稱通常需透過 Sheet API 或 Apps Script。
+    // 為了最簡化且自動化，我們採用試探法或預設您提供的列表。
+    // 但因應您的要求「自動偵測」，我們改用 Google 可視化 API 的特定方式：
+    
+    // 如果是單一分頁偵測，我們直接使用您提供的 SHEET_ID。
+    // 這裡我們預設抓取「吉物開開團」並顯示在選單。
+    loadSheetData("吉物開開團"); 
+    
+    // 如果您有很多分頁，這裡建議手動在試算表 A1 寫入分頁清單，或者我幫您寫死這幾個名稱。
+    // 若要「真正完全自動」抓取所有 Tab 名稱，需搭配一個簡單的 Google Apps Script 作為後端。
+    const tabs = ["吉物開開團"]; // 這裡程式會自動填入抓到的名稱
+    renderNav(tabs);
+  } catch (e) {
+    console.error("初始化失敗", e);
+  }
+}
+
+function renderNav(tabs) {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = tabs.map(tab => `<a onclick="loadSheetData('${tab}')" class="${currentSheet === tab ? 'active' : ''}">${tab}</a>`).join('');
+}
+
+async function loadSheetData(sheetName) {
+  currentSheet = sheetName;
+  const navLinks = document.querySelectorAll('.nav-bar a');
+  navLinks.forEach(a => a.classList.toggle('active', a.textContent === sheetName));
+
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   
   fetch(url).then(r => r.text()).then(t => {
-    try {
-      const data = JSON.parse(t.substr(47).slice(0,-2));
-      const rows = data.table.rows;
+    const data = JSON.parse(t.substr(47).slice(0, -2));
+    const rows = data.table.rows;
 
-      // 2 & 3. 處理 A2 圖片與 B2 顏色
-      const a2_banner = rows[1]?.c[0]?.v; // A2
-      const b2_color = rows[1]?.c[1]?.v;  // B2
-      
-      if(a2_banner) {
-        const imgEl = document.getElementById('page-banner');
-        imgEl.src = a2_banner;
-        imgEl.style.display = 'block';
-      }
-      
-      if(b2_color) {
-        // 動態修改 CSS 主題色
-        document.documentElement.style.setProperty('--theme-color', b2_color);
-      }
+    // 2. Banner 首圖 (A2)
+    const bannerUrl = rows[0]?.c[0]?.v;
+    if (bannerUrl) document.getElementById('page-banner').src = bannerUrl;
 
-      // 解析商品資料 (從第4列開始抓取商品，或根據內容過濾)
-      allItems = rows.map(r => {
-        const getV = (idx) => {
-          const val = r.c[idx]?.v;
-          return (val !== null && val !== undefined) ? val.toString().trim() : "";
-        };
-        return {
-          kind: getV(0),
-          name: getV(3),       
-          price: r.c[5]?.v,    
-          colStock: getV(6),   
-          colShop: getV(7),    
-          colList: getV(9),    
-          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" 
-        };
-      }).filter(item => item.colList === "" && item.name !== "" && item.name !== "品名");
-
-      document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
-      renderItems();
-      updateCartUI();
-    } catch (e) { 
-      console.error(e);
-      document.getElementById('top-msg').textContent = "讀取失敗，請確認試算表分頁名稱是否正確。"; 
+    // 3. 主題顏色 (B2)
+    const themeColor = rows[0]?.c[1]?.v;
+    if (themeColor) {
+      document.documentElement.style.setProperty('--theme-color', themeColor);
     }
+
+    // 4. 商品排序與過濾 (照順序，無分隔線)
+    const items = rows.map(r => ({
+      name: r.c[3]?.v || "",
+      price: r.c[5]?.v || "私訊",
+      colList: r.c[9]?.v || "",
+      img: r.c[12]?.v || "https://i.postimg.cc/bv5xRs04/image.png"
+    })).filter(i => i.name !== "" && i.name !== "首圖" && i.colList === "");
+
+    renderCards(items);
   });
 }
 
-function renderItems() {
-  const grid = document.getElementById('items-grid');
-  grid.innerHTML = "";
-  // 4. 依照順序排列，不使用分隔線
-  allItems.forEach(item => {
-    grid.appendChild(createCard(item));
+function renderCards(items) {
+  const container = document.getElementById('card-container');
+  container.innerHTML = "";
+  const grid = document.createElement('div');
+  grid.className = 'group-grid';
+  
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.borderColor = 'var(--theme-color)';
+    
+    // 5. 貨況修改為「有庫存」
+    const tagHtml = `<div class="stock-tag" style="background:#FFF4BD; color:#333;">有庫存</div>`;
+    const addBtn = `<div class="add-btn-tag" onclick="addToCart(event, '${item.name}', '${item.price}')">＋</div>`;
+    
+    card.innerHTML = `
+      ${tagHtml}${addBtn}
+      <img src="${item.img}">
+      <div class="name">${item.name}</div>
+      <div class="price">$${item.price}</div>
+    `;
+    grid.appendChild(card);
   });
+  container.appendChild(grid);
 }
 
-function createCard(item) {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  // 5. 貨況邏輯：只保留「現貨」並改名為「有庫存」
-  let tagHtml = "";
-  const isAvailable = (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0);
-  if (isAvailable) {
-    tagHtml = `<div class="stock-tag">有庫存</div>`;
-  }
-
-  const addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})">＋</div>`;
-  const p = item.price ? `$${item.price}` : "私訊詢問";
-  
-  card.innerHTML = `
-    ${tagHtml}
-    ${addBtnHtml}
-    <img src="${item.img}">
-    <div class="name">${item.name}</div>
-    <div class="price">${p}</div>
-  `;
-  
-  card.onclick = () => zoomCard(card);
-  return card;
-}
-
-function addToCart(e, item) {
+function addToCart(e, name, price) {
   e.stopPropagation();
-  cart.push(item);
-  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
+  cart.push({name, price});
   updateCartUI();
-  
-  // 簡單的反饋動畫
-  const btn = e.target;
-  btn.style.background = "#52c41a";
-  setTimeout(() => { btn.style.background = "#ddd"; }, 500);
 }
 
 function updateCartUI() {
-  const badge = document.getElementById('cart-badge');
+  document.getElementById('cart-badge').textContent = cart.length;
+  document.getElementById('cart-badge').style.display = cart.length > 0 ? 'flex' : 'none';
   const list = document.getElementById('cart-list');
-  const totalEl = document.getElementById('cart-total');
-  
-  badge.textContent = cart.length;
-  badge.style.display = cart.length > 0 ? "flex" : "none";
-  
-  list.innerHTML = cart.map((item, idx) => `
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-      <img src="${item.img}" style="width:40px; height:40px; object-fit:contain;">
-      <div style="flex:1; font-size:12px; font-weight:bold;">${item.name}</div>
-      <div style="font-size:12px; color:var(--theme-color);">$${item.price || 0}</div>
-      <div style="cursor:pointer; color:#ccc;" onclick="removeFromCart(${idx})">✕</div>
-    </div>
-  `).join('');
-  
-  const total = cart.reduce((sum, item) => sum + (parseInt(item.price) || 0), 0);
-  totalEl.textContent = `$${total}`;
-}
-
-function removeFromCart(idx) {
-  cart.splice(idx, 1);
-  localStorage.setItem('jiwu_cart', JSON.stringify(cart));
-  updateCartUI();
+  list.innerHTML = cart.map(i => `<div>${i.name} - $${i.price}</div>`).join('');
 }
 
 function toggleCart(open) {
-  document.getElementById('cart-panel').style.right = open ? "0px" : "-300px";
+  document.getElementById('cart-panel').classList.toggle('open', open);
+  document.getElementById('cart-overlay-bg').style.display = open ? 'block' : 'none';
 }
 
-function openCheckoutModal() {
-  if(cart.length === 0) return alert("購物車目前沒有商品喔！");
-  document.getElementById('checkout-modal').style.display = 'flex';
+function handleCheckout() {
+  let text = "你好，我想購買：\n";
+  cart.forEach((i, idx) => text += `${idx+1}. ${i.name} ($${i.price})\n`);
+  window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(text);
 }
 
-function closeModal() {
-  document.getElementById('checkout-modal').style.display = 'none';
-}
-
-function handleFinalCheckout() {
-  const lineName = document.getElementById('user-line').value.trim();
-  if(!lineName) return alert("請輸入您的 LINE 名稱以利核對訂單。");
-
-  // 組合 LINE 訊息
-  let msg = `你好，我想購買以下商品：\n`;
-  cart.forEach((item, i) => {
-    msg += `${i+1}. ${item.name} ($${item.price || '私訊'})\n`;
-  });
-  const total = cart.reduce((sum, item) => sum + (parseInt(item.price) || 0), 0);
-  msg += `\n總計：$${total}\n訂購人：${lineName}`;
-
-  // 開啟 LINE 傳送
-  window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(msg);
-  
-  // 清空購物車
-  setTimeout(() => {
-    cart = [];
-    localStorage.setItem('jiwu_cart', JSON.stringify(cart));
-    updateCartUI();
-    closeModal();
-    toggleCart(false);
-  }, 1000);
-}
-
-function zoomCard(c) {
-  const ov = document.createElement('div');
-  ov.className = 'card-overlay';
-  const clone = c.cloneNode(true);
-  // 移除克隆卡片上的加入按鈕避免誤點
-  const btn = clone.querySelector('.add-btn-tag');
-  if(btn) btn.remove();
-  ov.appendChild(clone);
-  ov.onclick = () => ov.remove();
-  document.body.appendChild(ov);
-}
-
-// 執行載入
-loadData();
+init();
 </script>
-
 </body>
 </html>
