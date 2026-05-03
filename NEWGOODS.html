@@ -230,6 +230,7 @@ function loadData() {
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
+        // 團期狀態判斷
         if(groupName !== "" && groupName !== lastGroup) {
             currentIsActive = (activeFlag !== 'x');
         }
@@ -240,6 +241,10 @@ function loadData() {
         const currentGroup = groupName || lastGroup;
         const currentNote = getV(14) || lastNote; 
 
+        // 售價欄位
+        const priceValue = getV(9); 
+
+        // 更新全域變數供下一列使用
         lastBanner = currentBanner;
         lastColor = currentColor;
         lastSubColor = currentSubColor;
@@ -256,7 +261,7 @@ function loadData() {
           type: getV(6),
           name: getV(7),
           originalPrice: getV(8),
-          price: getV(9),
+          price: priceValue,
           stock: getV(10),
           img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png",
           link: getV(12),
@@ -264,10 +269,9 @@ function loadData() {
           note: currentNote
         };
       }).filter(item => {
-        // 修改處：過濾掉名稱為空、團期不活躍，以及售價為 'x' 的商品
-        return item.name !== "" && 
-               item.isActive === true && 
-               item.price.toLowerCase() !== 'x';
+        // 核心修正：確保 price 存在且不等於 "x"
+        const isHidden = item.price.toLowerCase() === 'x';
+        return item.name !== "" && item.isActive === true && !isHidden;
       }); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
@@ -301,8 +305,8 @@ function loadData() {
 
       document.body.classList.add('data-loaded');
     } catch (e) { 
-        console.error(e); 
-        document.getElementById('card-container').innerHTML = "載入失敗。";
+        console.error("資料解析錯誤:", e); 
+        document.getElementById('card-container').innerHTML = "資料載入失敗，請檢查試算表設定。";
         document.body.classList.add('data-loaded');
     }
   });
