@@ -89,7 +89,7 @@
 
     .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
-    #card-container { padding: 90px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; }
+    #card-container { padding: 90px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; min-height: 200px; }
     
     .banner-container { width: 100%; max-width: 720px; margin: 0 auto; line-height: 0; scroll-margin-top: 85px; }
     .banner-container img { width: 100%; height: auto; display: block; }
@@ -212,6 +212,7 @@
 
 <script>
 let allItems = [], allGroups = [], selectedGroup = null;
+let groupSettings = {}; // 儲存每個團期的風格設定
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
@@ -221,7 +222,10 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
       
-      allItems = data.table.rows.map(r => {
+      // 清空舊設定，確保重新整理時正確
+      groupSettings = {};
+      
+      const rawRows = data.table.rows.map(r => {
         const getV = (idx) => {
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
@@ -230,28 +234,29 @@ function loadData() {
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
-        if(groupName !== "" && groupName !== lastGroup) {
+        // 1. 只要 E 欄（團名）有填寫，就立刻更新「當前團期」的風格與狀態
+        if (groupName !== "") {
+            lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
+            lastBanner = getV(1) || lastBanner;
+            lastColor = getV(2) || lastColor;
+            lastSubColor = getV(3) || lastSubColor;
+            lastNote = getV(14) || lastNote;
+
+            // 強制寫入或更新 groupSettings，確保這個團期在導航列一定會出現
+            groupSettings[lastGroup] = {
+              banner: lastBanner,
+              color: lastColor || "#ffffff",
+              subColor: lastSubColor || "#333333",
+              note: lastNote,
+              isActive: currentIsActive
+            };
         }
 
-        const currentBanner = getV(1) || lastBanner;
-        const currentColor = getV(2) || lastColor;
-        const currentSubColor = getV(3) || lastSubColor;
-        const currentGroup = groupName || lastGroup;
-        const currentNote = getV(14) || lastNote; 
-
-        lastBanner = currentBanner;
-        lastColor = currentColor;
-        lastSubColor = currentSubColor;
-        lastGroup = currentGroup;
-        lastNote = currentNote;
-
+        // 2. 建立資料物件，將每一行都保留下來
         return {
           isActive: currentIsActive,
-          banner: currentBanner,
-          color: currentColor,
-          subColor: currentSubColor,
-          group: currentGroup,
+          group: lastGroup,
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -260,14 +265,19 @@ function loadData() {
           stock: getV(10),
           img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png",
           link: getV(12),
-          size: getV(13),
-          note: currentNote
+          size: getV(13)
         };
-      }).filter(item => item.name !== "" && item.isActive === true); 
+      });
 
-      allGroups = [...new Set(allItems.map(i => i.group))];
+      // 3. 過濾出「真正的商品」，供 renderItems 篩選顯示
+      allItems = rawRows.filter(item => {
+        const isHidden = item.price.toLowerCase() === 'x';
+        return item.name !== "" && item.isActive === true && !isHidden;
+      });
+
+      // 4. 導航列清單：改從 groupSettings 抓取（這一步最關鍵，保證沒商品也會出現）
+      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
-      // --- 網址參數偵測邏輯 ---
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
       const savedGroup = localStorage.getItem('jiwu_last_group');
@@ -297,25 +307,25 @@ function loadData() {
 
       document.body.classList.add('data-loaded');
     } catch (e) { 
-        console.error(e); 
-        document.getElementById('card-container').innerHTML = "載入失敗。";
+        console.error("資料解析錯誤:", e); 
+        document.getElementById('card-container').innerHTML = "資料載入失敗，請檢查試算表設定。";
         document.body.classList.add('data-loaded');
     }
   });
 }
 
 function updateThemeColorByGroup(groupName) {
-  const groupData = allItems.find(i => i.group === groupName);
-  if (groupData) {
-    const color = groupData.color || "#ffffff";
-    const subColor = groupData.subColor || "#333333"; 
+  const settings = groupSettings[groupName];
+  if (settings) {
+    const color = settings.color || "#ffffff";
+    const subColor = settings.subColor || "#333333"; 
     
     document.documentElement.style.setProperty('--theme-color', color);
     document.documentElement.style.setProperty('--contrast-color', subColor);
     CONFIG.THEME_COLOR = color;
     
     const topMsg = document.getElementById('top-msg');
-    topMsg.textContent = groupData.note || "點擊卡片可放大圖片唷！";
+    topMsg.textContent = settings.note || "點擊卡片可放大圖片唷！";
   }
 }
 
@@ -331,7 +341,6 @@ function toggleGroup(group) {
   selectedGroup = group;
   localStorage.setItem('jiwu_last_group', group);
   
-  // --- 切換時動態更新網址參數 ---
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
   window.history.pushState({ path: newUrl }, '', newUrl);
 
@@ -344,20 +353,33 @@ function toggleGroup(group) {
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  const groupItems = allItems.filter(i => i.group === selectedGroup);
-  if (groupItems.length === 0) return;
-  const bannerImg = groupItems[0].banner;
-  if (bannerImg) {
+  
+  // 1. 獨立渲染首圖
+  const settings = groupSettings[selectedGroup];
+  if (settings && settings.banner) {
     const bannerDiv = document.createElement('div');
     bannerDiv.className = 'banner-container';
     bannerDiv.id = "group-banner";
-    bannerDiv.innerHTML = `<img src="${bannerImg}" alt="banner">`;
+    bannerDiv.innerHTML = `<img src="${settings.banner}" alt="banner">`;
     container.appendChild(bannerDiv);
   }
-  const grid = document.createElement('div');
-  grid.className = 'group-grid';
-  groupItems.forEach(item => grid.appendChild(createCard(item)));
-  container.appendChild(grid);
+
+  // 2. 渲染商品區塊
+  const groupItems = allItems.filter(i => i.group === selectedGroup);
+  if (groupItems.length > 0) {
+    const grid = document.createElement('div');
+    grid.className = 'group-grid';
+    groupItems.forEach(item => grid.appendChild(createCard(item)));
+    container.appendChild(grid);
+  } else {
+    // 若無商品，顯示提示訊息
+    const emptyMsg = document.createElement('div');
+    emptyMsg.style.padding = "40px 20px";
+    emptyMsg.style.color = "#888";
+    emptyMsg.style.fontSize = "14px";
+    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•́ฅ";
+    container.appendChild(emptyMsg);
+  }
 }
 
 function createCard(item) {
