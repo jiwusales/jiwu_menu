@@ -50,7 +50,6 @@
 
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
     
-    /* 備註列：確保一行，自動縮小字體 */
     .top-bar { 
       background: var(--theme-color); 
       color: var(--contrast-color);
@@ -70,7 +69,7 @@
     .top-bar-content {
       white-space: nowrap;
       font-weight: bold;
-      font-size: clamp(10px, 4vw, 15px); /* 根據螢幕寬度自動縮放字體 */
+      font-size: clamp(10px, 4vw, 15px);
       display: inline-block;
       animation: pulse 1.5s infinite;
     }
@@ -103,9 +102,9 @@
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 2px; object-fit: contain; pointer-events: none; }
-    .card .name { margin: 2px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 4px; color: #333; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-    .card .price { font-size: 11px; margin: 2px auto; color: #fbb550; font-weight: bold; }
-    .card .size { font-size: 9px; margin: 0 auto 6px; color: #888; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .card .name { margin: 2px auto 0px; font-size: 10px; font-weight: bold; line-height: 1.2; padding: 0 2px; color: #333; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+    .card .price { font-size: 11px; margin: 0px auto ; color: #fbb550; }
+    .card .size { font-size: 9px; margin: 1.5px auto 8px; color: #888; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 0; pointer-events: none; border-width: 1px; }
@@ -228,12 +227,9 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
-        // 欄位對應
-        // 0:上架, 1:首圖, 2:主色系, 3:輔色系, 4:團名, 5:角色, 6:種類, 7:名稱, 8:原價, 9:售價, 10:庫存, 11:圖片, 12:商品網址, 13:尺寸, 14:備註
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
-        // 如果團名有更換，重設上架狀態
         if(groupName !== "" && groupName !== lastGroup) {
             currentIsActive = (activeFlag !== 'x');
         }
@@ -271,8 +267,14 @@ function loadData() {
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       
+      // --- 網址參數偵測邏輯 ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const groupParam = urlParams.get('group');
       const savedGroup = localStorage.getItem('jiwu_last_group');
-      if (savedGroup && allGroups.includes(savedGroup)) {
+
+      if (groupParam && allGroups.includes(groupParam)) {
+        selectedGroup = groupParam;
+      } else if (savedGroup && allGroups.includes(savedGroup)) {
         selectedGroup = savedGroup;
       } else if (allGroups.length > 0) {
         selectedGroup = allGroups[0];
@@ -306,7 +308,7 @@ function updateThemeColorByGroup(groupName) {
   const groupData = allItems.find(i => i.group === groupName);
   if (groupData) {
     const color = groupData.color || "#ffffff";
-    const subColor = groupData.subColor || "#333333"; // 輔色系
+    const subColor = groupData.subColor || "#333333"; 
     
     document.documentElement.style.setProperty('--theme-color', color);
     document.documentElement.style.setProperty('--contrast-color', subColor);
@@ -328,6 +330,11 @@ function renderGroupNav() {
 function toggleGroup(group) { 
   selectedGroup = group;
   localStorage.setItem('jiwu_last_group', group);
+  
+  // --- 切換時動態更新網址參數 ---
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
+  window.history.pushState({ path: newUrl }, '', newUrl);
+
   updateThemeColorByGroup(group);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderGroupNav(); 
@@ -362,10 +369,7 @@ function createCard(item) {
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   let displayPrice = item.price ? `$${item.price}` : "詢問花花";
   
-  // 角色空白就不加，中間不留空白
   const displayName = item.role ? `${item.role}${item.name}` : item.name;
-
-  // 修改這裡：如果 item.size 是空的，就塞入一個空格佔位，確保那一行依然存在
   const sizeText = item.size ? item.size : '&nbsp;';
 
   card.innerHTML = `
@@ -418,8 +422,6 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
-    
-    // 購物車清單也同步角色名稱邏輯
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
@@ -465,8 +467,6 @@ function renderCheckoutSummary() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = item.price ? `$${item.price}` : "詢問花花";
-    
-    // 結帳清單也同步角色名稱邏輯
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
@@ -492,26 +492,16 @@ async function handleFinalCheckout() {
   const btn = document.getElementById('send-btn');
   btn.disabled = true; btn.textContent = "傳送中...";
 
-  // 定義尺寸格式化邏輯（因為後端不改，前端先轉好）
-  const formatSize = (str) => {
-    if (!str) return "";
-    const numbers = str.toString().match(/\d+(\.\d+)?/g);
-    return numbers ? numbers.join('x') : str;
-  };
-
   try {
     const cartData = cart.map(item => {
-      // 1. 處理角色：最新開團 F 欄 (item.role) -> 傳給後端 kind (D 欄)
-      // 排除「綜合角色」
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
-
       return {
-        kind: roleValue,       // 傳給後端 kind，會寫入 D 欄
-        type: item.type,       // 傳給後端 type，會寫入 E 欄
+        kind: roleValue,
+        type: item.type,
         name: item.name,
         price: item.price,
-        note: item.group,      // 團名傳給後端 note，會寫入 K 欄
-        sn: item.sn || ""      // 貨號傳給後端 sn，會寫入 I 欄
+        note: item.group,
+        sn: item.sn || ""
       };
     });
 
