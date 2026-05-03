@@ -263,11 +263,15 @@ function loadData() {
           size: getV(13),
           note: currentNote
         };
-      }).filter(item => item.name !== "" && item.isActive === true); 
+      }).filter(item => {
+        // 修改處：過濾掉名稱為空、團期不活躍，以及售價為 'x' 的商品
+        return item.name !== "" && 
+               item.isActive === true && 
+               item.price.toLowerCase() !== 'x';
+      }); 
 
       allGroups = [...new Set(allItems.map(i => i.group))];
       
-      // --- 網址參數偵測邏輯 ---
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
       const savedGroup = localStorage.getItem('jiwu_last_group');
@@ -331,7 +335,6 @@ function toggleGroup(group) {
   selectedGroup = group;
   localStorage.setItem('jiwu_last_group', group);
   
-  // --- 切換時動態更新網址參數 ---
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
   window.history.pushState({ path: newUrl }, '', newUrl);
 
