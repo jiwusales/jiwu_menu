@@ -231,36 +231,28 @@ function loadData() {
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
-        if(groupName !== "" && groupName !== lastGroup) {
+        // 只要這行有填寫團名，就更新目前的「上下文」設定
+        if(groupName !== "") {
+            lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
-        }
+            lastBanner = getV(1) || lastBanner;
+            lastColor = getV(2) || lastColor;
+            lastSubColor = getV(3) || lastSubColor;
+            lastNote = getV(14) || lastNote;
 
-        const currentBanner = getV(1) || lastBanner;
-        const currentColor = getV(2) || lastColor;
-        const currentSubColor = getV(3) || lastSubColor;
-        const currentGroup = groupName || lastGroup;
-        const currentNote = getV(14) || lastNote; 
-
-        lastBanner = currentBanner;
-        lastColor = currentColor;
-        lastSubColor = currentSubColor;
-        lastGroup = currentGroup;
-        lastNote = currentNote;
-
-        // 獨立儲存風格設定 (只要有團期名稱就存，不論有無商品)
-        if (currentGroup) {
-          groupSettings[currentGroup] = {
-            banner: currentBanner,
-            color: currentColor,
-            subColor: currentSubColor,
-            note: currentNote,
-            isActive: currentIsActive
-          };
+            // 儲存或更新風格設定（確保沒商品的團期也能被記錄）
+            groupSettings[lastGroup] = {
+              banner: lastBanner,
+              color: lastColor,
+              subColor: lastSubColor,
+              note: lastNote,
+              isActive: currentIsActive
+            };
         }
 
         return {
           isActive: currentIsActive,
-          group: currentGroup,
+          group: lastGroup, // 即使這行 groupName 是空的，也會繼承上方的 lastGroup
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -279,7 +271,7 @@ function loadData() {
         return item.name !== "" && item.isActive === true && !isHidden;
       });
 
-      // 團期清單取自 groupSettings (確保沒商品也會出現在導航)
+      // 導航列改由 groupSettings 產生，確保所有 isActive 的團期都出現
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
       const urlParams = new URLSearchParams(window.location.search);
