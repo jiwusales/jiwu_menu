@@ -543,7 +543,16 @@ function createCard(item) {
   card.onclick = () => zoomCard(card);
   return card;
 }
-function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function formatName(n) {
+  if (!n) return "";
+  // 1. 如果名稱包含空格，將第一個空格替換為換行符 <br>
+  if (n.includes(" ")) {
+    return n.replace(" ", "<br>");
+  }
+  // 2. 如果沒有空格但長度超過 9 個字，才強制從第 9 字斷行
+  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+}
+  
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true); ov.appendChild(clone);
