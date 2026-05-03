@@ -222,6 +222,9 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
       
+      // 清空舊設定，確保重新整理時正確
+      groupSettings = {};
+      
       const rawRows = data.table.rows.map(r => {
         const getV = (idx) => {
           const val = r.c[idx]?.v;
@@ -231,8 +234,8 @@ function loadData() {
         const activeFlag = getV(0).toLowerCase();
         const groupName = getV(4);
         
-        // 只要這行有填寫團名，就更新目前的「上下文」設定
-        if(groupName !== "") {
+        // 1. 只要 E 欄（團名）有填寫，就立刻更新「當前團期」的風格與狀態
+        if (groupName !== "") {
             lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
             lastBanner = getV(1) || lastBanner;
@@ -240,19 +243,20 @@ function loadData() {
             lastSubColor = getV(3) || lastSubColor;
             lastNote = getV(14) || lastNote;
 
-            // 儲存或更新風格設定（確保沒商品的團期也能被記錄）
+            // 強制寫入或更新 groupSettings，確保這個團期在導航列一定會出現
             groupSettings[lastGroup] = {
               banner: lastBanner,
-              color: lastColor,
-              subColor: lastSubColor,
+              color: lastColor || "#ffffff",
+              subColor: lastSubColor || "#333333",
               note: lastNote,
               isActive: currentIsActive
             };
         }
 
+        // 2. 建立資料物件，將每一行都保留下來
         return {
           isActive: currentIsActive,
-          group: lastGroup, // 即使這行 groupName 是空的，也會繼承上方的 lastGroup
+          group: lastGroup,
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -265,13 +269,13 @@ function loadData() {
         };
       });
 
-      // 過濾出真正的商品清單
+      // 3. 過濾出「真正的商品」，供 renderItems 篩選顯示
       allItems = rawRows.filter(item => {
         const isHidden = item.price.toLowerCase() === 'x';
         return item.name !== "" && item.isActive === true && !isHidden;
       });
 
-      // 導航列改由 groupSettings 產生，確保所有 isActive 的團期都出現
+      // 4. 導航列清單：改從 groupSettings 抓取（這一步最關鍵，保證沒商品也會出現）
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
       const urlParams = new URLSearchParams(window.location.search);
