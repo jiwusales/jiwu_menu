@@ -463,11 +463,53 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
+// 1. 修改進入結帳的邏輯 (增加手機判斷)
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
-  openCheckoutModal();
+
+  // 判定是否為手機裝置
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // 【手機版】不彈窗，直接生成訊息並跳轉 LINE
+    const msg = generateLineMessage(); 
+    window.location.href = CONFIG.LINE_MSG_URL + msg;
+    
+    // 提醒：跳轉後清空購物車（可選）
+    setTimeout(() => { 
+      cart = []; saveCart(); updateCartUI(); toggleCart(false); 
+    }, 1500);
+  } else {
+    // 【電腦版】維持原樣，開啟填寫資料的彈窗
+    openCheckoutModal();
+  }
 }
 
+// 2. 這是新增的輔助函數，用來統一生成 LINE 的訊息文字
+function generateLineMessage(lineName = "", igAccount = "") {
+  let msg = "你好！我想訂購以下商品：\n\n";
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+    total += priceVal;
+    const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+    msg += `${index + 1}. ${displayName} (${cartPriceDisplay})\n`;
+  });
+
+  msg += `\n總計金額：$${total}\n`;
+
+  // 如果有填寫資料 (電腦版) 則加上去
+  if (lineName) msg += `\nLINE 名稱：${lineName}`;
+  if (igAccount) msg += `\n聯繫方式：${igAccount}`;
+  
+  msg += `\n(來源：${lineName ? '電腦版下單' : '手機版直接下單'})`;
+
+  return encodeURIComponent(msg);
+}
+
+// 3. 結帳彈窗與預覽 (維持功能，僅調整格式)
 function openCheckoutModal() {
   toggleCart(false);
   document.getElementById('step-1').style.display = "block";
@@ -484,8 +526,6 @@ function renderCheckoutSummary() {
   cart.forEach((item) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
-    
-    // 修改結帳預覽售價顯示邏輯
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
@@ -504,6 +544,7 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
+// 4. 修改電腦版的最後送出邏輯 (傳送 Google Sheets + 跳轉 LINE)
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -526,17 +567,22 @@ async function handleFinalCheckout() {
     });
 
     const postData = { 
-      source: "網頁目錄", 
+      source: "電腦版下單", 
       lineName: lineName, 
       igAccount: igAcc, 
       cartItems: cartData 
     };
 
+    // 傳送到 Google Sheets
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
       mode: 'no-cors', 
       body: JSON.stringify(postData) 
     });
+
+    // 【電腦版特有】送完 Sheets 後，也幫他跳轉 LINE 把訊息帶過去
+    const msg = generateLineMessage(lineName, igAcc);
+    window.location.href = CONFIG.LINE_MSG_URL + msg;
 
     cart = []; saveCart(); updateCartUI();
     document.getElementById('step-1').style.display = "none";
