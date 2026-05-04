@@ -494,17 +494,23 @@ function generateLineMessage(lineName = "", igAccount = "") {
   const excludeRoles = ["綜合角色"];
 
   cart.forEach((item, i) => {
+    // 判定價格是否為純數字
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
     if (!isNumeric) hasInquiry = true;
     total += priceVal;
     
+    // 處理名稱：判定 kind 或 role 是否存在且不在排除名單
     let displayName = item.name;
-    if (item.kind && !excludeRoles.includes(item.kind)) {
-      displayName = `${item.kind} ${item.name}`;
+    const rolePrefix = item.kind || item.role;
+    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+      displayName = `${rolePrefix} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
+    // 直接處理價格顯示文字
+    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+    
+    msg += `${i + 1}. (${item.currentStatus || '無狀態'}) ${displayName} ${priceText}\n`;
   });
   
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
@@ -514,6 +520,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
     if (lineName) msg += `\nLINE：${lineName}`;
     if (igAccount) msg += `\nIG：${igAccount}`;
   }
+  
   return encodeURIComponent(msg);
 }
 
