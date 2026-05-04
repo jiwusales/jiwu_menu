@@ -507,10 +507,14 @@ function generateLineMessage(lineName = "", igAccount = "") {
       displayName = `${rolePrefix} ${item.name}`;
     }
 
-    // 直接處理價格顯示文字
+    // 取得團名，若無則不顯示
+    const groupPrefix = item.groupName ? `[${item.groupName}] ` : "";
+
+    // 價格顯示文字
     const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
     
-    msg += `${i + 1}. (${item.currentStatus || '無狀態'}) ${displayName} ${priceText}\n`;
+    // 格式：編號. [團名] 角色 商品名稱 價格
+    msg += `${i + 1}. ${groupPrefix}${displayName} ${priceText}\n`;
   });
   
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
