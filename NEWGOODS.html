@@ -490,38 +490,55 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
-  
   const excludeRoles = ["綜合角色"];
 
-  cart.forEach((item, i) => {
-    // 判定價格是否為純數字
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
-    
-    // 處理名稱：判定 kind 或 role 是否存在且不在排除名單
-    let displayName = item.name;
-    const rolePrefix = item.kind || item.role;
-    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-      displayName = `${rolePrefix} ${item.name}`;
+  // 1. 先將購物車商品按團名分組
+  const groupedCart = {};
+  cart.forEach(item => {
+    const gName = item.groupName || "其他商品"; // 若無團名則歸類到其他
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
     }
-
-    // 價格顯示文字
-    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-    
-    // 格式：1. 角色名稱 商品名稱 價格
-    msg += `${i + 1}. ${displayName} ${priceText}\n`;
+    groupedCart[gName].push(item);
   });
-  
-  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
-  
+
+  // 2. 依照分組生成訊息
+  let index = 1;
+  for (const groupName in groupedCart) {
+    // 顯示團名標題
+    msg += `【${groupName}】\n`;
+
+    groupedCart[groupName].forEach(item => {
+      // 價格計算
+      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+      const priceVal = isNumeric ? parseInt(item.price) : 0;
+      if (!isNumeric) hasInquiry = true;
+      total += priceVal;
+
+      // 處理角色與商品名
+      let displayName = item.name;
+      const rolePrefix = item.kind || item.role;
+      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+        displayName = `${rolePrefix} ${item.name}`;
+      }
+
+      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+      
+      // 每一行的格式：編號. 角色名 商品名 價格
+      msg += `${index}. ${displayName} ${priceText}\n`;
+      index++;
+    });
+    msg += "\n"; // 團與團之間空一行
+  }
+
+  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
     if (igAccount) msg += `\nIG：${igAccount}`;
   }
-  
+
   return encodeURIComponent(msg);
 }
 
