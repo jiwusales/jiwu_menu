@@ -252,7 +252,7 @@ function loadData() {
 
         return {
           isActive: currentIsActive,
-          group: lastGroup,
+          groupName: lastGroup, // 修正：統一使用 groupName
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -357,7 +357,7 @@ function renderItems() {
     container.appendChild(bannerDiv);
   }
 
-  const groupItems = allItems.filter(i => i.group === selectedGroup);
+  const groupItems = allItems.filter(i => i.groupName === selectedGroup); // 修正：使用 groupName
   if (groupItems.length > 0) {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
@@ -409,7 +409,8 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText });
+  // 修正：確保存入購物車時包含 groupName
+  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -487,7 +488,7 @@ function handleCheckoutEntry() {
 
 // 2. 這是新增的輔助函數，用來統一生成 LINE 的訊息文字
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
@@ -594,7 +595,7 @@ async function handleFinalCheckout() {
         type: item.type,
         name: item.name,
         price: item.price,
-        note: item.group,
+        note: item.groupName, // 修正：使用 groupName
         sn: item.sn || ""
       };
     });
