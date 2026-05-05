@@ -14,10 +14,10 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",
-      ACTIVE_COLOR: "#f5b080",
+      THEME_COLOR: "#90ADC6",
+      ACTIVE_COLOR: "#556890",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ナガノ",                                     
+      SHEET_NAME: "ナガノ",                                    
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -29,8 +29,8 @@
 
   <style>
     :root { 
-      --theme-color: #FBCC7E; 
-      --active-color: #f5b080;
+      --theme-color: #90ADC6; 
+      --active-color: #556890;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
     }
@@ -79,7 +79,7 @@
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { font-weight: bold; }
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color); }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
     .nav-bar a:last-child::after { content: ""; }
 
@@ -292,7 +292,7 @@ function loadData() {
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
-      renderSideMenu(); // 自動生成側邊選單
+      renderSideMenu();
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -301,10 +301,8 @@ function loadData() {
   });
 }
 
-// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
-  // 這裡可以手動定義你想在選單顯示的其他頁面連結
   const links = [
     { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
     { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
@@ -342,7 +340,6 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-// 處理顯示價格的通用邏輯
 function getDisplayPrice(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "組合出售";
@@ -351,7 +348,6 @@ function getDisplayPrice(price) {
   return p;
 }
 
-// 處理 LINE 訊息的價格轉換邏輯
 function getLinePriceText(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "詢問組合";
@@ -399,13 +395,12 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   
-  const excludeRoles = ["綜合角色", "其他角色"];
+  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   cart.forEach((item, i) => {
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
@@ -509,7 +504,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "電腦",          
+      source: "電腦",           
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -524,7 +519,6 @@ async function handleFinalCheckout() {
     console.error("GAS 傳送失敗", e);
   }
 
-  // 電腦版傳送後也直接嘗試開 LINE（這部分維持原邏輯，或是由用戶掃碼）
   const msg = generateLineMessage(lineName, igAcc);
   window.location.href = CONFIG.LINE_MSG_URL + msg;
 
@@ -539,12 +533,10 @@ async function handleFinalCheckout() {
 // 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
-  
+  // 移除 roleColors 物件，改用統一顏色
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    const activeColor = roleColors[cat] || CONFIG.ACTIVE_COLOR;
-    const activeStyle = isSelected ? `style="color:${activeColor};"` : "";
-    return `<a class="${isSelected ? 'active-role' : ''}" ${activeStyle} onclick="toggleRole('${cat}')">${cat}</a>`;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
@@ -607,15 +599,25 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
-  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+  // 移除 roleColors，邊框統一使用 THEME_COLOR
+  card.style.borderColor = CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
-  else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
+  if (item.colOrder !== "") { 
+    tagText = "受注"; tagBg = "#B1DEC1"; 
+  } 
+  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { 
+    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; 
+  }
+  else if (item.colStock === "" && item.colShop === "") { 
+    tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; 
+  }
+  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { 
+    tagText = "搭機中"; tagBg = "#6C95B0"; 
+  }
+  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { 
+    tagText = "需預訂"; tagBg = "#C197D2"; 
+  }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
