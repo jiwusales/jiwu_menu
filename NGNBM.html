@@ -14,8 +14,8 @@
   
   <script>
     const CONFIG = {
-      THEME_COLOR: "#90ADC6",
-      ACTIVE_COLOR: "#556890",
+      THEME_COLOR: "#FBCC7E",
+      ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "ナガノ",                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
@@ -29,8 +29,8 @@
 
   <style>
     :root { 
-      --theme-color: #90ADC6; 
-      --active-color: #556890;
+      --theme-color: #FBCC7E; 
+      --active-color: #f5b080;
       --nav-bg: #f9f9f9; 
       --text-color: #333333; 
     }
@@ -292,7 +292,7 @@ function loadData() {
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
-      renderSideMenu(); 
+      renderSideMenu(); // 自動生成側邊選單
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -301,8 +301,10 @@ function loadData() {
   });
 }
 
+// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
+  // 這裡可以手動定義你想在選單顯示的其他頁面連結
   const links = [
     { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
     { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
@@ -316,6 +318,7 @@ function renderSideMenu() {
   `).join('');
 }
 
+// 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
@@ -339,26 +342,56 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 處理顯示價格的通用邏輯
+function getDisplayPrice(price) {
+  const p = (price || "").toString().trim();
+  if (p.indexOf('-') !== -1) return "組合出售";
+  if (p === "") return "詢問花花";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
+  return p;
+}
+
+// 處理 LINE 訊息的價格轉換邏輯
+function getLinePriceText(price) {
+  const p = (price || "").toString().trim();
+  if (p.indexOf('-') !== -1) return "詢問組合";
+  if (p === "") return "詢問報價";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
+  return p;
+}
+
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
   const totalEl = document.getElementById('cart-total');
   list.innerHTML = "";
   let total = 0;
+  let hasInquiry = false;
+
   cart.forEach((item, index) => {
-    // 網頁購物車內顯示判斷
-    let displayPrice = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : `$${item.price}`);
-    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
     total += priceVal;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">${displayPrice}</div></div><span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
+    
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
+    `;
     list.appendChild(div);
   });
   badge.textContent = cart.length;
   badge.style.display = cart.length > 0 ? "flex" : "none";
-  totalEl.textContent = `$${total}`;
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 }
 
 function removeFromCart(index) {
@@ -370,29 +403,25 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
-  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
+  let hasInquiry = false;
+  
+  const excludeRoles = ["綜合角色", "其他角色"];
 
   cart.forEach((item, i) => {
-    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
     
-    // LINE 訊息文字判斷：改為「詢問組合」與「詢問報價」
-    let linePriceText = `$${item.price}`;
-    if (item.price === '-') {
-        linePriceText = "詢問組合";
-    } else if (!item.price || item.price.toString().trim() === "") {
-        linePriceText = "詢問報價";
-    }
-
     let displayName = item.name;
     if (item.kind && !excludeRoles.includes(item.kind)) {
       displayName = `${item.kind} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${linePriceText}\n`;
-    total += priceVal;
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
   });
   
-  msg += `\n總金額：$${total}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
   
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
@@ -429,18 +458,28 @@ function renderCheckoutSummary() {
   const totalEl = document.getElementById('modal-total-price');
   summaryList.innerHTML = "";
   let total = 0;
+  let hasInquiry = false;
+
   cart.forEach((item) => {
-    // 網頁結帳清單內顯示判斷
-    let displayPrice = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : `$${item.price}`);
-    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
     total += priceVal;
+
     const div = document.createElement('div');
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
-    div.innerHTML = `<img src="${item.img}"><div class="cart-item-info">${tagHtml}<div style="font-weight:bold; margin-bottom:2px;">${item.name}</div><div style="color:#e44d26; font-weight:bold; margin-top:2px;">${displayPrice}</div></div>`;
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+    `;
     summaryList.appendChild(div);
   });
-  totalEl.textContent = `$${total}`;
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 }
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
@@ -485,6 +524,10 @@ async function handleFinalCheckout() {
     console.error("GAS 傳送失敗", e);
   }
 
+  // 電腦版傳送後也直接嘗試開 LINE（這部分維持原邏輯，或是由用戶掃碼）
+  const msg = generateLineMessage(lineName, igAcc);
+  window.location.href = CONFIG.LINE_MSG_URL + msg;
+
   cart = []; 
   saveCart(); 
   updateCartUI();
@@ -493,9 +536,9 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
   
+// 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
-  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
   
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
@@ -527,6 +570,7 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
+// 渲染商品卡片
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
@@ -576,10 +620,7 @@ function createCard(item) {
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   
-  // 商品卡片顯示判斷
-  let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
-  
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
 }
@@ -592,6 +633,7 @@ function zoomCard(c) {
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
+// 懸浮購物車拖動邏輯
 (function initDraggableCart() {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
@@ -632,6 +674,7 @@ function zoomCard(c) {
   el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
+// 啟動資料載入
 loadData();
 </script>
 </body>
