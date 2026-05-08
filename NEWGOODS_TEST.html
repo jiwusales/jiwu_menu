@@ -384,10 +384,9 @@ function createCard(item) {
   // 修改售價顯示邏輯：空白顯示詢問花花，否則加上 $
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
-// 修改後的邏輯
-// 必須先取得 rawName，才能進行替換
-const rawName = item.role ? `${item.role}${item.name}` : item.name;
-const displayName = rawName.replace(/ /g, '<br>&nbsp;');
+  const rawName = item.role ? `${item.role}${item.name}` : item.name;
+  const displayName = rawName.replace(/ /g, '<br>');
+  const sizeText = item.size ? item.size : '&nbsp;';
 
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
