@@ -384,8 +384,10 @@ function createCard(item) {
   // 修改售價顯示邏輯：空白顯示詢問花花，否則加上 $
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
-  const rawName = item.role ? `${item.role}${item.name}` : item.name;
-  const displayName = rawName.replace(/ /g, '<br>');
+// 修改後的邏輯
+const rawName = item.role ? `${item.role}${item.name}` : item.name;
+// 使用正則表達式將所有空格替換為換行符號 + 不換行空格，確保空間被撐開
+const displayName = rawName.replace(/ /g, '<br>&nbsp;');
   const sizeText = item.size ? item.size : '&nbsp;';
 
   card.innerHTML = `
