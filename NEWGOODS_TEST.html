@@ -102,15 +102,9 @@
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 2px; object-fit: contain; pointer-events: none; border-radius: 6px; }
-    
-    /* 修改這裡：增加最小高度，固定售價位置 */
-    .card .name { margin: 2px auto 0px; font-size: 10px; font-weight: bold; line-height: 1.3; padding: 0 2px; color: #333; flex-grow: 1; display: block; text-align: center; word-break: break-word; min-height: 2.6em; }
-    
-    /* 修改這裡：移除底部 margin */
-    .card .price { font-size: 11px; margin: 0px auto; color: #fbb550; padding-bottom: 2px; }
-    
-    /* 修改這裡：讓尺寸區塊內容為空時不佔空間 */
-    .card .size { font-size: 9px; margin: 1.5px auto 8px; color: #888; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-height: 0; }
+    .card .name { margin: 2px auto 0px; font-size: 10px; font-weight: bold; line-height: 1.3; padding: 0 2px; color: #333; flex-grow: 1; display: block; text-align: center; word-break: break-word;}
+    .card .price { font-size: 11px; margin: 0px auto ; color: #fbb550; }
+    .card .size { font-size: 9px; margin: 1.5px auto 8px; color: #888; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 0; pointer-events: none; border-width: 1px; }
@@ -258,7 +252,7 @@ function loadData() {
 
         return {
           isActive: currentIsActive,
-          groupName: lastGroup, 
+          groupName: lastGroup, // 修正：統一使用 groupName
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -363,7 +357,7 @@ function renderItems() {
     container.appendChild(bannerDiv);
   }
 
-  const groupItems = allItems.filter(i => i.groupName === selectedGroup); 
+  const groupItems = allItems.filter(i => i.groupName === selectedGroup); // 修正：使用 groupName
   if (groupItems.length > 0) {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
@@ -387,20 +381,19 @@ function createCard(item) {
   let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   
+  // 修改售價顯示邏輯：空白顯示詢問花花，否則加上 $
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
   const rawName = item.role ? `${item.role}${item.name}` : item.name;
   const displayName = rawName.replace(/ /g, '<br>');
-  
-  // 修改這裡：只有當 item.size 有內容時才生成 size 區塊
-  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : "";
+  const sizeText = item.size ? item.size : '&nbsp;';
 
   card.innerHTML = `
     ${tagHtml}${addBtnHtml}
     <img src="${item.img}">
     <div class="name">${displayName}</div>
     <div class="price">${displayPrice}</div>
-    ${sizeHtml}
+    <div class="size">${sizeText}</div>
   `;
   card.onclick = () => zoomCard(card);
   return card;
@@ -416,6 +409,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
+  // 修正：確保存入購物車時包含 groupName
   cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
@@ -445,6 +439,7 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     
+    // 修改購物車清單售價顯示邏輯
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
@@ -469,44 +464,59 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
+// 1. 修改進入結帳的邏輯 (增加手機判斷)
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
+
+  // 判定是否為手機裝置
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   if (isMobile) {
+    // 【手機版】不彈窗，直接生成訊息並跳轉 LINE
     const msg = generateLineMessage(); 
     window.location.href = CONFIG.LINE_MSG_URL + msg;
+    
+    // 提醒：跳轉後清空購物車（可選）
     setTimeout(() => { 
       cart = []; saveCart(); updateCartUI(); toggleCart(false); 
     }, 1500);
   } else {
+    // 【電腦版】維持原樣，開啟填寫資料的彈窗
     openCheckoutModal();
   }
 }
 
+// 2. 這是新增的輔助函數，用來統一生成 LINE 的訊息文字
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
+  // 1. 先將購物車商品按團名分組
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = item.groupName || "其他商品";
+    const gName = item.groupName || "其他商品"; // 若無團名則歸類到其他
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
     groupedCart[gName].push(item);
   });
 
+  // 2. 依照分組生成訊息
   let index = 1;
   for (const groupName in groupedCart) {
+    // 顯示團名標題
     msg += `【${groupName}】\n`;
+
     groupedCart[groupName].forEach(item => {
+      // 價格計算
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
       const priceVal = isNumeric ? parseInt(item.price) : 0;
       if (!isNumeric) hasInquiry = true;
       total += priceVal;
 
+      // 處理角色與商品名
       let displayName = item.name;
       const rolePrefix = item.kind || item.role;
       if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
@@ -514,10 +524,12 @@ function generateLineMessage(lineName = "", igAccount = "") {
       }
 
       const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+      
+      // 每一行的格式：編號. 角色名 商品名 價格
       msg += `${index}. ${displayName} ${priceText}\n`;
       index++;
     });
-    msg += "\n";
+    msg += "\n"; // 團與團之間空一行
   }
 
   msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
@@ -531,6 +543,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   return encodeURIComponent(msg);
 }
 
+// 3. 結帳彈窗與預覽 (維持功能，僅調整格式)
 function openCheckoutModal() {
   toggleCart(false);
   document.getElementById('step-1').style.display = "block";
@@ -565,6 +578,7 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
+// 4. 修改電腦版的最後送出邏輯 (傳送 Google Sheets + 跳轉 LINE)
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -581,7 +595,7 @@ async function handleFinalCheckout() {
         type: item.type,
         name: item.name,
         price: item.price,
-        note: item.groupName,
+        note: item.groupName, // 修正：使用 groupName
         sn: item.sn || ""
       };
     });
@@ -593,12 +607,14 @@ async function handleFinalCheckout() {
       cartItems: cartData 
     };
 
+    // 傳送到 Google Sheets
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
       mode: 'no-cors', 
       body: JSON.stringify(postData) 
     });
 
+    // 【電腦版特有】送完 Sheets 後，也幫他跳轉 LINE 把訊息帶過去
     const msg = generateLineMessage(lineName, igAcc);
     window.location.href = CONFIG.LINE_MSG_URL + msg;
 
