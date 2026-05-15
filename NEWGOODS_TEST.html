@@ -266,7 +266,8 @@ function loadData() {
       });
 
       allItems = rawRows.filter(item => {
-        const isHidden = item.price.toLowerCase() === 'x';
+        // 修改此處：從 item.price 改為 item.stock 判斷 x 則不上架
+        const isHidden = item.stock.toLowerCase() === 'x';
         return item.name !== "" && item.isActive === true && !isHidden;
       });
 
