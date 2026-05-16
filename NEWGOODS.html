@@ -369,7 +369,7 @@ function renderItems() {
     emptyMsg.style.padding = "40px 20px";
     emptyMsg.style.color = "#888";
     emptyMsg.style.fontSize = "14px";
-    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•́ฅ";
+    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•飾ฅ";
     container.appendChild(emptyMsg);
   }
 }
@@ -589,15 +589,20 @@ async function handleFinalCheckout() {
   btn.disabled = true; btn.textContent = "傳送中...";
 
   try {
+    // 配合官網暫存區分頁欄位順序：日期(後端生成) LINE名稱 聯繫方式 角色 種類 款式 名稱 售價 貨號 貨況 備註
     const cartData = cart.map(item => {
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
       return {
-        kind: roleValue,
-        type: item.type,
-        name: item.name,
-        price: item.price,
-        note: item.groupName, // 修正：使用 groupName
-        sn: item.sn || ""
+        lineName: lineName,         // LINE名稱
+        contact: igAcc,            // 聯繫方式
+        role: roleValue,           // 角色
+        type: item.type,           // 種類
+        size: item.size || "",     // 款式 (對應試算表欄位順序)
+        name: item.name,           // 名稱
+        price: item.price,         // 售價
+        sn: item.sn || "",         // 貨號
+        stock: item.currentStatus || "有庫存", // 貨況
+        note: item.groupName       // 備註
       };
     });
 
