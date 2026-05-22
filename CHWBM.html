@@ -626,7 +626,20 @@ function createCard(item) {
   return card;
 }
 
-function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function formatName(n) {
+  if (!n) return n;
+  
+  // 1. 先把空格變成換行 <br>
+  let formatted = n.replace(/\s+/g, '<br>');
+  
+  // 2. 檢查每一行是否超過 9 個字，如果超過則強制在第 9 個字後斷行
+  return formatted.split('<br>').map(line => {
+    if (line.length > 9) {
+      return line.slice(0, 9) + '<br>' + line.slice(9);
+    }
+    return line;
+  }).join('<br>');
+}
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
