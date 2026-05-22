@@ -628,17 +628,25 @@ function createCard(item) {
 
 function formatName(n) {
   if (!n) return n;
-  
-  // 1. 先把空格變成換行 <br>
-  let formatted = n.replace(/\s+/g, '<br>');
-  
-  // 2. 檢查每一行是否超過 9 個字，如果超過則強制在第 9 個字後斷行
-  return formatted.split('<br>').map(line => {
-    if (line.length > 9) {
-      return line.slice(0, 9) + '<br>' + line.slice(9);
+
+  // 1. 將所有可能的空白（半形空格、全形空格、Tab等）統一替換成一個特殊的標記符號
+  // 這裡使用 '___' 作為暫存標記
+  let formatted = n.replace(/[\s\u3000]+/g, '___');
+
+  // 2. 將標記切分，並對每一段超過 9 個字的文字進行強制斷行
+  let parts = formatted.split('___').map(part => {
+    let result = "";
+    let temp = part;
+    // 如果單個片段還是超過 9 個字，就強制拆分
+    while (temp.length > 9) {
+      result += temp.slice(0, 9) + '<br>';
+      temp = temp.slice(9);
     }
-    return line;
-  }).join('<br>');
+    return result + temp;
+  });
+
+  // 3. 最後用 <br> 接起來
+  return parts.join('<br>');
 }
 
 function zoomCard(c) {
