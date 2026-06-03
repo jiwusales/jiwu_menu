@@ -483,7 +483,15 @@ function createCard(item) {
   card.onclick = () => zoomCard(card);
   return card;
 }
-function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function formatName(n) {
+  if (!n) return n;
+  // 先判斷是否有空格，有的話優先在空格處換行
+  if (/\s+/.test(n)) {
+    return n.replace(/\s+/, '<br>');
+  }
+  // 如果沒有空格，則維持原有的超過 9 個字換行邏輯
+  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+}
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true); ov.appendChild(clone);
