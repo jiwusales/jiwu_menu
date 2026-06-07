@@ -98,6 +98,8 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); justify-content: center; } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
+    .card.sold-out { filter: grayscale(1); }
+    .sold-out-tag { position: absolute; top: 0; left: 0; background: #555; color: #fff; font-size: 9px; padding: 2px 4px; border-bottom-right-radius: 6px; z-index: 10; font-weight: bold; pointer-events: none; }
     .stock-tag { position: absolute; top: 4px; left: 4px; padding: 0 4px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; color: var(--contrast-color); }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
@@ -156,7 +158,7 @@
 <body>
  <div class="top-bar">
     <span class="top-bar-content" id="top-msg">載入中...</span>
-  </div>
+ </div>
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
@@ -265,10 +267,7 @@ function loadData() {
         };
       });
 
-      allItems = rawRows.filter(item => {
-        const isHidden = item.stock.toLowerCase() === 'x';
-        return item.name !== "" && item.isActive === true && !isHidden;
-      });
+      allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
 
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
@@ -375,11 +374,19 @@ function renderItems() {
 
 function createCard(item) {
   const card = document.createElement('div');
-  card.className = 'card';
+  const isSoldOut = item.stock.toLowerCase() === 'x';
+  card.className = `card ${isSoldOut ? 'sold-out' : ''}`;
   card.style.borderColor = CONFIG.THEME_COLOR;
-  const hasStock = item.stock !== "" && item.stock !== "0" && item.stock.toLowerCase() !== "x";
-  let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
+  
+  let tagHtml = "";
+  if (isSoldOut) {
+      tagHtml = `<div class="sold-out-tag">SOLD OUT</div>`;
+  } else {
+      const hasStock = item.stock !== "" && item.stock !== "0";
+      tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
+  }
+
+  let addBtnHtml = !isSoldOut ? `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>` : "";
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
@@ -574,16 +581,16 @@ async function handleFinalCheckout() {
     const cartData = cart.map(item => {
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
       return {
-        lineName: lineName,         // 正確對應後端：LINE名稱 (B欄)
-        contact: igAcc,            // 正確對應後端：聯繫方式 (C欄)
-        role: roleValue,           // 角色
-        type: item.type,           // 種類
-        size: item.size || "",     // 款式
-        name: item.name,           // 名稱
-        price: item.price,         // 售價
-        sn: item.sn || "",         // 貨號
-        stock: item.currentStatus || "有庫存", // 貨況
-        note: item.groupName       // 備註
+        lineName: lineName,
+        contact: igAcc,
+        role: roleValue,
+        type: item.type,
+        size: item.size || "",
+        name: item.name,
+        price: item.price,
+        sn: item.sn || "",
+        stock: item.currentStatus || "有庫存",
+        note: item.groupName
       };
     });
 
