@@ -98,6 +98,8 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); justify-content: center; } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
+    .card.sold-out { filter: grayscale(1); }
+    .sold-out-tag { position: absolute; top: 0; left: 0; background: #555; color: #fff; font-size: 9px; padding: 2px 4px; border-bottom-right-radius: 6px; z-index: 10; font-weight: bold; pointer-events: none; }
     .stock-tag { position: absolute; top: 4px; left: 4px; padding: 0 4px; height: 18px; border-radius: 4px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; color: var(--contrast-color); }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; }
 
@@ -156,7 +158,7 @@
 <body>
  <div class="top-bar">
     <span class="top-bar-content" id="top-msg">載入中...</span>
-  </div>
+ </div>
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
@@ -252,7 +254,7 @@ function loadData() {
 
         return {
           isActive: currentIsActive,
-          groupName: lastGroup, // 修正：統一使用 groupName
+          groupName: lastGroup, 
           role: getV(5),
           type: getV(6),
           name: getV(7),
@@ -265,11 +267,7 @@ function loadData() {
         };
       });
 
-      allItems = rawRows.filter(item => {
-        // 修改此處：從 item.price 改為 item.stock 判斷 x 則不上架
-        const isHidden = item.stock.toLowerCase() === 'x';
-        return item.name !== "" && item.isActive === true && !isHidden;
-      });
+      allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
 
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
@@ -358,7 +356,7 @@ function renderItems() {
     container.appendChild(bannerDiv);
   }
 
-  const groupItems = allItems.filter(i => i.groupName === selectedGroup); // 修正：使用 groupName
+  const groupItems = allItems.filter(i => i.groupName === selectedGroup); 
   if (groupItems.length > 0) {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
@@ -369,20 +367,27 @@ function renderItems() {
     emptyMsg.style.padding = "40px 20px";
     emptyMsg.style.color = "#888";
     emptyMsg.style.fontSize = "14px";
-    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•́ฅ";
+    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•飾ฅ";
     container.appendChild(emptyMsg);
   }
 }
 
 function createCard(item) {
   const card = document.createElement('div');
-  card.className = 'card';
+  const isSoldOut = item.stock.toLowerCase() === 'x';
+  card.className = `card ${isSoldOut ? 'sold-out' : ''}`;
   card.style.borderColor = CONFIG.THEME_COLOR;
-  const hasStock = item.stock !== "" && item.stock !== "0" && item.stock.toLowerCase() !== "x";
-  let tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${hasStock ? '有庫存' : ''}')">＋</div>`;
   
-  // 修改售價顯示邏輯：空白顯示詢問花花，否則加上 $
+  let tagHtml = "";
+  if (isSoldOut) {
+      tagHtml = `<div class="sold-out-tag">SOLD OUT</div>`;
+  } else {
+      const hasStock = item.stock !== "" && item.stock !== "0";
+      tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
+  }
+
+  let addBtnHtml = !isSoldOut ? `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>` : "";
+  
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
   const rawName = item.role ? `${item.role}${item.name}` : item.name;
@@ -410,7 +415,6 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  // 修正：確保存入購物車時包含 groupName
   cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
@@ -440,7 +444,6 @@ function updateCartUI() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     
-    // 修改購物車清單售價顯示邏輯
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
     const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
@@ -465,59 +468,48 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 1. 修改進入結帳的邏輯 (增加手機判斷)
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
 
-  // 判定是否為手機裝置
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   if (isMobile) {
-    // 【手機版】不彈窗，直接生成訊息並跳轉 LINE
     const msg = generateLineMessage(); 
     window.location.href = CONFIG.LINE_MSG_URL + msg;
     
-    // 提醒：跳轉後清空購物車（可選）
     setTimeout(() => { 
       cart = []; saveCart(); updateCartUI(); toggleCart(false); 
     }, 1500);
   } else {
-    // 【電腦版】維持原樣，開啟填寫資料的彈窗
     openCheckoutModal();
   }
 }
 
-// 2. 這是新增的輔助函數，用來統一生成 LINE 的訊息文字
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  // 1. 先將購物車商品按團名分組
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = item.groupName || "其他商品"; // 若無團名則歸類到其他
+    const gName = item.groupName || "其他商品"; 
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
     groupedCart[gName].push(item);
   });
 
-  // 2. 依照分組生成訊息
   let index = 1;
   for (const groupName in groupedCart) {
-    // 顯示團名標題
     msg += `【${groupName}】\n`;
 
     groupedCart[groupName].forEach(item => {
-      // 價格計算
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
       const priceVal = isNumeric ? parseInt(item.price) : 0;
       if (!isNumeric) hasInquiry = true;
       total += priceVal;
 
-      // 處理角色與商品名
       let displayName = item.name;
       const rolePrefix = item.kind || item.role;
       if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
@@ -526,11 +518,10 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
       const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
       
-      // 每一行的格式：編號. 角色名 商品名 價格
       msg += `${index}. ${displayName} ${priceText}\n`;
       index++;
     });
-    msg += "\n"; // 團與團之間空一行
+    msg += "\n"; 
   }
 
   msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
@@ -544,7 +535,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
   return encodeURIComponent(msg);
 }
 
-// 3. 結帳彈窗與預覽 (維持功能，僅調整格式)
 function openCheckoutModal() {
   toggleCart(false);
   document.getElementById('step-1').style.display = "block";
@@ -579,7 +569,6 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
-// 4. 修改電腦版的最後送出邏輯 (傳送 Google Sheets + 跳轉 LINE)
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -592,12 +581,16 @@ async function handleFinalCheckout() {
     const cartData = cart.map(item => {
       const roleValue = (item.role === "綜合角色") ? "" : item.role;
       return {
-        kind: roleValue,
+        lineName: lineName,
+        contact: igAcc,
+        role: roleValue,
         type: item.type,
+        size: item.size || "",
         name: item.name,
         price: item.price,
-        note: item.groupName, // 修正：使用 groupName
-        sn: item.sn || ""
+        sn: item.sn || "",
+        stock: item.currentStatus || "有庫存",
+        note: item.groupName
       };
     });
 
@@ -608,16 +601,11 @@ async function handleFinalCheckout() {
       cartItems: cartData 
     };
 
-    // 傳送到 Google Sheets
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
       mode: 'no-cors', 
       body: JSON.stringify(postData) 
     });
-
-    // 【電腦版特有】送完 Sheets 後，也幫他跳轉 LINE 把訊息帶過去
-    const msg = generateLineMessage(lineName, igAcc);
-    window.location.href = CONFIG.LINE_MSG_URL + msg;
 
     cart = []; saveCart(); updateCartUI();
     document.getElementById('step-1').style.display = "none";
@@ -684,7 +672,7 @@ async function handleFinalCheckout() {
 
 loadData();
 </script>
-  <div style="text-align: center; font-size: 11px; color: #999; padding: 15px; margin-top: 15px; border-top: 1px solid #eee;">
+  <div style="text-align: center; font-size: 11px; color: #999; padding: 10px; margin-top: 10px; border-top: 1px solid #eee;">
   模擬圖僅供參考，以實際商品為準，有問題請私訊官方LINE @jiwusales
 </div>
 </body>
