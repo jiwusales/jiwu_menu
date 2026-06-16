@@ -227,10 +227,11 @@ function loadData() {
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
-      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
+      // 初始化變數，放在 map 外面以確保繼承關係
+      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true;
       groupSettings = {};
-      
-    const rawRows = data.table.rows.map(r => {
+
+      const rawRows = data.table.rows.map(r => {
         const getV = (name) => {
           const idx = col(name);
           const val = r.c[idx]?.v;
@@ -240,7 +241,7 @@ function loadData() {
         const activeFlag = getV('上架').toLowerCase();
         const groupName = getV('團名');
         
-        // 只要這一列有團名，就更新當前團的設定
+        // 如果有填寫新團名，就更新所有群組設定；如果沒填，就沿用上一列的 lastGroup
         if (groupName !== "") {
             lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
@@ -259,7 +260,6 @@ function loadData() {
         }
 
         return {
-          isActive: currentIsActive,
           groupName: lastGroup, 
           role: getV('角色'),
           type: getV('種類'),
@@ -273,8 +273,9 @@ function loadData() {
         };
       });
 
-      // 過濾時，只要是有名稱的商品，且所屬的團是啟用的即可
+      // 篩選：確保只要該商品所屬的 groupName 存在於設定中，且該群組為啟動狀態即可
       allItems = rawRows.filter(item => item.name !== "" && groupSettings[item.groupName]?.isActive === true);
+      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
