@@ -277,8 +277,12 @@ function loadData() {
         });
 
       // 篩選：確保只要該商品所屬的 groupName 存在於設定中，且該群組為啟動狀態即可
-      allItems = rawRows.filter(item => item.name !== "" && groupSettings[item.groupName]?.isActive === true);
-      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
+      allItems = rawRows.filter(item => {
+    // 只要有名稱，且該團組存在且為上架狀態，就保留
+    const hasName = item.name && item.name.trim() !== "";
+    const isGroupActive = groupSettings[item.groupName]?.isActive === true;
+    return hasName && isGroupActive;
+});
       
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
