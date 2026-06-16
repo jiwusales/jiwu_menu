@@ -230,7 +230,7 @@ function loadData() {
       let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
       groupSettings = {};
       
-      const rawRows = data.table.rows.map(r => {
+    const rawRows = data.table.rows.map(r => {
         const getV = (name) => {
           const idx = col(name);
           const val = r.c[idx]?.v;
@@ -258,7 +258,6 @@ function loadData() {
         }
 
         return {
-          isActive: currentIsActive,
           groupName: lastGroup, 
           role: getV('角色'),
           type: getV('種類'),
@@ -272,7 +271,7 @@ function loadData() {
         };
       });
 
-      allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
+      allItems = rawRows.filter(item => item.name !== "" && groupSettings[item.groupName]?.isActive === true);
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
       const urlParams = new URLSearchParams(window.location.search);
