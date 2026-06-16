@@ -240,6 +240,7 @@ function loadData() {
         const activeFlag = getV('上架').toLowerCase();
         const groupName = getV('團名');
         
+        // 只要這一列有團名，就更新當前團的設定
         if (groupName !== "") {
             lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
@@ -258,6 +259,7 @@ function loadData() {
         }
 
         return {
+          isActive: currentIsActive,
           groupName: lastGroup, 
           role: getV('角色'),
           type: getV('種類'),
@@ -271,8 +273,8 @@ function loadData() {
         };
       });
 
+      // 過濾時，只要是有名稱的商品，且所屬的團是啟用的即可
       allItems = rawRows.filter(item => item.name !== "" && groupSettings[item.groupName]?.isActive === true);
-      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
