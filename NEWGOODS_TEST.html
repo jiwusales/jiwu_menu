@@ -227,22 +227,24 @@ function loadData() {
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
-      // 初始化變數，放在 map 外面以確保繼承關係
       let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true;
       groupSettings = {};
+      
+      // 關鍵修正：將所有資料先展開，過濾掉無法解析的空行，再進行處理
+      const rawRows = data.table.rows
+        .filter(r => r.c.some(cell => cell !== null)) // 排除純空行
+        .map(r => {
+          const getV = (name) => {
+            const idx = col(name);
+            const val = r.c[idx]?.v;
+            return (val !== null && val !== undefined) ? val.toString().trim() : "";
+          };
 
-      const rawRows = data.table.rows.map(r => {
-        const getV = (name) => {
-          const idx = col(name);
-          const val = r.c[idx]?.v;
-          return (val !== null && val !== undefined) ? val.toString().trim() : "";
-        };
+          const groupName = getV('團名');
+          const activeFlag = getV('上架').toLowerCase();
 
-        const activeFlag = getV('上架').toLowerCase();
-        const groupName = getV('團名');
-        
-        // 如果有填寫新團名，就更新所有群組設定；如果沒填，就沿用上一列的 lastGroup
-        if (groupName !== "") {
+          // 只要有團名就更新全域狀態
+          if (groupName !== "") {
             lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
             lastBanner = getV('首圖') || lastBanner;
@@ -257,21 +259,22 @@ function loadData() {
               note: lastNote,
               isActive: currentIsActive
             };
-        }
+          }
 
-        return {
-          groupName: lastGroup, 
-          role: getV('角色'),
-          type: getV('種類'),
-          name: getV('名稱'),
-          originalPrice: getV('原價'),
-          price: getV('售價'),
-          stock: getV('庫存'),
-          img: getV('圖片') || "https://i.postimg.cc/bv5xRs04/image.png",
-          link: getV('商品網址'),
-          size: getV('尺寸')
-        };
-      });
+          return {
+            groupName: lastGroup,
+            isActive: currentIsActive,
+            role: getV('角色'),
+            type: getV('種類'),
+            name: getV('名稱'),
+            originalPrice: getV('原價'),
+            price: getV('售價'),
+            stock: getV('庫存'),
+            img: getV('圖片') || "https://i.postimg.cc/bv5xRs04/image.png",
+            link: getV('商品網址'),
+            size: getV('尺寸')
+          };
+        });
 
       // 篩選：確保只要該商品所屬的 groupName 存在於設定中，且該群組為啟動狀態即可
       allItems = rawRows.filter(item => item.name !== "" && groupSettings[item.groupName]?.isActive === true);
