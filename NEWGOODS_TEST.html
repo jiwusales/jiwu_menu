@@ -314,8 +314,12 @@ function loadData() {
 function updateThemeColorByGroup(groupName) {
   const settings = groupSettings[groupName];
   if (settings) {
-    const color = settings.color || "#ffffff";
-    const subColor = settings.subColor || "#333333"; 
+    // 檢查如果沒有包含 #，就自動在前面加上 #
+    let color = settings.color || "#ffffff";
+    if (color && !color.startsWith('#')) color = '#' + color;
+
+    let subColor = settings.subColor || "#333333"; 
+    if (subColor && !subColor.startsWith('#')) subColor = '#' + subColor;
     
     document.documentElement.style.setProperty('--theme-color', color);
     document.documentElement.style.setProperty('--contrast-color', subColor);
