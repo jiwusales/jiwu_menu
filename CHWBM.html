@@ -401,11 +401,13 @@ function removeFromCart(index) {
 
 // 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(৹꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
+
+  msg += "【吉伊卡哇】\n"; // 在這裡加上標題
 
   cart.forEach((item, i) => {
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
