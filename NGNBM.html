@@ -364,6 +364,8 @@ function updateCartUI() {
   let total = 0;
   let hasInquiry = false;
 
+msg += "【Nagano白熊】\n"; // 在這裡加上標題
+  
   cart.forEach((item, index) => {
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
