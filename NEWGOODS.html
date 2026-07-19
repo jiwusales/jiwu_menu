@@ -391,7 +391,7 @@ function createCard(item) {
       tagHtml = `<div class="sold-out-tag">SOLD OUT</div>`;
   } else {
       const hasStock = item.stock !== "" && item.stock !== "0";
-      tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">有庫存</div>` : "";
+      tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
   let addBtnHtml = !isSoldOut ? `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>` : "";
@@ -597,7 +597,7 @@ async function handleFinalCheckout() {
         name: item.name,
         price: item.price,
         sn: item.sn || "",
-        stock: item.currentStatus || "有庫存",
+        stock: item.currentStatus || "現貨",
         note: item.groupName
       };
     });
