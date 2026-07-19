@@ -333,27 +333,29 @@ function removeFromCart(index) {
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
-  let hasInquiry = false;
-  
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
-  msg += "【吉伊樂園】\n"; // 在這裡加上標題
-
   cart.forEach((item, i) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     
+    // 處理 LINE 訊息中的價格字樣
+    let linePrice = `$${item.price}`;
+    if (item.price === '-') {
+        linePrice = "詢問組合";
+    } else if (!item.price || item.price.toString().trim() === "") {
+        linePrice = "詢問報價";
+    }
+
     let displayName = item.name;
     if (item.kind && !excludeRoles.includes(item.kind)) {
       displayName = `${item.kind} ${item.name}`;
     }
 
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${linePrice}\n`;
+    total += priceVal;
   });
   
-  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `\n總金額：$${total}`;
   
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
