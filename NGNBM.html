@@ -363,8 +363,6 @@ function updateCartUI() {
   list.innerHTML = "";
   let total = 0;
   let hasInquiry = false;
-
-msg += "【Nagano白熊】\n"; // 在這裡加上標題
   
   cart.forEach((item, index) => {
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
@@ -398,7 +396,10 @@ function removeFromCart(index) {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  // 在這裡加入您的標題
+  let msg = "【Nagano白熊】\n"; 
+  msg += "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  
   let total = 0;
   let hasInquiry = false;
   
