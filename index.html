@@ -44,7 +44,7 @@
       width: 31vw; 
       max-width: 180px; 
       flex-shrink: 0;
-      scroll-snap-align: center; /* 對齊中間 */
+      scroll-snap-align: start; /* 改為靠左對齊 */
       text-align: center;
     }
 
@@ -161,7 +161,6 @@
     originalCount = filteredRows.length;
     if (originalCount === 0) return;
 
-    // 製作三份 [1,2,3] [1,2,3] [1,2,3]
     const tripleRows = [...filteredRows, ...filteredRows, ...filteredRows];
 
     tripleRows.forEach((row, index) => {
@@ -172,25 +171,23 @@
         if (index === originalCount) dot.classList.add('active');
         dot.onclick = () => {
           const item = inner.children[index];
-          wrapper.scrollTo({ left: item.offsetLeft - (wrapper.offsetWidth / 2) + (item.offsetWidth / 2), behavior: 'smooth' });
+          wrapper.scrollTo({ left: item.offsetLeft - wrapper.offsetLeft, behavior: 'smooth' });
         };
         dotsContainer.appendChild(dot);
       }
     });
 
-    // 初始跳轉到中間那組
+    // 初始跳轉到中間那組的開頭（最右邊開始顯示）
     setTimeout(() => {
-      const middleItem = inner.children[originalCount];
-      wrapper.scrollLeft = middleItem.offsetLeft - (wrapper.offsetWidth / 2) + (middleItem.offsetWidth / 2);
+      const startItem = inner.children[originalCount];
+      wrapper.scrollLeft = startItem.offsetLeft - wrapper.offsetLeft;
     }, 100);
   }
 
-  // 循環監聽
   wrapper.addEventListener('scroll', () => {
     const scrollLeft = wrapper.scrollLeft;
     const singleSetWidth = inner.scrollWidth / 3;
 
-    // 瞬間跳轉（肉眼不可見）
     if (scrollLeft <= 10) {
       wrapper.scrollLeft = singleSetWidth + 10;
     } else if (scrollLeft >= singleSetWidth * 2) {
@@ -207,7 +204,7 @@
     let minDiff = Infinity;
 
     items.forEach((item, i) => {
-      const diff = Math.abs((item.offsetLeft + item.offsetWidth/2) - (wrapper.scrollLeft + wrapper.offsetWidth/2));
+      const diff = Math.abs(item.offsetLeft - wrapper.scrollLeft);
       if (diff < minDiff) { minDiff = diff; activeIndex = i; }
     });
 
@@ -215,7 +212,6 @@
     dots.forEach((dot, i) => dot.classList.toggle('active', i === dotIndex));
   }
 
-  // 桌面端拖拽支援
   let isDown = false, startX, scrollLeft;
   wrapper.addEventListener('mousedown', (e) => {
     isDown = true; startX = e.pageX - wrapper.offsetLeft; scrollLeft = wrapper.scrollLeft;
