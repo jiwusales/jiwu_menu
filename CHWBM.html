@@ -319,17 +319,15 @@ function renderSideMenu() {
 }
 
 // 購物車邏輯
-function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
-
-function addToCart(e, item, tagText, tagBg, tagColor) {
+function addToCart(e, item) {
   e.stopPropagation();
 
   cart.push({
     ...item,
     groupName: CONFIG.SHEET_NAME,
-    currentStatus: tagText || "",
-    tagBg: tagBg,
-    tagColor: tagColor
+    currentStatus: item._status || "",
+    tagBg: item._tagBg || "",
+    tagColor: item._tagColor || ""
   });
 
   saveCart();
@@ -652,8 +650,11 @@ function createCard(item) {
   else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  
+item._status = tagText;
+item._tagBg = tagBg;
+item._tagColor = tagColor;
+
+let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})">＋</div>`;  
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
