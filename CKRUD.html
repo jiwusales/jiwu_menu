@@ -18,7 +18,7 @@
       CONTRAST_COLOR: "#333333", 
       ACTIVE_COLOR: "#EF9D7F",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",     
-      SHEET_NAME: "人魚島劇場版",                             
+      SHEET_NAME: "人魚島劇場版",                                   
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -153,7 +153,7 @@
 <body>
  <div class="top-bar">
     <span class="top-bar-content" id="top-msg">載入中...</span>
- </div>
+  </div>
 
   <div class="type-bar-fixed">
     <div class="type-scroll-container" id="type-scroll">
@@ -348,6 +348,7 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
+  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
@@ -396,6 +397,7 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
 function getCartItemDisplayName(item) {
   let baseName = item.role ? `${item.role}${item.name}` : item.name;
   const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
@@ -462,8 +464,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  msg += "【劇場版人魚島】\n";
-
   cart.forEach((item, idx) => {
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
@@ -476,6 +476,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
       displayName = `${rolePrefix} ${item.name}`;
     }
     
+    // 檢查並補上（補貨登記）
     const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
     if (isSoldOut) {
       displayName += "（補貨登記）";
