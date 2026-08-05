@@ -1,11 +1,13 @@
+人魚島
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU人魚島劇場版</title>
+  <title>JIWU吉伊劇場版人魚島周邊</title>
 
-  <meta property="og:title" content="JIWU人魚島劇場版" />
+  <meta property="og:title" content="JIWU吉伊劇場版人魚島周邊" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -18,7 +20,7 @@
       CONTRAST_COLOR: "#333333", 
       ACTIVE_COLOR: "#EF9D7F",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",     
-      SHEET_NAME: "人魚島劇場版",                                         
+      SHEET_NAME: "人魚島劇場版",                                   
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -348,6 +350,7 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
+  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
@@ -377,10 +380,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ 
-  ...item, 
-  currentStatus: tagText || "" 
-});
+  cart.push({ ...item, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -399,8 +399,13 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
 function getCartItemDisplayName(item) {
   let baseName = item.role ? `${item.role}${item.name}` : item.name;
+  const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+  if (isSoldOut) {
+    baseName += "（補貨登記）";
+  }
   return baseName;
 }
 
@@ -456,69 +461,40 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳ ˙ฅ)：\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
+  const excludeRoles = ["綜合角色"];
 
-  const groupedCart = {};
+  cart.forEach((item, idx) => {
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
 
-  cart.forEach(item => {
-    const groupName = item.type || CONFIG.SHEET_NAME;
-
-    if (!groupedCart[groupName]) {
-      groupedCart[groupName] = [];
+    let displayName = item.name;
+    const rolePrefix = item.role;
+    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+      displayName = `${rolePrefix} ${item.name}`;
+    }
+    
+    // 檢查並補上（補貨登記）
+    const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+    if (isSoldOut) {
+      displayName += "（補貨登記）";
     }
 
-    groupedCart[groupName].push(item);
+    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
   });
-
-  let index = 1;
-
-  Object.entries(groupedCart).forEach(([groupName, items]) => {
-
-    msg += `\n【${groupName}】\n`;
-
-    items.forEach(item => {
-
-      const priceNumber = parseInt(
-        (item.price || "").toString().replace(/[^0-9]/g, "")
-      ) || 0;
-
-      total += priceNumber;
-
-      const isInquiry = !priceNumber;
-      if (isInquiry) hasInquiry = true;
-
-      // 貨況：依該分頁設定，沒有設定就空白
-      const status = item.currentStatus ? `(${item.currentStatus})` : "";
-
-      let displayName = item.name;
-
-      if (item.role && item.role !== "綜合角色") {
-        displayName = `${item.role}${item.name}`;
-      }
-
-      const priceText = isInquiry
-        ? "詢問報價"
-        : `$${item.price}`;
-
-      msg += `${index}.${status}${displayName} ${priceText}\n`;
-
-      index++;
-    });
-  });
-
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
-
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
-
     if (lineName) msg += `\nLINE：${lineName}`;
     if (igAccount) msg += `\nIG：${igAccount}`;
   }
-
 
   return encodeURIComponent(msg);
 }
