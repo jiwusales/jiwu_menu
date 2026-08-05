@@ -223,7 +223,6 @@ function loadData() {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       
-      // 建立表頭名稱與索引的映射
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
@@ -238,10 +237,11 @@ function loadData() {
         };
 
         const activeFlag = getV('上架').toLowerCase();
-        const groupName = getV('團名');
+        const groupNameInput = getV('團名');
         
-        if (groupName !== "") {
-            lastGroup = groupName;
+        // 如果團名欄位有填寫，更新目前所屬的團名與相關設定
+        if (groupNameInput !== "") {
+            lastGroup = groupNameInput;
             currentIsActive = (activeFlag !== 'x');
             lastBanner = getV('首圖') || lastBanner;
             lastColor = getV('主色系') || lastColor;
@@ -257,6 +257,7 @@ function loadData() {
             };
         }
 
+        // 以當下的有效團名作為此列的歸屬群組（若無團名則維持當前累積或後續fallback）
         return {
           isActive: currentIsActive,
           groupName: lastGroup, 
@@ -314,7 +315,6 @@ function loadData() {
 function updateThemeColorByGroup(groupName) {
   const settings = groupSettings[groupName];
   if (settings) {
-    // 檢查如果沒有包含 #，就自動在前面加上 #
     let color = settings.color || "#ffffff";
     if (color && !color.startsWith('#')) color = '#' + color;
 
@@ -423,7 +423,8 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
+  // 將當前選中的分頁名稱（selectedGroup）作為購物車項目的分類依據
+  cart.push({ ...item, groupName: selectedGroup, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -499,10 +500,10 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  // 確實依據每個商品各自記錄的 groupName（分頁標題）進行分類
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = item.groupName || "其他商品"; 
+    // 優先使用 item.groupName，若無則用 selectedGroup 或 fallback 為 "其他商品"
+    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedGroup || "其他商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
@@ -510,7 +511,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
   });
 
   let index = 1;
-  // 針對每一個不同的分頁標題產生對應區塊
   for (const groupName in groupedCart) {
     msg += `【${groupName}】\n`;
 
@@ -521,7 +521,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
       total += priceVal;
 
       let displayName = item.name;
-      // 修正此處：確保不會抓錯屬性導致名稱或標題被異動
       const rolePrefix = item.role; 
       if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
         displayName = `${rolePrefix} ${item.name}`;
@@ -601,7 +600,7 @@ async function handleFinalCheckout() {
         price: item.price,
         sn: item.sn || "",
         stock: item.currentStatus || "現貨",
-        note: item.groupName
+        note: (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedGroup || "")
       };
     });
 
