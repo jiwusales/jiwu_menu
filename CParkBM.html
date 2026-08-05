@@ -339,56 +339,53 @@ function removeFromCart(index) {
 // 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
 
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n";
+
   let total = 0;
-  const groups = {};
+  let hasInquiry = false;
 
-  cart.forEach(item => {
-    const group = item.groupName || "";
-    (groups[group] ||= []).push(item);
+  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
+
+  let lastSheet = "";
+
+  cart.forEach((item, i) => {
+
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
+
+
+    // 分頁名稱
+    if (item.sheetName !== lastSheet) {
+      msg += `\n【${item.sheetName || CONFIG.SHEET_NAME}】\n`;
+      lastSheet = item.sheetName;
+    }
+
+
+    let displayName = item.name;
+
+    if (item.kind && !excludeRoles.includes(item.kind)) {
+      displayName = `${item.kind} ${item.name}`;
+    }
+
+
+    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
+
   });
 
-  let index = 1;
 
-  Object.keys(groups).forEach(groupName => {
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
-    msg += `【${groupName}】\n`;
 
-    groups[groupName].forEach(item => {
+  if (lineName || igAccount) {
+    msg += "\n\n--------------------------";
 
-      total += parseInt(item.price?.toString().replace(/[^0-9]/g,'')) || 0;
-
-      let name = item.name;
-      const role = item.kind || item.role;
-
-      if(role && !["綜合角色","三小隻","其他角色"].includes(role)){
-        name = `${role} ${name}`;
-      }
-
-      // 直接使用購物車裡顯示的貨況標籤
-      let status = item.currentStatus
-        ? `（${item.currentStatus}）`
-        : "";
-
-      let price = item.price === "-"
-        ? "詢問組合"
-        : (!item.price ? "詢問報價" : `$${item.price}`);
-
-      msg += `${index}. ${status}${name} ${price}\n`;
-
-      index++;
-    });
-
-    msg += "\n";
-  });
-
-  msg += `總金額：$${total}`;
-
-  if(lineName || igAccount){
-    msg += "\n--------------------------";
-    if(lineName) msg += `\nLINE：${lineName}`;
-    if(igAccount) msg += `\nIG：${igAccount}`;
+    if (lineName) msg += `\nLINE：${lineName}`;
+    if (igAccount) msg += `\nIG：${igAccount}`;
   }
+
 
   return encodeURIComponent(msg);
 }
