@@ -423,7 +423,9 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
+  // 修正：如果商品沒有帶 groupName（例如從其他獨立分頁來），就強制賦予當前分頁或固定名稱
+  const assignedGroupName = item.groupName || CONFIG.SHEET_NAME;
+  cart.push({ ...item, groupName: assignedGroupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
