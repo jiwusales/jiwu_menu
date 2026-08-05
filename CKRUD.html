@@ -470,21 +470,20 @@ function generateLineMessage(lineName = "", igAccount = "") {
     if (!isNumeric) hasInquiry = true;
     total += priceVal;
 
-    let rolePrefix = item.role;
-    let baseName = item.name;
-    
-    // 確保不會重複串接角色名稱或抓錯欄位
-    if (rolePrefix && !excludeRoles.includes(rolePrefix) && !baseName.startsWith(rolePrefix)) {
-      baseName = `${rolePrefix} ${baseName}`;
+    let displayName = item.name;
+    const rolePrefix = item.role;
+    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+      displayName = `${rolePrefix} ${item.name}`;
     }
     
+    // 檢查並補上（補貨登記）
     const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
     if (isSoldOut) {
-      baseName += "（補貨登記）";
+      displayName += "（補貨登記）";
     }
 
     const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-    msg += `${idx + 1}. 【劇場版人魚島】${baseName} ${priceText}\n`;
+    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
   });
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
