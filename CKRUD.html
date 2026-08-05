@@ -459,32 +459,46 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n【劇場版人魚島】\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  cart.forEach((item, idx) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
-
-    let displayName = item.name;
-    const rolePrefix = item.role;
-    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-      displayName = `${rolePrefix} ${item.name}`;
+  // 依照商品各自的 groupName 進行分組
+  const groupedCart = {};
+  cart.forEach(item => {
+    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : "其他商品";
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
     }
-    
-    // 檢查並補上（補貨登記）
-    const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
-    if (isSoldOut) {
-      displayName += "（補貨登記）";
-    }
-
-    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
+    groupedCart[gName].push(item);
   });
+
+  let globalIdx = 1;
+  for (const [groupName, items] of Object.entries(groupedCart)) {
+    msg += `\n【${groupName}】\n`;
+    items.forEach((item) => {
+      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+      const priceVal = isNumeric ? parseInt(item.price) : 0;
+      if (!isNumeric) hasInquiry = true;
+      total += priceVal;
+
+      let displayName = item.name;
+      const rolePrefix = item.role;
+      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+        displayName = `${rolePrefix} ${item.name}`;
+      }
+      
+      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+      if (isSoldOut) {
+        displayName += "（補貨登記）";
+      }
+
+      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+      msg += `${globalIdx}. ${displayName} ${priceText}\n`;
+      globalIdx++;
+    });
+  }
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
