@@ -319,29 +319,15 @@ function renderSideMenu() {
 }
 
 // 購物車邏輯
-function addToCart(e, item) {
+function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
+
+function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-
-  // 重新計算當前商品的貨況狀態
-  let tagText = "";
-  if (item.colOrder !== "") { tagText = "受注"; } 
-  else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; }
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; }
-
-  let tagBg = "#fab460";
-  let tagColor = "white";
-  if (item.colOrder !== "") { tagBg = "#B1DEC1"; } 
-  else if (item.colStock === "" && item.colShop === "") { tagBg = "#D2EAF1"; tagColor = "#333"; }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagBg = "#6C95B0"; }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagBg = "#C197D2"; }
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagBg = "#FFF4BD"; tagColor = "#333"; }
 
   cart.push({
     ...item,
     groupName: CONFIG.SHEET_NAME,
-    currentStatus: tagText,
+    currentStatus: tagText || "",
     tagBg: tagBg,
     tagColor: tagColor
   });
@@ -428,46 +414,45 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let total = 0;
   let hasInquiry = false;
   
-  const excludeRoles = ["綜合角色", "三小隻", "other", "其他角色"];
+  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   const groups = {};
 
-  cart.forEach(item => {
-    const group = item.groupName || CONFIG.SHEET_NAME;
-    (groups[group] ||= []).push(item);
+cart.forEach(item => {
+  const group = item.groupName || CONFIG.SHEET_NAME;
+  (groups[group] ||= []).push(item);
+});
+
+let index = 1;
+
+Object.keys(groups).forEach(groupName => {
+
+  msg += `【${groupName}】\n`;
+
+  groups[groupName].forEach(item => {
+
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
+
+    let displayName = item.name;
+
+    if (item.kind && !excludeRoles.includes(item.kind)) {
+      displayName = `${item.kind} ${item.name}`;
+    }
+
+    let status = item.currentStatus 
+      ? `（${item.currentStatus}）`
+      : "";
+
+    msg += `${index}. ${status}${displayName} ${getLinePriceText(item.price)}\n`;
+
+    index++;
   });
 
-  let index = 1;
-
-  Object.keys(groups).forEach(groupName => {
-
-    msg += `【${groupName}】\n`;
-
-    groups[groupName].forEach(item => {
-
-      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-      const priceVal = isNumeric ? parseInt(item.price) : 0;
-      if (!isNumeric) hasInquiry = true;
-      total += priceVal;
-
-      let displayName = item.name;
-
-      if (item.kind && !excludeRoles.includes(item.kind)) {
-        displayName = `${item.kind} ${item.name}`;
-      }
-
-      // 修正這裡：將貨況狀態加在商品名稱最前面
-      let status = item.currentStatus 
-        ? `【${item.currentStatus}】` 
-        : "";
-
-      msg += `${index}. ${status}${displayName} ${getLinePriceText(item.price)}\n`;
-
-      index++;
-    });
-
-    msg += "\n";
-  });
+  msg += "\n";
+});
   
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
   
@@ -667,11 +652,8 @@ function createCard(item) {
   else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-item._status = tagText;
-item._tagBg = tagBg;
-item._tagColor = tagColor;
-
-let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')})">＋</div>`;  
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>`;
   card.onclick = () => zoomCard(card);
   return card;
