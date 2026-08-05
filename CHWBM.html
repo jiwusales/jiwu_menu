@@ -17,7 +17,7 @@
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                             
+      SHEET_NAME: "ちいかわ",                                                         
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -247,7 +247,8 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
-let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+const cartStorageKey = 'jiwu_cart_' + CONFIG.SHEET_NAME;
+let cart = JSON.parse(localStorage.getItem(cartStorageKey)) || [];
 
 // 側邊選單開關
 function toggleMenu(isOpen) {
@@ -329,7 +330,7 @@ function getItemStatus(item) {
 }
 
 // 購物車邏輯
-function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
+function saveCart() { localStorage.setItem(cartStorageKey, JSON.stringify(cart)); }
 
 function addToCart(e, item) {
   e.stopPropagation();
