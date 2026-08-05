@@ -412,45 +412,46 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let total = 0;
   let hasInquiry = false;
   
-  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
+  const excludeRoles = ["綜合角色", "三小隻", "other", "其他角色"];
 
   const groups = {};
 
-cart.forEach(item => {
-  const group = item.groupName || CONFIG.SHEET_NAME;
-  (groups[group] ||= []).push(item);
-});
-
-let index = 1;
-
-Object.keys(groups).forEach(groupName => {
-
-  msg += `【${groupName}】\n`;
-
-  groups[groupName].forEach(item => {
-
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
-
-    let displayName = item.name;
-
-    if (item.kind && !excludeRoles.includes(item.kind)) {
-      displayName = `${item.kind} ${item.name}`;
-    }
-
-    let status = item.currentStatus 
-      ? `（${item.currentStatus}）`
-      : "";
-
-    msg += `${index}. ${status}${displayName} ${getLinePriceText(item.price)}\n`;
-
-    index++;
+  cart.forEach(item => {
+    const group = item.groupName || CONFIG.SHEET_NAME;
+    (groups[group] ||= []).push(item);
   });
 
-  msg += "\n";
-});
+  let index = 1;
+
+  Object.keys(groups).forEach(groupName => {
+
+    msg += `【${groupName}】\n`;
+
+    groups[groupName].forEach(item => {
+
+      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+      const priceVal = isNumeric ? parseInt(item.price) : 0;
+      if (!isNumeric) hasInquiry = true;
+      total += priceVal;
+
+      let displayName = item.name;
+
+      if (item.kind && !excludeRoles.includes(item.kind)) {
+        displayName = `${item.kind} ${item.name}`;
+      }
+
+      // 修正這裡：將貨況狀態加在商品名稱最前面
+      let status = item.currentStatus 
+        ? `【${item.currentStatus}】` 
+        : "";
+
+      msg += `${index}. ${status}${displayName} ${getLinePriceText(item.price)}\n`;
+
+      index++;
+    });
+
+    msg += "\n";
+  });
   
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
   
