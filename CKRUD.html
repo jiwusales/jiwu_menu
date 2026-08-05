@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉伊劇場版人魚島周邊</title>
+  <title>JIWU劇場版人魚島周邊</title>
 
-  <meta property="og:title" content="JIWU吉伊劇場版人魚島周邊" />
+  <meta property="og:title" content="JIWU劇場版人魚島周邊" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -453,7 +453,7 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n";
+  let msg = `你好，我想詢問跟購買以下 ${CONFIG.SHEET_NAME} 寶寶(৹˙꒳​˙ฅ)：\n`;
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
