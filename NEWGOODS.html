@@ -423,8 +423,12 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  // 將當前選中的分頁名稱（selectedGroup）作為購物車項目的分類依據
-  cart.push({ ...item, groupName: selectedGroup, currentStatus: tagText });
+  const cartItem = {
+    ...item,
+    groupName: (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedType !== "全部" ? selectedType : CONFIG.SHEET_NAME),
+    currentStatus: tagText
+  };
+  cart.push(cartItem);
   saveCart();
   updateCartUI();
   const btn = e.target;
