@@ -344,9 +344,10 @@ function generateLineMessage(lineName = "", igAccount = "") {
     groups[groupName].forEach(item => {
       total += parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
       let name = item.name;
-      if (item.kind && !["綜合角色", "三小隻", "其他角色"].includes(item.kind)) {
-        name = `${item.kind} ${item.name}`;
-      }
+      const role = item.kind || item.role;
+if (role && !["綜合角色", "三小隻", "其他角色"].includes(role)) {
+  name = `${role} ${item.name}`;
+}
       let price = item.price === "-" ? "詢問組合" : (!item.price ? "詢問報價" : `$${item.price}`);
       msg += `${index}. ${name} ${price}\n`;
       index++;
