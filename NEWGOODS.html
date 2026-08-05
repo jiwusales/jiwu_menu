@@ -503,7 +503,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = item.groupName || "其他商品"; 
+    const gName = item.groupName || CONFIG.SHEET_NAME;
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
