@@ -464,10 +464,9 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  // 依照商品各自的 groupName 進行分組
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : "其他商品";
+    const gName = CONFIG.SHEET_NAME;
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
