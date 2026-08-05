@@ -483,8 +483,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
     }
 
     const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-    // 強制加上固定標題
-    msg += `${idx + 1}. 【劇場版人魚島】${displayName} ${priceText}\n`;
+    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
   });
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
