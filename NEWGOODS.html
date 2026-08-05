@@ -423,10 +423,11 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
+  const hasStock = item.stock !== "" && item.stock !== "0";
   cart.push({
     ...item,
     groupName: item.groupName || CONFIG.SHEET_NAME,
-    currentStatus: tagText
+    currentStatus: hasStock ? "現貨" : ""
 });
   saveCart();
   updateCartUI();
@@ -497,49 +498,62 @@ function handleCheckoutEntry() {
   }
 }
 
+// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
-  const excludeRoles = ["綜合角色"];
+  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   const groupedCart = {};
-cart.forEach(item => {
-  const gName = (item.groupName && item.groupName.trim())
-      ? item.groupName.trim()
-      : CONFIG.SHEET_NAME;
-
-  if (!groupedCart[gName]) {
-    groupedCart[gName] = [];
-  }
-  groupedCart[gName].push(item);
-});
+  const groupOrder = [];
+  cart.forEach(item => {
+    const gName = (item.groupName && item.groupName.toString().trim())
+      ? item.groupName.toString().trim()
+      : (CONFIG.SHEET_NAME || "商品");
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
+      groupOrder.push(gName);
+    }
+    groupedCart[gName].push(item);
+  });
 
   let index = 1;
-  for (const groupName in groupedCart) {
-    msg += `【${groupName}】\n`;
+  groupOrder.forEach(gName => {
+    msg += `\n【${gName}】\n`;
+    groupedCart[gName].forEach(item => {
+      const priceRaw = (item.price !== undefined && item.price !== null) ? item.price.toString().trim() : "";
+      let priceText = "";
+      let priceVal = 0;
 
-    groupedCart[groupName].forEach(item => {
-      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-      const priceVal = isNumeric ? parseInt(item.price) : 0;
-      if (!isNumeric) hasInquiry = true;
+      if (/^[0-9]+$/.test(priceRaw)) {
+        priceVal = parseInt(priceRaw);
+        priceText = `$${priceRaw}`;
+      } else if (priceRaw.indexOf('-') !== -1) {
+        priceText = "組合出售";
+        hasInquiry = true;
+      } else if (priceRaw === "") {
+        priceText = "詢問花花";
+        hasInquiry = true;
+      } else {
+        priceText = priceRaw;
+        hasInquiry = true;
+      }
       total += priceVal;
 
+      const roleName = item.kind || item.role || "";
       let displayName = item.name;
-      const rolePrefix = item.kind || item.role;
-      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-        displayName = `${rolePrefix} ${item.name}`;
+      if (roleName && !excludeRoles.includes(roleName)) {
+        displayName = `${roleName} ${item.name}`;
       }
 
-      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-      
-      msg += `${index}. ${displayName} ${priceText}\n`;
+      const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
+      msg += `${index}.${statusText}${displayName} ${priceText}\n`;
       index++;
     });
-    msg += "\n"; 
-  }
+  });
 
-  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
