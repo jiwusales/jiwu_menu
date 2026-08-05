@@ -499,15 +499,15 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
   const groupedCart = {};
   cart.forEach(item => {
-    // 嚴格依照加入購物車時各自記錄的 groupName 分組
-    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : "其他商品";
+    // 嚴格依照商品當下的 groupName，若無則使用 CONFIG.SHEET_NAME（分頁名稱）
+    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : CONFIG.SHEET_NAME;
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
@@ -516,7 +516,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   let index = 1;
   for (const groupName in groupedCart) {
-    msg += `【${groupName}】\n`;
+    msg += `\n【${groupName}】\n`;
 
     groupedCart[groupName].forEach(item => {
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
@@ -530,15 +530,19 @@ function generateLineMessage(lineName = "", igAccount = "") {
         displayName = `${rolePrefix} ${item.name}`;
       }
 
+      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+      if (isSoldOut) {
+        displayName += "（補貨登記）";
+      }
+
       const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
       
       msg += `${index}. ${displayName} ${priceText}\n`;
       index++;
     });
-    msg += "\n"; 
   }
 
-  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
