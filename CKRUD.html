@@ -377,7 +377,10 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText });
+  cart.push({ 
+  ...item, 
+  currentStatus: tagText || "" 
+});
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -456,48 +459,66 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳ ˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
-  const excludeRoles = ["綜合角色"];
 
   const groupedCart = {};
+
   cart.forEach(item => {
-    const gName = item.type || CONFIG.SHEET_NAME;
-    if (!groupedCart[gName]) {
-      groupedCart[gName] = [];
+    const groupName = item.type || CONFIG.SHEET_NAME;
+
+    if (!groupedCart[groupName]) {
+      groupedCart[groupName] = [];
     }
-    groupedCart[gName].push(item);
+
+    groupedCart[groupName].push(item);
   });
 
-  let globalIdx = 1;
-  for (const [groupName, items] of Object.entries(groupedCart)) {
+  let index = 1;
+
+  Object.entries(groupedCart).forEach(([groupName, items]) => {
+
     msg += `\n【${groupName}】\n`;
-    items.forEach((item) => {
-      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-      const priceVal = isNumeric ? parseInt(item.price) : 0;
-      if (!isNumeric) hasInquiry = true;
-      total += priceVal;
+
+    items.forEach(item => {
+
+      const priceNumber = parseInt(
+        (item.price || "").toString().replace(/[^0-9]/g, "")
+      ) || 0;
+
+      total += priceNumber;
+
+      const isInquiry = !priceNumber;
+      if (isInquiry) hasInquiry = true;
+
+      // 貨況：依該分頁設定，沒有設定就空白
+      const status = item.currentStatus ? `(${item.currentStatus})` : "";
 
       let displayName = item.name;
-      const rolePrefix = item.role;
-      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-        displayName = `${rolePrefix} ${item.name}`;
+
+      if (item.role && item.role !== "綜合角色") {
+        displayName = `${item.role}${item.name}`;
       }
-      
-      const rawStock = item.currentStatus || "";
-      const statusText = rawStock ? `(${rawStock})` : "";
-      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-      
-      msg += `${globalIdx}.${statusText}${displayName} ${priceText}\n`;
-      globalIdx++;
+
+      const priceText = isInquiry
+        ? "詢問報價"
+        : `$${item.price}`;
+
+      msg += `${index}.${status}${displayName} ${priceText}\n`;
+
+      index++;
     });
-  }
+  });
+
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
+
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
+
     if (lineName) msg += `\nLINE：${lineName}`;
     if (igAccount) msg += `\nIG：${igAccount}`;
   }
+
 
   return encodeURIComponent(msg);
 }
