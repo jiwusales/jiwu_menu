@@ -340,16 +340,30 @@ function createCard(item) {
   card.className = `card ${isSoldOut ? 'sold-out' : ''}`;
   card.style.borderColor = CONFIG.THEME_COLOR;
   
-  let tagHtml = "";
-  if (isSoldOut) {
-      tagHtml = `<div class="sold-out-tag">SOLD OUT</div>`;
-  } else {
-      const hasStock = item.stock !== "" && item.stock !== "0";
-      tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
-  }
+  let tagText = "";
+let tagBg = "";
+let tagColor = "#333";
+
+if (isSoldOut) {
+    tagText = "補貨登記";
+    tagBg = "#555";
+    tagColor = "#fff";
+} else {
+    const hasStock = item.stock !== "" && item.stock !== "0";
+
+    if(hasStock){
+        tagText = "現貨";
+        tagBg = "#FFF4BD";
+        tagColor = "#333";
+    }
+}
+
+let tagHtml = tagText 
+? `<div class="stock-tag" style="background-color:${tagBg};color:${tagColor};">${tagText}</div>` 
+: "";
 
   // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor || "white"}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
@@ -376,15 +390,20 @@ function zoomCard(c) {
 
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function addToCart(e, item, tagText) {
+function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
+
   cart.push({
-  ...item,
-  groupName: CONFIG.SHEET_NAME,
-  currentStatus: tagText
-});
+    ...item,
+    groupName: CONFIG.SHEET_NAME,
+    currentStatus: tagText || "",
+    tagBg: tagBg || "",
+    tagColor: tagColor || "white"
+  });
+
   saveCart();
   updateCartUI();
+
   const btn = e.target;
   btn.style.background = "#fdd365";
   setTimeout(() => { btn.style.background = "#ddd"; }, 100); 
