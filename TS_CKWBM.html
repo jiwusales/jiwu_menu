@@ -17,7 +17,7 @@
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                       
+      SHEET_NAME: "ちいかわ",                                     
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -262,91 +262,49 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料（改為依標題定位，並支援自動容錯與除錯）
+// 載入試算表資料
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      const rows = data.table.rows;
-      
-      if (rows.length === 0) {
-        document.getElementById('card-container').innerHTML = "試算表沒有資料。";
-        return;
-      }
-
-      // 1. 抓取第一列作為標題對應表（進行 trim 與過濾）
-      const headers = rows[0].c.map(cell => (cell && cell.v !== undefined && cell.v !== null) ? cell.v.toString().trim() : "");
-      console.log("抓到的標題列：", headers);
-
-      // 智慧對應欄位索引（支援完整名稱或包含關鍵字）
-      const findCol = (keywords) => {
-        for (let kw of keywords) {
-          let idx = headers.findIndex(h => h.includes(kw));
-          if (idx !== -1) return idx;
-        }
-        return -1;
-      };
-
-      const colMap = {
-        kind: findCol(["角色", "IP"]),
-        type: findCol(["種類", "分類"]),
-        style: findCol(["款式"]),
-        name: findCol(["名稱", "品名"]),
-        price: findCol(["售價", "價格"]),
-        colStock: findCol(["庫存"]),
-        colShop: findCol(["店面"]),
-        colNonStock: findCol(["非現"]),
-        colList: findCol(["上架"]),
-        colOrder: findCol(["受注"]),
-        sn: findCol(["貨號", "編號"]),
-        img: findCol(["圖片", "圖"])
-      };
-
-      console.log("欄位對應索引結果：", colMap);
-
-      // 2. 從第二列開始解析資料
-      allItems = rows.slice(1).map(r => {
+      allItems = data.table.rows.map(r => {
         const getV = (idx) => {
-          if (idx === -1 || !r.c || !r.c[idx]) return "";
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
-
         return {
-          kind: getV(colMap.kind) || "其他角色",
-          type: getV(colMap.type) || "其他",
-          style: getV(colMap.style),      
-          name: getV(colMap.name),        
-          price: colMap.price !== -1 && r.c[colMap.price] ? r.c[colMap.price]?.v : "",    
-          colStock: getV(colMap.colStock),    
-          colShop: getV(colMap.colShop),    
-          colNonStock: getV(colMap.colNonStock),
-          colList: getV(colMap.colList),    
-          colOrder: getV(colMap.colOrder),  
-          sn: getV(colMap.sn),            
-          img: getV(colMap.img) || "https://i.postimg.cc/bv5xRs04/image.png" 
+          kind: getV(0) || "其他角色",
+          type: getV(1) || "其他",
+          style: getV(2),      
+          name: getV(3),       
+          price: r.c[5]?.v,    
+          colStock: getV(6),   
+          colShop: getV(7),    
+          colNonStock: getV(8),
+          colList: getV(9),    
+          colOrder: getV(10),  
+          sn: getV(11),        
+          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" 
         };
       }).filter(item => item.colList === "" && item.colStock.toLowerCase() !== 'x');
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
-      renderSideMenu(); 
+      renderSideMenu(); // 自動生成側邊選單
       renderRoleNav();
       renderFilters();
       renderItems();
       updateCartUI();
-    } catch (e) { 
-      console.error(e);
-      document.getElementById('card-container').innerHTML = "載入失敗。"; 
-    }
+    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗。"; }
   });
 }
 
-// 自動生成側邊選單
+// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
+  // 這裡可以手動定義你想在選單顯示的其他頁面連結
   const links = [
     { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
     { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
@@ -365,7 +323,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText || "商品", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, groupName: CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -384,6 +342,7 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 處理顯示價格的通用邏輯
 function getDisplayPrice(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "組合出售";
@@ -392,6 +351,7 @@ function getDisplayPrice(price) {
   return p;
 }
 
+// 處理 LINE 訊息的價格轉換邏輯
 function getLinePriceText(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "詢問組合";
@@ -439,29 +399,63 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
+// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
-  
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
-  cart.forEach((item, i) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
-    
-    let displayName = item.name;
-    if (item.kind && !excludeRoles.includes(item.kind)) {
-      displayName = `${item.kind} ${item.name}`;
+  const groupedCart = {};
+  const groupOrder = [];
+  cart.forEach(item => {
+    const gName = (item.groupName && item.groupName.toString().trim())
+      ? item.groupName.toString().trim()
+      : (CONFIG.SHEET_NAME || "商品");
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
+      groupOrder.push(gName);
     }
-
-    msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${getLinePriceText(item.price)}\n`;
+    groupedCart[gName].push(item);
   });
-  
+
+  let index = 1;
+  groupOrder.forEach(gName => {
+    msg += `\n【${gName}】\n`;
+    groupedCart[gName].forEach(item => {
+      const priceRaw = (item.price !== undefined && item.price !== null) ? item.price.toString().trim() : "";
+      let priceText = "";
+      let priceVal = 0;
+
+      if (/^[0-9]+$/.test(priceRaw)) {
+        priceVal = parseInt(priceRaw);
+        priceText = `$${priceRaw}`;
+      } else if (priceRaw.indexOf('-') !== -1) {
+        priceText = "組合出售";
+        hasInquiry = true;
+      } else if (priceRaw === "") {
+        priceText = "詢問花花";
+        hasInquiry = true;
+      } else {
+        priceText = priceRaw;
+        hasInquiry = true;
+      }
+      total += priceVal;
+
+      const roleName = item.kind || item.role || "";
+      let displayName = item.name;
+      if (roleName && !excludeRoles.includes(roleName)) {
+        displayName = `${roleName} ${item.name}`;
+      }
+
+      const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
+      msg += `${index}.${statusText}${displayName} ${priceText}\n`;
+      index++;
+    });
+  });
+
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
-  
+
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
@@ -544,13 +538,14 @@ async function handleFinalCheckout() {
       name: item.name,      
       price: item.price,    
       sn: item.sn,          
-      status: item.currentStatus 
+      status: item.currentStatus,
+      note: item.groupName
     }));
 
     const postData = { 
-      source: "電腦",           
-      lineName: lineName,    
-      igAccount: igAcc,      
+      source: "電腦",          
+      lineName: lineName,   
+      igAccount: igAcc,     
       cartItems: cartData 
     };
 
@@ -563,6 +558,7 @@ async function handleFinalCheckout() {
     console.error("GAS 傳送失敗", e);
   }
 
+  // 電腦版傳送後也直接嘗試開 LINE（這部分維持原邏輯，或是由用戶掃碼）
   const msg = generateLineMessage(lineName, igAcc);
   window.location.href = CONFIG.LINE_MSG_URL + msg;
 
@@ -574,6 +570,7 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
   
+// 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
@@ -608,6 +605,7 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
+// 渲染商品卡片
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
@@ -664,16 +662,24 @@ function createCard(item) {
 
 function formatName(n) {
   if (!n) return n;
+
+  // 1. 將所有可能的空白（半形空格、全形空格、Tab等）統一替換成一個特殊的標記符號
+  // 這裡使用 '___' 作為暫存標記
   let formatted = n.replace(/[\s\u3000]+/g, '___');
+
+  // 2. 將標記切分，並對每一段超過 9 個字的文字進行強制斷行
   let parts = formatted.split('___').map(part => {
     let result = "";
     let temp = part;
+    // 如果單個片段還是超過 9 個字，就強制拆分
     while (temp.length > 9) {
       result += temp.slice(0, 9) + '<br>';
       temp = temp.slice(9);
     }
     return result + temp;
   });
+
+  // 3. 最後用 <br> 接起來
   return parts.join('<br>');
 }
 
@@ -683,6 +689,7 @@ function zoomCard(c) {
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
+// 懸浮購物車拖動邏輯
 (function initDraggableCart() {
   const el = document.getElementById('cart-trigger');
   let isDragging = false;
@@ -723,6 +730,7 @@ function zoomCard(c) {
   el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
+// 啟動資料載入
 loadData();
 </script>
 </body>
