@@ -17,7 +17,7 @@
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                             
+      SHEET_NAME: "ちいかわ",                                       
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
@@ -262,7 +262,7 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料（改為依標題定位）
+// 載入試算表資料（改為依標題定位，並支援自動容錯與除錯）
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -275,30 +275,40 @@ function loadData() {
         return;
       }
 
-      // 1. 抓取第一列作為標題對應表
-      const headers = rows[0].c.map(cell => (cell?.v ? cell.v.toString().trim() : ""));
-      const getColIndex = (title) => headers.indexOf(title);
+      // 1. 抓取第一列作為標題對應表（進行 trim 與過濾）
+      const headers = rows[0].c.map(cell => (cell && cell.v !== undefined && cell.v !== null) ? cell.v.toString().trim() : "");
+      console.log("抓到的標題列：", headers);
 
-      // 定義需要的標題名稱
-      const colMap = {
-        kind: getColIndex("角色"),
-        type: getColIndex("種類"),
-        style: getColIndex("款式"),
-        name: getColIndex("名稱"),
-        price: getColIndex("售價"),
-        colStock: getColIndex("庫存"),
-        colShop: getColIndex("店面"),
-        colNonStock: getColIndex("非現"),
-        colList: getColIndex("上架"),
-        colOrder: getColIndex("受注"),
-        sn: getColIndex("貨號"),
-        img: getColIndex("圖片")
+      // 智慧對應欄位索引（支援完整名稱或包含關鍵字）
+      const findCol = (keywords) => {
+        for (let kw of keywords) {
+          let idx = headers.findIndex(h => h.includes(kw));
+          if (idx !== -1) return idx;
+        }
+        return -1;
       };
+
+      const colMap = {
+        kind: findCol(["角色", "IP"]),
+        type: findCol(["種類", "分類"]),
+        style: findCol(["款式"]),
+        name: findCol(["名稱", "品名"]),
+        price: findCol(["售價", "價格"]),
+        colStock: findCol(["庫存"]),
+        colShop: findCol(["店面"]),
+        colNonStock: findCol(["非現"]),
+        colList: findCol(["上架"]),
+        colOrder: findCol(["受注"]),
+        sn: findCol(["貨號", "編號"]),
+        img: findCol(["圖片", "圖"])
+      };
+
+      console.log("欄位對應索引結果：", colMap);
 
       // 2. 從第二列開始解析資料
       allItems = rows.slice(1).map(r => {
         const getV = (idx) => {
-          if (idx === -1 || !r.c[idx]) return "";
+          if (idx === -1 || !r.c || !r.c[idx]) return "";
           const val = r.c[idx]?.v;
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
@@ -308,7 +318,7 @@ function loadData() {
           type: getV(colMap.type) || "其他",
           style: getV(colMap.style),      
           name: getV(colMap.name),        
-          price: colMap.price !== -1 ? r.c[colMap.price]?.v : "",    
+          price: colMap.price !== -1 && r.c[colMap.price] ? r.c[colMap.price]?.v : "",    
           colStock: getV(colMap.colStock),    
           colShop: getV(colMap.colShop),    
           colNonStock: getV(colMap.colNonStock),
@@ -538,9 +548,9 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "電腦",          
-      lineName: lineName,   
-      igAccount: igAcc,     
+      source: "電腦",           
+      lineName: lineName,    
+      igAccount: igAcc,      
       cartItems: cartData 
     };
 
