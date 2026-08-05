@@ -273,6 +273,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
+
   cart.push({
     ...item,
     groupName: CONFIG.SHEET_NAME,
@@ -280,9 +281,15 @@ function addToCart(e, item, tagText, tagBg, tagColor) {
     tagBg: tagBg,
     tagColor: tagColor
   });
-
+  saveCart();
+  updateCartUI();
+}
 function clearCart() {
-  if (confirm("確定要清空購物車嗎？")) { cart = []; saveCart(); updateCartUI(); }
+  if (confirm("確定要清空購物車嗎？")) { 
+    cart = []; 
+    saveCart(); 
+    updateCartUI(); 
+  }
 }
 
 function toggleCart(isOpen) {
