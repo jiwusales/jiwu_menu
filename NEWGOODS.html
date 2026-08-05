@@ -502,8 +502,8 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   const groupedCart = {};
   cart.forEach(item => {
-    // 優先使用 item.groupName，若無則用 selectedGroup 或 fallback 為 "其他商品"
-    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedGroup || "其他商品");
+    // 嚴格依照加入購物車時各自記錄的 groupName 分組
+    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : "其他商品";
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
