@@ -17,8 +17,8 @@
       THEME_COLOR: "#ffffff", 
       CONTRAST_COLOR: "#333333", 
       ACTIVE_COLOR: "#EF9D7F",
-      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
-      SHEET_NAME: "人魚島劇場版",                                     
+      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",     
+      SHEET_NAME: "人魚島劇場版",                                   
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -206,9 +206,14 @@
   </div>
 
 <script>
-let allItems = [], allGroups = [], selectedGroup = null;
+let allItems = [];
 let selectedType = "全部";
-let groupSettings = {}; 
+let globalSettings = {
+  banner: "",
+  color: "#ffffff",
+  subColor: "#333333",
+  note: ""
+};
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
@@ -220,9 +225,6 @@ function loadData() {
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
-      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
-      groupSettings = {};
-      
       const rawRows = data.table.rows.map(r => {
         const getV = (name) => {
           const idx = col(name);
@@ -230,31 +232,19 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
-        const activeFlag = getV('上架').toLowerCase();
-        const groupName = getV('團名');
-        
-        if (groupName !== "") {
-            lastGroup = groupName;
-            currentIsActive = (activeFlag !== 'x');
-            lastBanner = getV('首圖') || lastBanner;
-            lastColor = getV('主色系') || lastColor;
-            lastSubColor = getV('輔色系') || lastSubColor;
-            lastNote = getV('備註') || lastNote;
-
-            groupSettings[lastGroup] = {
-              banner: lastBanner,
-              color: lastColor || "#ffffff",
-              subColor: lastSubColor || "#333333",
-              note: lastNote,
-              isActive: currentIsActive
-            };
-        }
+        // 讀取全域設定（只要表格中有填寫，就抓取最新的一筆或第一筆有效值）
+        const b = getV('首圖');
+        if (b) globalSettings.banner = b;
+        const c = getV('主色系');
+        if (c) globalSettings.color = c;
+        const sc = getV('輔色系');
+        if (sc) globalSettings.subColor = sc;
+        const n = getV('備註');
+        if (n) globalSettings.note = n;
 
         return {
-          isActive: currentIsActive,
-          groupName: lastGroup, 
-          role: getV('角色'),
           type: getV('種類'),
+          role: getV('角色'),
           name: getV('名稱'),
           originalPrice: getV('原價'),
           price: getV('售價'),
@@ -265,17 +255,10 @@ function loadData() {
         };
       });
 
-      allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
-      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
+      // 過濾掉名稱為空的行
+      allItems = rawRows.filter(item => item.name !== "");
       
-      if (allGroups.length > 0) {
-        selectedGroup = allGroups[0];
-      }
-
-      if (selectedGroup) {
-        updateThemeColorByGroup(selectedGroup);
-      }
-
+      applyThemeSettings();
       selectedType = "全部";
       renderTypeNav();
       renderItems();
@@ -290,29 +273,24 @@ function loadData() {
   });
 }
 
-function updateThemeColorByGroup(groupName) {
-  const settings = groupSettings[groupName];
-  if (settings) {
-    let color = settings.color || "#ffffff";
-    if (color && !color.startsWith('#')) color = '#' + color;
+function applyThemeSettings() {
+  let color = globalSettings.color || "#ffffff";
+  if (color && !color.startsWith('#')) color = '#' + color;
 
-    let subColor = settings.subColor || "#333333"; 
-    if (subColor && !subColor.startsWith('#')) subColor = '#' + subColor;
-    
-    document.documentElement.style.setProperty('--theme-color', color);
-    document.documentElement.style.setProperty('--contrast-color', subColor);
-    CONFIG.THEME_COLOR = color;
-    
-    const topMsg = document.getElementById('top-msg');
-    topMsg.textContent = settings.note || "點擊卡片可放大圖片唷！";
-  }
+  let subColor = globalSettings.subColor || "#333333"; 
+  if (subColor && !subColor.startsWith('#')) subColor = '#' + subColor;
+  
+  document.documentElement.style.setProperty('--theme-color', color);
+  document.documentElement.style.setProperty('--contrast-color', subColor);
+  CONFIG.THEME_COLOR = color;
+  
+  const topMsg = document.getElementById('top-msg');
+  topMsg.textContent = globalSettings.note || "點擊卡片可放大圖片唷！";
 }
 
 function renderTypeNav() {
   const typeNav = document.getElementById('dynamic-type-nav');
-  const groupItems = allItems.filter(i => i.groupName === selectedGroup);
-  
-  const types = ["全部", ...new Set(groupItems.map(i => i.type).filter(t => t !== ""))];
+  const types = ["全部", ...new Set(allItems.map(i => i.type).filter(t => t !== ""))];
   
   typeNav.innerHTML = types.map(t => {
     const isSelected = selectedType === t;
@@ -330,24 +308,23 @@ function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
   
-  const settings = groupSettings[selectedGroup];
-  if (settings && settings.banner) {
+  if (globalSettings.banner) {
     const bannerDiv = document.createElement('div');
     bannerDiv.className = 'banner-container';
     bannerDiv.id = "group-banner";
-    bannerDiv.innerHTML = `<img src="${settings.banner}" alt="banner">`;
+    bannerDiv.innerHTML = `<img src="${globalSettings.banner}" alt="banner">`;
     container.appendChild(bannerDiv);
   }
 
-  let groupItems = allItems.filter(i => i.groupName === selectedGroup); 
+  let displayItems = allItems; 
   if (selectedType !== "全部") {
-    groupItems = groupItems.filter(i => i.type === selectedType);
+    displayItems = displayItems.filter(i => i.type === selectedType);
   }
 
-  if (groupItems.length > 0) {
+  if (displayItems.length > 0) {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
-    groupItems.forEach(item => grid.appendChild(createCard(item)));
+    displayItems.forEach(item => grid.appendChild(createCard(item)));
     container.appendChild(grid);
   } else {
     const emptyMsg = document.createElement('div');
@@ -402,7 +379,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
+  cart.push({ ...item, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -478,40 +455,23 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  const groupedCart = {};
-  cart.forEach(item => {
-    const gName = item.groupName || "其他商品"; 
-    if (!groupedCart[gName]) {
-      groupedCart[gName] = [];
+  cart.forEach((item, idx) => {
+    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
+
+    let displayName = item.name;
+    const rolePrefix = item.role;
+    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+      displayName = `${rolePrefix} ${item.name}`;
     }
-    groupedCart[gName].push(item);
+
+    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
   });
 
-  let index = 1;
-  for (const groupName in groupedCart) {
-    msg += `【${groupName}】\n`;
-
-    groupedCart[groupName].forEach(item => {
-      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-      const priceVal = isNumeric ? parseInt(item.price) : 0;
-      if (!isNumeric) hasInquiry = true;
-      total += priceVal;
-
-      let displayName = item.name;
-      const rolePrefix = item.kind || item.role;
-      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-        displayName = `${rolePrefix} ${item.name}`;
-      }
-
-      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-      
-      msg += `${index}. ${displayName} ${priceText}\n`;
-      index++;
-    });
-    msg += "\n"; 
-  }
-
-  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
@@ -575,9 +535,7 @@ async function handleFinalCheckout() {
         size: item.size || "",
         name: item.name,
         price: item.price,
-        sn: item.sn || "",
-        stock: item.currentStatus || "現貨",
-        note: item.groupName
+        stock: item.currentStatus || "現貨"
       };
     });
 
