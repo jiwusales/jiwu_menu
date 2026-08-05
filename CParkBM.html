@@ -307,7 +307,6 @@ function updateCartUI() {
   list.innerHTML = "";
   let total = 0;
   cart.forEach((item, index) => {
-    // 判斷價格顯示與計算
     let displayPrice = item.price;
     if (item.price === '-') {
         displayPrice = "組合出售";
@@ -336,7 +335,6 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
   let total = 0;
@@ -469,7 +467,7 @@ async function handleFinalCheckout() {
     }));
 
     const postData = { 
-      source: "電腦",          
+      source: "電腦",           
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -574,7 +572,6 @@ function createCard(item) {
 
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   
-  // 網頁卡片顯示判斷：維持「組合出售」與「私訊花花」
   let p = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : (/^[0-9]+$/.test(item.price.toString().trim()) ? `$${item.price}` : item.price));
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${p}</div>`;
   card.onclick = () => zoomCard(card);
@@ -582,11 +579,9 @@ function createCard(item) {
 }
 function formatName(n) {
   if (!n) return "";
-  // 1. 如果名稱包含空格，將第一個空格替換為換行符 <br>
   if (n.includes(" ")) {
     return n.replace(" ", "<br>");
   }
-  // 2. 如果沒有空格但長度超過 9 個字，才強制從第 9 字斷行
   return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
 }
   
@@ -632,7 +627,7 @@ function zoomCard(c) {
       if (rect.top > window.innerHeight - 60) el.style.top = (window.innerHeight - 60) + 'px';
     }
   };
-  el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCard(true); });
+  el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCart(true); });
   el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
