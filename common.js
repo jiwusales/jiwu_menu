@@ -27,6 +27,9 @@ function initCommonMenu() {
       <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
         <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
       </a>
+      <a href="https://jiwusales.github.io/jiwu_menu/CKRUD.html" class="menu-item">
+        <img src="https://i.postimg.cc/Pr60BNgV/image.png"> 劇場版人魚島
+      </a>
       <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
         <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
       </a>
