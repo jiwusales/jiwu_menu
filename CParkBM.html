@@ -331,35 +331,56 @@ function removeFromCart(index) {
 
 // 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
+
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n\n";
   let total = 0;
   const groups = {};
+
   cart.forEach(item => {
     const group = item.groupName || CONFIG.SHEET_NAME;
     (groups[group] ||= []).push(item);
   });
+
   let index = 1;
+
   Object.keys(groups).forEach(groupName => {
+
     msg += `【${groupName}】\n`;
+
     groups[groupName].forEach(item => {
-      total += parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+
+      total += parseInt(item.price?.toString().replace(/[^0-9]/g,'')) || 0;
+
       let name = item.name;
       const role = item.kind || item.role;
-if (role && !["綜合角色", "三小隻", "其他角色"].includes(role)) {
-  name = `${role} ${item.name}`;
-}
-      let price = item.price === "-" ? "詢問組合" : (!item.price ? "詢問報價" : `$${item.price}`);
-      msg += `${index}. ${name} ${price}\n`;
+
+      if(role && !["綜合角色","三小隻","其他角色"].includes(role)){
+        name = `${role} ${name}`;
+      }
+
+      let status = item.currentStatus ? `（${item.currentStatus}）` : "";
+
+      let price = item.price === "-"
+        ? "詢問組合"
+        : (!item.price ? "詢問報價" : `$${item.price}`);
+
+      msg += `${index}. ${status}${name} ${price}\n`;
+
       index++;
     });
+
+    // 分頁之間只空一行
     msg += "\n";
   });
+
   msg += `總金額：$${total}`;
-  if (lineName || igAccount) {
-    msg += "\n\n--------------------------";
-    if (lineName) msg += `\nLINE：${lineName}`;
-    if (igAccount) msg += `\nIG：${igAccount}`;
+
+  if(lineName || igAccount){
+    msg += "\n--------------------------";
+    if(lineName) msg += `\nLINE：${lineName}`;
+    if(igAccount) msg += `\nIG：${igAccount}`;
   }
+
   return encodeURIComponent(msg);
 }
 
