@@ -423,9 +423,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  // 確保帶入當前畫面上選中的團名，如果沒有則用 CONFIG.SHEET_NAME
-  const currentGroup = selectedGroup || item.groupName || CONFIG.SHEET_NAME;
-  cart.push({ ...item, groupName: currentGroup, currentStatus: tagText });
+  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -503,8 +501,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   const groupedCart = {};
   cart.forEach(item => {
-    // 修正：優先使用商品自身的 groupName，其次才是當前畫面的團名或預設值
-    const gName = item.groupName || selectedGroup || CONFIG.SHEET_NAME;
+    const gName = item.groupName || "其他商品"; 
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
