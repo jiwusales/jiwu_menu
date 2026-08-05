@@ -378,11 +378,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({
-  ...item,
-  groupName: CONFIG.SHEET_NAME,
-  currentStatus: tagText
-});
+  cart.push({ ...item, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -463,75 +459,52 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
-
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  // ===== 依 groupName 分組 =====
-  const groups = {};
-
+  const groupedCart = {};
   cart.forEach(item => {
-    const group = item.groupName || CONFIG.SHEET_NAME;
-
-    if (!groups[group]) {
-      groups[group] = [];
+    const gName = CONFIG.SHEET_NAME;
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
     }
-
-    groups[group].push(item);
+    groupedCart[gName].push(item);
   });
 
-  let index = 1;
-
-  Object.keys(groups).forEach(groupName => {
-
-    msg += `【${groupName}】\n`;
-
-    groups[groupName].forEach(item => {
-
+  let globalIdx = 1;
+  for (const [groupName, items] of Object.entries(groupedCart)) {
+    msg += `\n【${groupName}】\n`;
+    items.forEach((item) => {
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
       const priceVal = isNumeric ? parseInt(item.price) : 0;
-
       if (!isNumeric) hasInquiry = true;
       total += priceVal;
 
       let displayName = item.name;
-
-      if (item.role && !excludeRoles.includes(item.role)) {
-        displayName = `${item.role} ${item.name}`;
+      const rolePrefix = item.role;
+      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+        displayName = `${rolePrefix} ${item.name}`;
       }
-
-      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === "x";
-
+      
+      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
       if (isSoldOut) {
         displayName += "（補貨登記）";
       }
 
-      const priceText = isNumeric
-        ? `$${item.price}`
-        : (item.price || "詢問報價");
-
-      msg += `${index}. ${displayName} ${priceText}\n`;
-
-      index++;
+      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+      msg += `${globalIdx}. ${displayName} ${priceText}\n`;
+      globalIdx++;
     });
+  }
 
-    msg += "\n";
-  });
-
-  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
-
-    if (lineName) {
-      msg += `\nLINE：${lineName}`;
-    }
-
-    if (igAccount) {
-      msg += `\nIG：${igAccount}`;
-    }
+    if (lineName) msg += `\nLINE：${lineName}`;
+    if (igAccount) msg += `\nIG：${igAccount}`;
   }
 
   return encodeURIComponent(msg);
