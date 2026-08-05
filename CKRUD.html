@@ -459,7 +459,8 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
+  let msg = `【${CONFIG.SHEET_NAME}】\n`;
+msg += "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
