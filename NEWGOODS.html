@@ -1,3 +1,5 @@
+最新開團
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -223,6 +225,7 @@ function loadData() {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       
+      // 建立表頭名稱與索引的映射
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
@@ -237,11 +240,10 @@ function loadData() {
         };
 
         const activeFlag = getV('上架').toLowerCase();
-        const groupNameInput = getV('團名');
+        const groupName = getV('團名');
         
-        // 如果團名欄位有填寫，更新目前所屬的團名與相關設定
-        if (groupNameInput !== "") {
-            lastGroup = groupNameInput;
+        if (groupName !== "") {
+            lastGroup = groupName;
             currentIsActive = (activeFlag !== 'x');
             lastBanner = getV('首圖') || lastBanner;
             lastColor = getV('主色系') || lastColor;
@@ -257,7 +259,6 @@ function loadData() {
             };
         }
 
-        // 以當下的有效團名作為此列的歸屬群組（若無團名則維持當前累積或後續fallback）
         return {
           isActive: currentIsActive,
           groupName: lastGroup, 
@@ -315,6 +316,7 @@ function loadData() {
 function updateThemeColorByGroup(groupName) {
   const settings = groupSettings[groupName];
   if (settings) {
+    // 檢查如果沒有包含 #，就自動在前面加上 #
     let color = settings.color || "#ffffff";
     if (color && !color.startsWith('#')) color = '#' + color;
 
@@ -423,12 +425,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  const cartItem = {
-    ...item,
-    groupName: (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedGroup || CONFIG.SHEET_NAME),
-    currentStatus: tagText
-  };
-  cart.push(cartItem);
+  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -436,15 +433,77 @@ function addToCart(e, item, tagText) {
   setTimeout(() => { btn.style.background = "#ddd"; }, 100); 
 }
 
+function clearCart() {
+  if (confirm("確定要清空購物車嗎？")) { cart = []; saveCart(); updateCartUI(); }
+}
+
+function toggleCart(isOpen) {
+  const panel = document.getElementById('cart-panel');
+  const bg = document.getElementById('cart-overlay-bg');
+  if(isOpen) { panel.classList.add('open'); bg.style.display = 'block'; }
+  else { panel.classList.remove('open'); bg.style.display = 'none'; }
+}
+
+function updateCartUI() {
+  const list = document.getElementById('cart-list');
+  const badge = document.getElementById('cart-badge');
+  const totalEl = document.getElementById('cart-total');
+  list.innerHTML = "";
+  let total = 0;
+  cart.forEach((item, index) => {
+    const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
+    total += priceVal;
+    
+    const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        <div style="font-weight:bold; margin-bottom:2px;">${displayName}</div>
+        <div style="color:#e44d26; font-weight:bold;">${cartPriceDisplay}</div>
+      </div>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>`;
+    list.appendChild(div);
+  });
+  badge.textContent = cart.length;
+  badge.style.display = cart.length > 0 ? "flex" : "none";
+  totalEl.textContent = `$${total}`;
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1); saveCart(); updateCartUI();
+  if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
+}
+
+function handleCheckoutEntry() {
+  if (cart.length === 0) return alert("購物車是空的唷！");
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    const msg = generateLineMessage(); 
+    window.location.href = CONFIG.LINE_MSG_URL + msg;
+    
+    setTimeout(() => { 
+      cart = []; saveCart(); updateCartUI(); toggleCart(false); 
+    }, 1500);
+  } else {
+    openCheckoutModal();
+  }
+}
+
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = (item.groupName && item.groupName.trim() !== "") ? item.groupName : CONFIG.SHEET_NAME;
+    const gName = item.groupName || "其他商品"; 
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
@@ -453,7 +512,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   let index = 1;
   for (const groupName in groupedCart) {
-    msg += `\n【${groupName}】\n`;
+    msg += `【${groupName}】\n`;
 
     groupedCart[groupName].forEach(item => {
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
@@ -462,14 +521,9 @@ function generateLineMessage(lineName = "", igAccount = "") {
       total += priceVal;
 
       let displayName = item.name;
-      const rolePrefix = item.role; 
+      const rolePrefix = item.kind || item.role;
       if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
         displayName = `${rolePrefix} ${item.name}`;
-      }
-
-      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
-      if (isSoldOut) {
-        displayName += "（補貨登記）";
       }
 
       const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
@@ -477,9 +531,10 @@ function generateLineMessage(lineName = "", igAccount = "") {
       msg += `${index}. ${displayName} ${priceText}\n`;
       index++;
     });
+    msg += "\n"; 
   }
 
-  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
@@ -545,7 +600,7 @@ async function handleFinalCheckout() {
         price: item.price,
         sn: item.sn || "",
         stock: item.currentStatus || "現貨",
-        note: (item.groupName && item.groupName.trim() !== "") ? item.groupName : (selectedGroup || "")
+        note: item.groupName
       };
     });
 
