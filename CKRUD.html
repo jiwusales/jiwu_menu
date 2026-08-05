@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉伊劇場版人魚島周邊</title>
+  <title>JIWU吉物 - 人魚島</title>
 
-  <meta property="og:title" content="JIWU吉伊劇場版人魚島周邊" />
+  <meta property="og:title" content="JIWU吉物 - 人魚島" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -17,8 +17,8 @@
       THEME_COLOR: "#ffffff", 
       CONTRAST_COLOR: "#333333", 
       ACTIVE_COLOR: "#EF9D7F",
-      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",     
-      SHEET_NAME: "人魚島劇場版",                                   
+      SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY", 
+      SHEET_NAME: "人魚島",                                     
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -36,14 +36,13 @@
       --text-color: #333333; 
     }
 
-    .top-bar, .header-fixed, .type-bar-fixed, #card-container, #cart-trigger {
+    .top-bar, .header-fixed, #card-container, #cart-trigger {
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
     .data-loaded .top-bar, 
     .data-loaded .header-fixed, 
-    .data-loaded .type-bar-fixed,
     .data-loaded #card-container, 
     .data-loaded #cart-trigger {
       opacity: 1;
@@ -77,12 +76,18 @@
     
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     
-    .type-bar-fixed { position: fixed; top: 40px; width: 100%; background: #ffffff; z-index: 997; border-bottom: 1px solid #eee; display: flex; align-items: center; height: 38px; box-sizing: border-box; }
-    .type-scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 10px; }
-    .type-scroll-container::-webkit-scrollbar { display: none; }
-    .type-bar { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; }
-    .type-chip { padding: 4px 10px; border-radius: 12px; font-size: 11px; background: #f0f0f0; color: #333; cursor: pointer; user-select: none; transition: 0.2s; display: inline-block; }
-    .type-chip.active { background: var(--active-color); color: #fff; font-weight: bold; }
+    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
+    
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color) !important; }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
+    .nav-bar a:last-child::after { content: ""; }
+
+    .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
     #card-container { padding: 78px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; min-height: 200px; }
     
@@ -153,11 +158,13 @@
 <body>
  <div class="top-bar">
     <span class="top-bar-content" id="top-msg">載入中...</span>
-  </div>
+ </div>
 
-  <div class="type-bar-fixed">
-    <div class="type-scroll-container" id="type-scroll">
-      <div class="type-bar" id="dynamic-type-nav"></div>
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
     </div>
   </div>
 
@@ -200,21 +207,15 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•๑ฅ✧ </p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•́ฅ ✧ </p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
 
 <script>
-let allItems = [];
-let selectedType = "全部";
-let globalSettings = {
-  banner: "",
-  color: "#ffffff",
-  subColor: "#333333",
-  note: ""
-};
-let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+let allItems = [], allGroups = [], selectedGroup = null;
+let groupSettings = {}; 
+let cart = JSON.parse(localStorage.getItem('jiwu_cart_mermaid')) || [];
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -225,6 +226,9 @@ function loadData() {
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
+      let lastBanner = "", lastColor = "", lastSubColor = "", lastGroup = "", lastNote = "", currentIsActive = true; 
+      groupSettings = {};
+      
       const rawRows = data.table.rows.map(r => {
         const getV = (name) => {
           const idx = col(name);
@@ -232,18 +236,31 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
-        const b = getV('首圖');
-        if (b) globalSettings.banner = b;
-        const c = getV('主色系');
-        if (c) globalSettings.color = c;
-        const sc = getV('輔色系');
-        if (sc) globalSettings.subColor = sc;
-        const n = getV('備註');
-        if (n) globalSettings.note = n;
+        const activeFlag = getV('上架').toLowerCase();
+        const groupName = getV('團名');
+        
+        if (groupName !== "") {
+            lastGroup = groupName;
+            currentIsActive = (activeFlag !== 'x');
+            lastBanner = getV('首圖') || lastBanner;
+            lastColor = getV('主色系') || lastColor;
+            lastSubColor = getV('輔色系') || lastSubColor;
+            lastNote = getV('備註') || lastNote;
+
+            groupSettings[lastGroup] = {
+              banner: lastBanner,
+              color: lastColor || "#ffffff",
+              subColor: lastSubColor || "#333333",
+              note: lastNote,
+              isActive: currentIsActive
+            };
+        }
 
         return {
-          type: getV('種類'),
+          isActive: currentIsActive,
+          groupName: lastGroup, 
           role: getV('角色'),
+          type: getV('種類'),
           name: getV('名稱'),
           originalPrice: getV('原價'),
           price: getV('售價'),
@@ -254,13 +271,35 @@ function loadData() {
         };
       });
 
-      allItems = rawRows.filter(item => item.name !== "");
+      allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
+      allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
-      applyThemeSettings();
-      selectedType = "全部";
-      renderTypeNav();
+      const urlParams = new URLSearchParams(window.location.search);
+      const groupParam = urlParams.get('group');
+      const savedGroup = localStorage.getItem('jiwu_last_group_mermaid');
+
+      if (groupParam && allGroups.includes(groupParam)) {
+        selectedGroup = groupParam;
+      } else if (savedGroup && allGroups.includes(savedGroup)) {
+        selectedGroup = savedGroup;
+      } else if (allGroups.length > 0) {
+        selectedGroup = allGroups[0];
+      }
+
+      if (selectedGroup) {
+        updateThemeColorByGroup(selectedGroup);
+      }
+
+      renderGroupNav();
       renderItems();
       updateCartUI();
+      
+      setTimeout(() => {
+        const activeNav = document.querySelector('.nav-bar a.active-role');
+        if (activeNav) {
+          activeNav.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+        }
+      }, 100);
 
       document.body.classList.add('data-loaded');
     } catch (e) { 
@@ -271,65 +310,70 @@ function loadData() {
   });
 }
 
-function applyThemeSettings() {
-  let color = globalSettings.color || "#ffffff";
-  if (color && !color.startsWith('#')) color = '#' + color;
+function updateThemeColorByGroup(groupName) {
+  const settings = groupSettings[groupName];
+  if (settings) {
+    let color = settings.color || "#ffffff";
+    if (color && !color.startsWith('#')) color = '#' + color;
 
-  let subColor = globalSettings.subColor || "#333333"; 
-  if (subColor && !subColor.startsWith('#')) subColor = '#' + subColor;
-  
-  document.documentElement.style.setProperty('--theme-color', color);
-  document.documentElement.style.setProperty('--contrast-color', subColor);
-  CONFIG.THEME_COLOR = color;
-  
-  const topMsg = document.getElementById('top-msg');
-  topMsg.textContent = globalSettings.note || "點擊卡片可放大圖片唷！";
+    let subColor = settings.subColor || "#333333"; 
+    if (subColor && !subColor.startsWith('#')) subColor = '#' + subColor;
+    
+    document.documentElement.style.setProperty('--theme-color', color);
+    document.documentElement.style.setProperty('--contrast-color', subColor);
+    CONFIG.THEME_COLOR = color;
+    
+    const topMsg = document.getElementById('top-msg');
+    topMsg.textContent = settings.note || "點擊卡片可放大圖片唷！";
+  }
 }
 
-function renderTypeNav() {
-  const typeNav = document.getElementById('dynamic-type-nav');
-  const types = ["全部", ...new Set(allItems.map(i => i.type).filter(t => t !== ""))];
-  
-  typeNav.innerHTML = types.map(t => {
-    const isSelected = selectedType === t;
-    return `<div class="type-chip ${isSelected ? 'active' : ''}" onclick="toggleType('${t}')">${t}</div>`;
+function renderGroupNav() {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = allGroups.map(group => {
+    const isSelected = selectedGroup === group;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleGroup('${group}')">${group}</a>`;
   }).join('');
 }
 
-function toggleType(type) {
-  selectedType = type;
-  renderTypeNav();
-  renderItems();
+function toggleGroup(group) { 
+  selectedGroup = group;
+  localStorage.setItem('jiwu_last_group_mermaid', group);
+  
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
+  window.history.pushState({ path: newUrl }, '', newUrl);
+
+  updateThemeColorByGroup(group);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderGroupNav(); 
+  renderItems(); 
 }
 
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
   
-  if (globalSettings.banner) {
+  const settings = groupSettings[selectedGroup];
+  if (settings && settings.banner) {
     const bannerDiv = document.createElement('div');
     bannerDiv.className = 'banner-container';
     bannerDiv.id = "group-banner";
-    bannerDiv.innerHTML = `<img src="${globalSettings.banner}" alt="banner">`;
+    bannerDiv.innerHTML = `<img src="${settings.banner}" alt="banner">`;
     container.appendChild(bannerDiv);
   }
 
-  let displayItems = allItems; 
-  if (selectedType !== "全部") {
-    displayItems = displayItems.filter(i => i.type === selectedType);
-  }
-
-  if (displayItems.length > 0) {
+  const groupItems = allItems.filter(i => i.groupName === selectedGroup); 
+  if (groupItems.length > 0) {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
-    displayItems.forEach(item => grid.appendChild(createCard(item)));
+    groupItems.forEach(item => grid.appendChild(createCard(item)));
     container.appendChild(grid);
   } else {
     const emptyMsg = document.createElement('div');
     emptyMsg.style.padding = "40px 20px";
     emptyMsg.style.color = "#888";
     emptyMsg.style.fontSize = "14px";
-    emptyMsg.innerHTML = "此種類商品準備中，敬請期待 (๑•̀∀•๑ฅ";
+    emptyMsg.innerHTML = "此團商品準備中，敬請期待 (๑•̀∀•๑ฅ";
     container.appendChild(emptyMsg);
   }
 }
@@ -348,8 +392,7 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
-  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
+  let addBtnHtml = !isSoldOut ? `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>` : "";
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
@@ -374,11 +417,11 @@ function zoomCard(c) {
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
-function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
+function saveCart() { localStorage.setItem('jiwu_cart_mermaid', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, currentStatus: tagText });
+  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -397,16 +440,6 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
-function getCartItemDisplayName(item) {
-  let baseName = item.role ? `${item.role}${item.name}` : item.name;
-  const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
-  if (isSoldOut) {
-    baseName += "（補貨登記）";
-  }
-  return baseName;
-}
-
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
@@ -418,7 +451,7 @@ function updateCartUI() {
     total += priceVal;
     
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
-    const displayName = getCartItemDisplayName(item);
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
     div.className = 'cart-item';
@@ -464,29 +497,40 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
-  cart.forEach((item, idx) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
-
-    let displayName = item.name;
-    const rolePrefix = item.role;
-    if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
-      displayName = `${rolePrefix} ${item.name}`;
+  const groupedCart = {};
+  cart.forEach(item => {
+    const gName = item.groupName || "其他商品"; 
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
     }
-    
-    // 檢查並補上（補貨登記）
-    const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
-    if (isSoldOut) {
-      displayName += "（補貨登記）";
-    }
-
-    const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-    msg += `${idx + 1}. ${displayName} ${priceText}\n`;
+    groupedCart[gName].push(item);
   });
 
-  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+  let index = 1;
+  for (const groupName in groupedCart) {
+    msg += `【${groupName}】\n`;
+
+    groupedCart[groupName].forEach(item => {
+      const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+      const priceVal = isNumeric ? parseInt(item.price) : 0;
+      if (!isNumeric) hasInquiry = true;
+      total += priceVal;
+
+      let displayName = item.name;
+      const rolePrefix = item.kind || item.role;
+      if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
+        displayName = `${rolePrefix} ${item.name}`;
+      }
+
+      const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
+      
+      msg += `${index}. ${displayName} ${priceText}\n`;
+      index++;
+    });
+    msg += "\n"; 
+  }
+
+  msg += `總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
@@ -514,7 +558,7 @@ function renderCheckoutSummary() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
-    const displayName = getCartItemDisplayName(item);
+    const displayName = item.role ? `${item.role}${item.name}` : item.name;
 
     const div = document.createElement('div');
     div.className = 'cart-item';
@@ -550,7 +594,9 @@ async function handleFinalCheckout() {
         size: item.size || "",
         name: item.name,
         price: item.price,
-        stock: item.currentStatus || "現貨"
+        sn: item.sn || "",
+        stock: item.currentStatus || "現貨",
+        note: item.groupName
       };
     });
 
