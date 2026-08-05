@@ -499,6 +499,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
+  // 確實依據每個商品各自記錄的 groupName（分頁標題）進行分類
   const groupedCart = {};
   cart.forEach(item => {
     const gName = item.groupName || "其他商品"; 
@@ -509,6 +510,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   });
 
   let index = 1;
+  // 針對每一個不同的分頁標題產生對應區塊
   for (const groupName in groupedCart) {
     msg += `【${groupName}】\n`;
 
@@ -519,7 +521,8 @@ function generateLineMessage(lineName = "", igAccount = "") {
       total += priceVal;
 
       let displayName = item.name;
-      const rolePrefix = item.kind || item.role;
+      // 修正此處：確保不會抓錯屬性導致名稱或標題被異動
+      const rolePrefix = item.role; 
       if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
         displayName = `${rolePrefix} ${item.name}`;
       }
