@@ -215,7 +215,7 @@
 <script>
 let allItems = [], allGroups = [], selectedGroup = null;
 let groupSettings = {}; 
-let cart = JSON.parse(localStorage.getItem('jiwu_cart_latest')) || [];
+let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
@@ -223,6 +223,7 @@ function loadData() {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       
+      // 建立表頭名稱與索引的映射
       const headers = data.table.cols.map(c => c.label);
       const col = (name) => headers.indexOf(name);
 
@@ -276,7 +277,7 @@ function loadData() {
       
       const urlParams = new URLSearchParams(window.location.search);
       const groupParam = urlParams.get('group');
-      const savedGroup = localStorage.getItem('jiwu_last_group_latest');
+      const savedGroup = localStorage.getItem('jiwu_last_group');
 
       if (groupParam && allGroups.includes(groupParam)) {
         selectedGroup = groupParam;
@@ -313,6 +314,7 @@ function loadData() {
 function updateThemeColorByGroup(groupName) {
   const settings = groupSettings[groupName];
   if (settings) {
+    // 檢查如果沒有包含 #，就自動在前面加上 #
     let color = settings.color || "#ffffff";
     if (color && !color.startsWith('#')) color = '#' + color;
 
@@ -338,7 +340,7 @@ function renderGroupNav() {
 
 function toggleGroup(group) { 
   selectedGroup = group;
-  localStorage.setItem('jiwu_last_group_latest', group);
+  localStorage.setItem('jiwu_last_group', group);
   
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
   window.history.pushState({ path: newUrl }, '', newUrl);
@@ -417,7 +419,7 @@ function zoomCard(c) {
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
-function saveCart() { localStorage.setItem('jiwu_cart_latest', JSON.stringify(cart)); }
+function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
