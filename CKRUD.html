@@ -77,29 +77,16 @@
     
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     
-    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
-    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
-    
-    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .scroll-container::-webkit-scrollbar { display: none; }
-    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
-    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { font-weight: bold; color: var(--active-color) !important; }
-    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
-    .nav-bar a:last-child::after { content: ""; }
-
-    .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
-
-    .type-bar-fixed { position: fixed; top: 78px; width: 100%; background: #ffffff; z-index: 997; border-bottom: 1px solid #eee; display: flex; align-items: center; height: 38px; box-sizing: border-box; }
+    .type-bar-fixed { position: fixed; top: 40px; width: 100%; background: #ffffff; z-index: 997; border-bottom: 1px solid #eee; display: flex; align-items: center; height: 38px; box-sizing: border-box; }
     .type-scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 10px; }
     .type-scroll-container::-webkit-scrollbar { display: none; }
     .type-bar { display: inline-flex; align-items: center; gap: 8px; padding: 6px 0; }
     .type-chip { padding: 4px 10px; border-radius: 12px; font-size: 11px; background: #f0f0f0; color: #333; cursor: pointer; user-select: none; transition: 0.2s; display: inline-block; }
     .type-chip.active { background: var(--active-color); color: #fff; font-weight: bold; }
 
-    #card-container { padding: 116px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; min-height: 200px; }
+    #card-container { padding: 78px 0px 10px; display: flex; flex-direction: column; gap: 0px; align-items: center; min-height: 200px; }
     
-    .banner-container { width: 100%; max-width: 720px; margin: 0 auto; line-height: 0; scroll-margin-top: 125px; }
+    .banner-container { width: 100%; max-width: 720px; margin: 0 auto; line-height: 0; scroll-margin-top: 85px; }
     .banner-container img { width: 100%; height: auto; display: block; }
 
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; padding: 10px; width: 100%; box-sizing: border-box; max-width: 1400px; }
@@ -121,7 +108,7 @@
     
     #cart-trigger { 
       position: fixed; 
-      top: 153px;
+      top: 115px;
       right: 15px; 
       width: 45px; 
       height: 45px; 
@@ -166,14 +153,6 @@
 <body>
  <div class="top-bar">
     <span class="top-bar-content" id="top-msg">載入中...</span>
- </div>
-
-  <div class="header-fixed">
-    <div class="nav-bar-wrapper">
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
-      <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
-    </div>
   </div>
 
   <div class="type-bar-fixed">
@@ -289,15 +268,7 @@ function loadData() {
       allItems = rawRows.filter(item => item.name !== "" && item.isActive === true);
       allGroups = Object.keys(groupSettings).filter(g => groupSettings[g].isActive);
       
-      const urlParams = new URLSearchParams(window.location.search);
-      const groupParam = urlParams.get('group');
-      const savedGroup = localStorage.getItem('jiwu_last_group');
-
-      if (groupParam && allGroups.includes(groupParam)) {
-        selectedGroup = groupParam;
-      } else if (savedGroup && allGroups.includes(savedGroup)) {
-        selectedGroup = savedGroup;
-      } else if (allGroups.length > 0) {
+      if (allGroups.length > 0) {
         selectedGroup = allGroups[0];
       }
 
@@ -306,17 +277,9 @@ function loadData() {
       }
 
       selectedType = "全部";
-      renderGroupNav();
       renderTypeNav();
       renderItems();
       updateCartUI();
-      
-      setTimeout(() => {
-        const activeNav = document.querySelector('.nav-bar a.active-role');
-        if (activeNav) {
-          activeNav.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
-        }
-      }, 100);
 
       document.body.classList.add('data-loaded');
     } catch (e) { 
@@ -345,14 +308,6 @@ function updateThemeColorByGroup(groupName) {
   }
 }
 
-function renderGroupNav() {
-  const nav = document.getElementById('dynamic-nav');
-  nav.innerHTML = allGroups.map(group => {
-    const isSelected = selectedGroup === group;
-    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleGroup('${group}')">${group}</a>`;
-  }).join('');
-}
-
 function renderTypeNav() {
   const typeNav = document.getElementById('dynamic-type-nav');
   const groupItems = allItems.filter(i => i.groupName === selectedGroup);
@@ -363,21 +318,6 @@ function renderTypeNav() {
     const isSelected = selectedType === t;
     return `<div class="type-chip ${isSelected ? 'active' : ''}" onclick="toggleType('${t}')">${t}</div>`;
   }).join('');
-}
-
-function toggleGroup(group) { 
-  selectedGroup = group;
-  selectedType = "全部";
-  localStorage.setItem('jiwu_last_group', group);
-  
-  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?group=' + encodeURIComponent(group);
-  window.history.pushState({ path: newUrl }, '', newUrl);
-
-  updateThemeColorByGroup(group);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  renderGroupNav(); 
-  renderTypeNav();
-  renderItems(); 
 }
 
 function toggleType(type) {
