@@ -273,14 +273,13 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  // 捕捉點擊當下的文字標籤
-  cart.push({ ...item, currentStatus: tagText || "需預訂", tagBg: tagBg, tagColor: tagColor });
-  saveCart();
-  updateCartUI();
-  const btn = e.target;
-  btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = "#ddd"; }, 50); 
-}
+  cart.push({
+    ...item,
+    groupName: CONFIG.SHEET_NAME,
+    currentStatus: tagText || "需預訂",
+    tagBg: tagBg,
+    tagColor: tagColor
+  });
 
 function clearCart() {
   if (confirm("確定要清空購物車嗎？")) { cart = []; saveCart(); updateCartUI(); }
@@ -337,7 +336,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   const groups = {};
 
   cart.forEach(item => {
-    const group = item.groupName || CONFIG.SHEET_NAME;
+    const group = item.groupName || "";
     (groups[group] ||= []).push(item);
   });
 
