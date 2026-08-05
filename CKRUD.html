@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU劇場版人魚島周邊</title>
+  <title>JIWU吉伊劇場版人魚島周邊</title>
 
-  <meta property="og:title" content="JIWU劇場版人魚島周邊" />
+  <meta property="og:title" content="JIWU吉伊劇場版人魚島周邊" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -18,7 +18,7 @@
       CONTRAST_COLOR: "#333333", 
       ACTIVE_COLOR: "#EF9D7F",
       SHEET_ID: "1zA9Y-kgt5QPOZt_r4-H6ZTWFaLmSRjc13dcFZYEp-JY",     
-      SHEET_NAME: "人魚島劇場版",                                         
+      SHEET_NAME: "人魚島劇場版",                                   
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -348,6 +348,7 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
+  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
@@ -396,8 +397,13 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
 function getCartItemDisplayName(item) {
   let baseName = item.role ? `${item.role}${item.name}` : item.name;
+  const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+  if (isSoldOut) {
+    baseName += "（補貨登記）";
+  }
   return baseName;
 }
 
@@ -453,14 +459,14 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = `你好，我想詢問跟購買以下 ${CONFIG.SHEET_NAME} 寶寶(৹˙꒳​˙ฅ)：\n`;
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色"];
 
   const groupedCart = {};
   cart.forEach(item => {
-    const gName = item.type || CONFIG.SHEET_NAME;
+    const gName = CONFIG.SHEET_NAME;
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
     }
@@ -482,10 +488,13 @@ function generateLineMessage(lineName = "", igAccount = "") {
         displayName = `${rolePrefix} ${item.name}`;
       }
       
-      const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
+      const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+      if (isSoldOut) {
+        displayName += "（補貨登記）";
+      }
+
       const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
-      
-      msg += `${globalIdx}.${statusText}${displayName} ${priceText}\n`;
+      msg += `${globalIdx}. ${displayName} ${priceText}\n`;
       globalIdx++;
     });
   }
