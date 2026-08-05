@@ -336,43 +336,58 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成
+// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
-
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
-  let lastGroup = "";
+
+  const groupedCart = {};
+  const groupOrder = [];
+  cart.forEach(item => {
+    const gName = (item.groupName && item.groupName.toString().trim())
+      ? item.groupName.toString().trim()
+      : (CONFIG.SHEET_NAME || "商品");
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
+      groupOrder.push(gName);
+    }
+    groupedCart[gName].push(item);
+  });
+
   let index = 1;
+  groupOrder.forEach(gName => {
+    msg += `\n【${gName}】\n`;
+    groupedCart[gName].forEach(item => {
+      let priceText;
+      let priceVal = 0;
+      const priceRaw = (item.price !== undefined && item.price !== null) ? item.price.toString().trim() : "";
 
-  cart.forEach((item) => {
-    // 價格計算與格式化
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
-    const priceVal = isNumeric ? parseInt(item.price) : 0;
+      if (priceRaw === '-') {
+        priceText = "組合出售";
+        hasInquiry = true;
+      } else if (priceRaw === "") {
+        priceText = "私訊花花";
+        hasInquiry = true;
+      } else if (/^[0-9]+$/.test(priceRaw)) {
+        priceVal = parseInt(priceRaw);
+        priceText = `$${priceRaw}`;
+      } else {
+        priceText = priceRaw;
+        hasInquiry = true;
+      }
+      total += priceVal;
 
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
+      let displayName = item.name;
+      if (item.kind && !excludeRoles.includes(item.kind)) {
+        displayName = `${item.kind} ${item.name}`;
+      }
 
-    let priceText = item.price === '-' ? "組合出售" : (!item.price ? "私訊花花" : `$${item.price}`);
-
-    // 分頁/團名區塊
-    const currentGroup = item.groupName || CONFIG.SHEET_NAME;
-    if (currentGroup !== lastGroup) {
-      msg += `\n【${currentGroup}】\n`;
-      lastGroup = currentGroup;
-    }
-
-    let displayName = item.name;
-    if (item.kind && !excludeRoles.includes(item.kind)) {
-      displayName = `${item.kind} ${item.name}`;
-    }
-
-    // 貨況狀態：若該分頁有設定則顯示，無則留白不帶括號
-    const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
-
-    msg += `${index}.${statusText}${displayName} ${priceText}\n`;
-    index++;
+      const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
+      msg += `${index}.${statusText}${displayName} ${priceText}\n`;
+      index++;
+    });
   });
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
@@ -449,7 +464,8 @@ async function handleFinalCheckout() {
       name: item.name,      
       price: item.price,    
       sn: item.sn,          
-      status: item.currentStatus 
+      status: item.currentStatus,
+      note: item.groupName
     }));
 
     const postData = { 
