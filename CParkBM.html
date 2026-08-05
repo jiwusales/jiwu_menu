@@ -330,20 +330,24 @@ function removeFromCart(index) {
 }
 
 // 結帳訊息生成
+// 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+  // 固定標題
+  let msg = "【吉伊卡哇樂園】\n\n";
+  msg += "你好，我想詢問跟購買以下寶寶(৹˙꒳​˙ฅ)：\n\n";
+
   let total = 0;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   cart.forEach((item, i) => {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
-    
+
     // 處理 LINE 訊息中的價格字樣
     let linePrice = `$${item.price}`;
     if (item.price === '-') {
-        linePrice = "詢問組合";
+      linePrice = "詢問組合";
     } else if (!item.price || item.price.toString().trim() === "") {
-        linePrice = "詢問報價";
+      linePrice = "詢問報價";
     }
 
     let displayName = item.name;
@@ -354,14 +358,15 @@ function generateLineMessage(lineName = "", igAccount = "") {
     msg += `${i + 1}. (${item.currentStatus}) ${displayName} ${linePrice}\n`;
     total += priceVal;
   });
-  
+
   msg += `\n總金額：$${total}`;
-  
+
   if (lineName || igAccount) {
     msg += "\n\n--------------------------";
     if (lineName) msg += `\nLINE：${lineName}`;
     if (igAccount) msg += `\nIG：${igAccount}`;
   }
+
   return encodeURIComponent(msg);
 }
 
