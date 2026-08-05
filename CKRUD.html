@@ -200,7 +200,7 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•́ฅ ✧ </p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•๑ฅ✧ </p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
@@ -232,7 +232,6 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
 
-        // 讀取全域設定（只要表格中有填寫，就抓取最新的一筆或第一筆有效值）
         const b = getV('首圖');
         if (b) globalSettings.banner = b;
         const c = getV('主色系');
@@ -255,7 +254,6 @@ function loadData() {
         };
       });
 
-      // 過濾掉名稱為空的行
       allItems = rawRows.filter(item => item.name !== "");
       
       applyThemeSettings();
@@ -350,7 +348,8 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
-  let addBtnHtml = !isSoldOut ? `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>` : "";
+  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
   
@@ -398,6 +397,16 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
+function getCartItemDisplayName(item) {
+  let baseName = item.role ? `${item.role}${item.name}` : item.name;
+  const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+  if (isSoldOut) {
+    baseName += "（補貨登記）";
+  }
+  return baseName;
+}
+
 function updateCartUI() {
   const list = document.getElementById('cart-list');
   const badge = document.getElementById('cart-badge');
@@ -409,7 +418,7 @@ function updateCartUI() {
     total += priceVal;
     
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
-    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+    const displayName = getCartItemDisplayName(item);
 
     const div = document.createElement('div');
     div.className = 'cart-item';
@@ -466,6 +475,12 @@ function generateLineMessage(lineName = "", igAccount = "") {
     if (rolePrefix && !excludeRoles.includes(rolePrefix)) {
       displayName = `${rolePrefix} ${item.name}`;
     }
+    
+    // 檢查並補上（補貨登記）
+    const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
+    if (isSoldOut) {
+      displayName += "（補貨登記）";
+    }
 
     const priceText = isNumeric ? `$${item.price}` : (item.price || "詢問報價");
     msg += `${idx + 1}. ${displayName} ${priceText}\n`;
@@ -499,7 +514,7 @@ function renderCheckoutSummary() {
     const priceVal = parseInt(item.price?.toString().replace(/[^0-9]/g, '')) || 0;
     total += priceVal;
     const cartPriceDisplay = (item.price === "") ? "詢問花花" : `$${item.price}`;
-    const displayName = item.role ? `${item.role}${item.name}` : item.name;
+    const displayName = getCartItemDisplayName(item);
 
     const div = document.createElement('div');
     div.className = 'cart-item';
