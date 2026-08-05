@@ -423,7 +423,11 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: item.groupName, currentStatus: tagText });
+  cart.push({
+    ...item,
+    groupName: item.groupName || CONFIG.SHEET_NAME,
+    currentStatus: tagText
+});
   saveCart();
   updateCartUI();
   const btn = e.target;
