@@ -293,7 +293,7 @@ function loadData() {
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
-      renderSideMenu(); // 自動生成側邊選單
+      renderSideMenu(); 
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -302,7 +302,7 @@ function loadData() {
   });
 }
 
-// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
+// 自動生成側邊選單
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
   const links = [
@@ -335,15 +335,7 @@ function saveCart() { localStorage.setItem(cartStorageKey, JSON.stringify(cart))
 function addToCart(e, item) {
   e.stopPropagation();
 
-  const { tagText, tagBg, tagColor } = getItemStatus(item);
-
-  cart.push({
-    ...item,
-    groupName: CONFIG.SHEET_NAME,
-    currentStatus: tagText || "",
-    tagBg: tagBg,
-    tagColor: tagColor
-  });
+  cart.push(item);
 
   saveCart();
   updateCartUI();
@@ -391,11 +383,7 @@ function updateCartUI() {
   let hasInquiry = false;
 
   cart.forEach((item, index) => {
-    // 確保即時抓取最新狀態（如果資料有變或重新整理）
     const { tagText, tagBg, tagColor } = getItemStatus(item);
-    item.currentStatus = tagText;
-    item.tagBg = tagBg;
-    item.tagColor = tagColor;
 
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
@@ -404,7 +392,7 @@ function updateCartUI() {
 
     const div = document.createElement('div');
     div.className = 'cart-item';
-    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
+    const tagHtml = tagText ? `<div class="cart-tag" style="background-color:${tagBg}; color:${tagColor || 'white'};">${tagText}</div>` : "";
     
     div.innerHTML = `
       <img src="${item.img}">
@@ -437,12 +425,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
   const groups = {};
 
   cart.forEach(item => {
-    // 確保輸出訊息時帶有最新狀態
-    const { tagText, tagBg, tagColor } = getItemStatus(item);
-    item.currentStatus = tagText;
-    item.tagBg = tagBg;
-    item.tagColor = tagColor;
-
     const group = item.groupName || CONFIG.SHEET_NAME;
     (groups[group] ||= []).push(item);
   });
@@ -453,6 +435,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
     msg += `【${groupName}】\n`;
 
     groups[groupName].forEach(item => {
+      const { tagText } = getItemStatus(item);
       const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
       const priceVal = isNumeric ? parseInt(item.price) : 0;
       if (!isNumeric) hasInquiry = true;
@@ -464,9 +447,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
         displayName = `${item.kind} ${item.name}`;
       }
 
-      let status = item.currentStatus 
-        ? `（${item.currentStatus}）` 
-        : "";
+      let status = tagText ? `（${tagText}）` : "";
 
       msg += `${index}. ${status}${displayName} ${getLinePriceText(item.price)}\n`;
 
@@ -517,9 +498,6 @@ function renderCheckoutSummary() {
 
   cart.forEach((item) => {
     const { tagText, tagBg, tagColor } = getItemStatus(item);
-    item.currentStatus = tagText;
-    item.tagBg = tagBg;
-    item.tagColor = tagColor;
 
     const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
@@ -528,7 +506,7 @@ function renderCheckoutSummary() {
 
     const div = document.createElement('div');
     div.className = 'cart-item';
-    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
+    const tagHtml = tagText ? `<div class="cart-tag" style="background-color:${tagBg}; color:${tagColor || 'white'};">${tagText}</div>` : "";
     div.innerHTML = `
       <img src="${item.img}">
       <div class="cart-item-info">
