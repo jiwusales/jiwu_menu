@@ -277,10 +277,11 @@ function addToCart(e, item, tagText, tagBg, tagColor) {
   cart.push({
     ...item,
     groupName: CONFIG.SHEET_NAME,
-    currentStatus: tagText || "需預訂",
-    tagBg: tagBg,
-    tagColor: tagColor
+    currentStatus: tagText || "",
+    tagBg: tagBg || "",
+    tagColor: tagColor || "white"
   });
+
   saveCart();
   updateCartUI();
 }
@@ -364,7 +365,10 @@ function generateLineMessage(lineName = "", igAccount = "") {
         name = `${role} ${name}`;
       }
 
-      let status = item.currentStatus ? `（${item.currentStatus}）` : "";
+      // 直接使用購物車裡顯示的貨況標籤
+      let status = item.currentStatus
+        ? `（${item.currentStatus}）`
+        : "";
 
       let price = item.price === "-"
         ? "詢問組合"
@@ -375,7 +379,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
       index++;
     });
 
-    // 分頁之間只空一行
     msg += "\n";
   });
 
