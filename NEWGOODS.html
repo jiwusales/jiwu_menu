@@ -500,13 +500,16 @@ function generateLineMessage(lineName = "", igAccount = "") {
   const excludeRoles = ["綜合角色"];
 
   const groupedCart = {};
-  cart.forEach(item => {
-    const gName = item.groupName || "其他商品"; 
-    if (!groupedCart[gName]) {
-      groupedCart[gName] = [];
-    }
-    groupedCart[gName].push(item);
-  });
+cart.forEach(item => {
+  const gName = (item.groupName && item.groupName.trim())
+      ? item.groupName.trim()
+      : CONFIG.SHEET_NAME;
+
+  if (!groupedCart[gName]) {
+    groupedCart[gName] = [];
+  }
+  groupedCart[gName].push(item);
+});
 
   let index = 1;
   for (const groupName in groupedCart) {
