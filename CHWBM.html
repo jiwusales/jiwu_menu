@@ -534,22 +534,24 @@ async function handleFinalCheckout() {
 
   try {
     const cartData = cart.map(item => ({
-      kind: item.kind,      
-      type: item.type,      
-      style: item.style,    
-      name: item.name,      
-      price: item.price,    
-      sn: item.sn,          
-      status: item.currentStatus,
-      note: item.groupName
-    }));
+  kind: item.kind,      
+  role: item.kind,         // 補上 role 供 GAS 寫入「團名」欄位
+  type: item.type,      
+  style: item.style,    
+  name: item.name,      
+  price: item.price,    
+  sn: item.sn,          
+  stock: item.currentStatus, // 補上 stock 供 GAS 寫入「貨況」欄位
+  status: item.currentStatus,
+  note: item.groupName
+}));
 
     const postData = { 
-      source: "電腦",          
-      lineName: lineName,   
-      igAccount: igAcc,     
-      cartItems: cartData 
-    };
+  source: "電腦版下單",          
+  lineName: lineName,   
+  igAccount: igAcc,     
+  cartItems: cartData 
+};
 
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
