@@ -348,7 +348,6 @@ function createCard(item) {
       tagHtml = hasStock ? `<div class="stock-tag" style="background-color:${CONFIG.THEME_COLOR};">現貨</div>` : "";
   }
 
-  // 修改處：不論是否 Sold Out，都顯示加入購物車按鈕
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${item.stock}')">＋</div>`;
   
   let displayPrice = (item.price === "") ? "詢問花花" : `$${item.price}`;
@@ -384,13 +383,11 @@ function addToCart(e, item, tagText) {
   
   let statusLabel = "";
   if (isSoldOut) {
-    statusLabel = "補貨登記";
+    statusLabel = "補登";
   } else if (!isNaN(numStock) && numStock > 0) {
     statusLabel = "現貨";
-  } else if (rawStock !== "") {
-    statusLabel = rawStock;
   } else {
-    statusLabel = "預訂"; // 庫存空白時預設標籤為預訂
+    statusLabel = "預訂";
   }
 
   cart.push({ ...item, groupName: CONFIG.SHEET_NAME, currentStatus: statusLabel });
@@ -412,7 +409,6 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-// 輔助函式：根據是否為 Sold Out 決定是否加上（補貨登記）字樣
 function getCartItemDisplayName(item) {
   let baseName = item.role ? `${item.role}${item.name}` : item.name;
   const isSoldOut = (item.currentStatus || item.stock || "").toLowerCase() === 'x';
@@ -473,7 +469,6 @@ function handleCheckoutEntry() {
   }
 }
 
-// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
   let total = 0;
@@ -573,7 +568,7 @@ async function handleFinalCheckout() {
   if (!lineName) { alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )"); return; }
   
   const btn = document.getElementById('send-btn');
-  btn.disabled = true; btn.textContent = "傳送中...";
+  btn.disabled = true; btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
   try {
     const cartData = cart.map(item => {
@@ -586,7 +581,7 @@ async function handleFinalCheckout() {
         size: item.size || "",
         name: item.name,
         price: item.price,
-        stock: item.stock || "", // 直接傳送原始試算表庫存數據（空白即為 ""，不再預設改為現貨）
+        stock: item.stock || "",
         currentStatus: item.currentStatus || "預訂",
         note: item.groupName
       };
@@ -675,4 +670,3 @@ loadData();
 </div>
 </body>
 </html>
-
