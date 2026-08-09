@@ -555,12 +555,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
-  if (lineName || igAccount) {
-    msg += "\n\n--------------------------";
-    if (lineName) msg += `\nLINE：${lineName}`;
-    if (igAccount) msg += `\nIG：${igAccount}`;
-  }
-
   return encodeURIComponent(msg);
 }
 
