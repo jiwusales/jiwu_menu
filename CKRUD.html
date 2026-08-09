@@ -378,11 +378,21 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText) {
   e.stopPropagation();
-  const isSoldOut = (item.stock || "").toString().toLowerCase() === 'x';
-  const hasStock = item.stock !== "" && item.stock !== "0" && !isSoldOut;
+  const rawStock = (item.stock || "").toString().trim();
+  const isSoldOut = rawStock.toLowerCase() === 'x';
+  const numStock = parseFloat(rawStock);
+  
   let statusLabel = "";
-  if (isSoldOut) statusLabel = "補貨登記";
-  else if (hasStock) statusLabel = "現貨";
+  if (isSoldOut) {
+    statusLabel = "補貨登記";
+  } else if (!isNaN(numStock) && numStock > 0) {
+    statusLabel = "現貨";
+  } else if (rawStock !== "") {
+    statusLabel = rawStock;
+  } else {
+    statusLabel = "預訂"; // 庫存空白時預設標籤為預訂
+  }
+
   cart.push({ ...item, groupName: CONFIG.SHEET_NAME, currentStatus: statusLabel });
   saveCart();
   updateCartUI();
@@ -576,7 +586,8 @@ async function handleFinalCheckout() {
         size: item.size || "",
         name: item.name,
         price: item.price,
-        stock: item.currentStatus || "現貨",
+        stock: item.stock || "", // 直接傳送原始試算表庫存數據（空白即為 ""，不再預設改為現貨）
+        currentStatus: item.currentStatus || "預訂",
         note: item.groupName
       };
     });
