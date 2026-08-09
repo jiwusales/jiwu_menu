@@ -51,7 +51,7 @@ async function handleFinalCheckout() {
 
   const btn = document.getElementById('send-btn');
   btn.disabled = true; 
-  btn.textContent = "傳送中 (犖)";
+  btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
   try {
     const cartData = cart.map(item => ({
