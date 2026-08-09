@@ -39,5 +39,62 @@ function initCommonMenu() {
   document.body.insertAdjacentHTML('afterbegin', menuHtml);
 }
 
+// 處理官網下單傳送給 GAS
+async function handleFinalCheckout() {
+  const lineName = document.getElementById('user-line').value.trim();
+  const igAcc = document.getElementById('user-ig').value.trim();
+  
+  if (!lineName) {
+    alert("請輸入LINE名稱方便核對 ( )");
+    return;
+  }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; 
+  btn.textContent = "傳送中 (犖)";
+
+  try {
+    const cartData = cart.map(item => ({
+      kind: item.kind,      
+      role: item.kind,           // 補上：供 GAS 寫入「團名」
+      type: item.type,      
+      style: item.style,    
+      name: item.name,      
+      price: item.price,    
+      sn: item.sn,          
+      stock: item.currentStatus, // 補上：供 GAS 寫入「貨況」
+      status: item.currentStatus,
+      note: item.groupName
+    }));
+
+    const postData = { 
+      source: "電腦版下單",      // 與 GAS doGet/doPost 判斷相符
+      lineName: lineName,   
+      igAccount: igAcc,     
+      cartItems: cartData 
+    };
+
+    await fetch(CONFIG.DEPLOY_URL, { 
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(postData) 
+    });
+  } catch (e) {
+    console.error("GAS 傳送失敗", e);
+  }
+
+  const msg = generateLineMessage(lineName, igAcc);
+  window.location.href = CONFIG.LINE_MSG_URL + msg;
+
+  cart = []; 
+  saveCart(); 
+  updateCartUI();
+  
+  document.getElementById('step-1').style.display = "none";
+  document.getElementById('step-2').style.display = "block";
+}
+
 // 頁面載入完成後執行
 document.addEventListener('DOMContentLoaded', initCommonMenu);
