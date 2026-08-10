@@ -16,16 +16,19 @@
     const CONFIG = {
       THEME_COLOR: "#FBCC7E",
       ACTIVE_COLOR: "#f5b080",
-      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                     
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
+      SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", 
+      SHEET_NAME: "商品庫存",                                    
+      IP_NAME: "ちいかわ", 
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (˙˙ )",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbzEaZqaGT4HU2sWDUIiBLQ2TljlaW4YCeupcd_yVf0AlboFATxXSKpkwUwfUWbTuovGKA/exec"
+      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec"
     };
   </script>
+
+  <script src="common.js"></script>
 
   <style>
     :root { 
@@ -148,7 +151,7 @@
     #cart-panel.open { right: 0; }
     #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
 
-    .cart-header { padding: 12px 15px; background: #b8a597; color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .cart-header { padding: 12px 15px; background: var(--theme-color); color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
     .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
     .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
     .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
@@ -158,7 +161,7 @@
     .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
     .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
     .text-clear:hover { color: #888; }
-    .btn-checkout { background: #b8a597; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    .btn-checkout { background: var(--theme-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
     #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 15px; padding: 20px; position: relative; }
@@ -170,7 +173,7 @@
 </head>
 <body>
  <div class="top-bar">
-    <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
+    <div class="menu-btn" onclick="toggleMenu(true)"></div>
     <span class="pulse-text" id="top-msg" style="color: #fff;">載入中...</span>
   </div>
 
@@ -185,14 +188,14 @@
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)"></div>
       <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)"></div>
     </div>
     <div class="filter-bar-wrapper">
-      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)">❮</div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)"></div>
       <div class="scroll-container" id="filter-scroll"><div id="filter-bar" style="display: inline-block;"></div></div>
-      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)">❯</div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)"></div>
     </div>
   </div>
 
@@ -207,7 +210,7 @@
   <div id="cart-panel">
     <div class="cart-header">
       <span>購物車</span>
-      <span style="cursor:pointer; font-size: 20px;" onclick="toggleCart(false)">✕</span>
+      <span style="cursor:pointer; font-size: 20px;" onclick="toggleCart(false)"></span>
     </div>
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
@@ -230,12 +233,12 @@
       <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
       <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
       <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
-      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
+      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc"></span>
     </div>
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•́ฅ ✧ </p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂購資料，感謝你 (‧‧  </p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
@@ -262,9 +265,10 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料
+// 載入試算表資料（從「商品庫存」依 A 欄 IP 欄位進行篩選，欄位依序為：A:IP, B:角色, C:種類, D:名稱, E:原價, F:售價, G:庫存, H:店面, I:非現, J:狀態, K:貨號, L:圖片）
 function loadData() {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  const tqQuery = encodeURIComponent(`SELECT * WHERE A = '${CONFIG.IP_NAME}'`);
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&tq=${tqQuery}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
@@ -274,18 +278,18 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
         return {
-          kind: getV(0) || "其他角色",
-          type: getV(1) || "其他",
-          style: getV(2),      
-          name: getV(3),       
-          price: r.c[5]?.v,    
-          colStock: getV(6),   
-          colShop: getV(7),    
-          colNonStock: getV(8),
-          colList: getV(9),    
-          colOrder: getV(10),  
-          sn: getV(11),        
-          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" 
+          kind: getV(1) || "其他角色",  // B欄：角色
+          type: getV(2) || "其他",     // C欄：種類
+          style: "",                  
+          name: getV(3),               // D欄：名稱
+          price: r.c[5]?.v,            // F欄：售價
+          colStock: getV(6),           // G欄：庫存
+          colShop: getV(7),            // H欄：店面
+          colNonStock: getV(8),        // I欄：非現
+          colList: getV(9),            // J欄：狀態
+          colOrder: "",                
+          sn: getV(10),                // K欄：貨號
+          img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png" // L欄：圖片
         };
       }).filter(item => item.colList === "" && item.colStock.toLowerCase() !== 'x');
 
@@ -304,7 +308,6 @@ function loadData() {
 // 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
-  // 這裡可以手動定義你想在選單顯示的其他頁面連結
   const links = [
     { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
     { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
@@ -323,7 +326,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, groupName: CONFIG.IP_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -385,7 +388,7 @@ function updateCartUI() {
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
-      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})"></span>
     `;
     list.appendChild(div);
   });
@@ -399,9 +402,9 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成（統一格式：依團名/分頁分組）
+// 結帳訊息生成
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
+  let msg = "你好，我想詢問跟購買以下寶寶(˙˙)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
@@ -411,7 +414,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   cart.forEach(item => {
     const gName = (item.groupName && item.groupName.toString().trim())
       ? item.groupName.toString().trim()
-      : (CONFIG.SHEET_NAME || "商品");
+      : (CONFIG.IP_NAME || "商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -522,7 +525,7 @@ async function handleFinalCheckout() {
   const igAcc = document.getElementById('user-ig').value.trim();
   
   if (!lineName) {
-    alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )");
+    alert("請輸入LINE名稱方便核對 ( )");
     return;
   }
 
@@ -533,17 +536,19 @@ async function handleFinalCheckout() {
   try {
     const cartData = cart.map(item => ({
       kind: item.kind,      
+      role: item.kind,           // 供 GAS 寫入「團名」
       type: item.type,      
       style: item.style,    
       name: item.name,      
       price: item.price,    
       sn: item.sn,          
+      stock: item.currentStatus, // 供 GAS 寫入「貨況」
       status: item.currentStatus,
       note: item.groupName
     }));
 
     const postData = { 
-      source: "電腦",          
+      source: "電腦版下單",      // 與 GAS doGet/doPost 判斷一致
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -551,14 +556,15 @@ async function handleFinalCheckout() {
 
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
-      mode: 'no-cors', 
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
       body: JSON.stringify(postData) 
     });
   } catch (e) {
     console.error("GAS 傳送失敗", e);
   }
 
-  // 電腦版傳送後也直接嘗試開 LINE（這部分維持原邏輯，或是由用戶掃碼）
   const msg = generateLineMessage(lineName, igAcc);
   window.location.href = CONFIG.LINE_MSG_URL + msg;
 
@@ -614,7 +620,7 @@ function renderItems() {
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
   
   if (filteredItems.length === 0) {
-    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( 循 )</div>";
     return;
   }
 
@@ -662,24 +668,16 @@ function createCard(item) {
 
 function formatName(n) {
   if (!n) return n;
-
-  // 1. 將所有可能的空白（半形空格、全形空格、Tab等）統一替換成一個特殊的標記符號
-  // 這裡使用 '___' 作為暫存標記
   let formatted = n.replace(/[\s\u3000]+/g, '___');
-
-  // 2. 將標記切分，並對每一段超過 9 個字的文字進行強制斷行
   let parts = formatted.split('___').map(part => {
     let result = "";
     let temp = part;
-    // 如果單個片段還是超過 9 個字，就強制拆分
     while (temp.length > 9) {
       result += temp.slice(0, 9) + '<br>';
       temp = temp.slice(9);
     }
     return result + temp;
   });
-
-  // 3. 最後用 <br> 接起來
   return parts.join('<br>');
 }
 
