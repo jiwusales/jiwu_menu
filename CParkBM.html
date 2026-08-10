@@ -18,7 +18,7 @@
       ACTIVE_COLOR: "#f06490",
       SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
       SHEET_NAME: "ちいかわ樂園",                                     
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！ (৹˙꒳˙ฅ )",
+      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -220,7 +220,7 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•́ฅ ✧ </p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">記得去官Line找花花確認！感謝你(๑•̀ω•́)ノ</p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
@@ -338,7 +338,7 @@ function removeFromCart(index) {
 
 // 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
@@ -442,7 +442,7 @@ async function handleFinalCheckout() {
   const igAcc = document.getElementById('user-ig').value.trim();
   
   if (!lineName) {
-    alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )");
+    alert("請輸入LINE名稱方便核對ι(｀･-･´)/");
     return;
   }
 
@@ -527,7 +527,7 @@ function renderItems() {
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
   if (filteredItems.length === 0) {
-    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
     return;
   }
   if (!isFilterMode && !selectedRole) {
