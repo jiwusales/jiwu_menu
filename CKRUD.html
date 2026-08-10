@@ -200,7 +200,7 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">請至官LINE核對訂單資料，感謝你 (๑•̀∀•๑ฅ✧ </p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">記得去官Line找花花確認！感謝你(๑•̀ω•́)ノ </p>
       <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
@@ -283,7 +283,7 @@ function applyThemeSettings() {
   CONFIG.THEME_COLOR = color;
   
   const topMsg = document.getElementById('top-msg');
-  topMsg.textContent = globalSettings.note || "點擊卡片可放大圖片唷！";
+  topMsg.textContent = globalSettings.note || "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)";
 }
 
 function renderTypeNav() {
@@ -329,7 +329,7 @@ function renderItems() {
     emptyMsg.style.padding = "40px 20px";
     emptyMsg.style.color = "#888";
     emptyMsg.style.fontSize = "14px";
-    emptyMsg.innerHTML = "此種類商品準備中，敬請期待 (๑•̀∀•๑ฅ";
+    emptyMsg.innerHTML = "目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ";
     container.appendChild(emptyMsg);
   }
 }
@@ -470,7 +470,7 @@ function handleCheckoutEntry() {
 }
 
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下寶寶(৹˙꒳˙ฅ)：\n";
+  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
@@ -565,7 +565,7 @@ function closeModal() { document.getElementById('checkout-modal').style.display 
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
-  if (!lineName) { alert("請輸入LINE名稱方便核對 ദ്ദി(⩌ᴗ⩌ )"); return; }
+  if (!lineName) { alert("請輸入LINE名稱方便核對ι(｀･-･´)/"); return; }
   
   const btn = document.getElementById('send-btn');
   btn.disabled = true; btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
