@@ -383,7 +383,7 @@ function addToCart(e, item, tagText) {
   
   let statusLabel = "";
   if (isSoldOut) {
-    statusLabel = "補登";
+    statusLabel = "補貨登記";
   } else if (!isNaN(numStock) && numStock > 0) {
     statusLabel = "現貨";
   } else {
