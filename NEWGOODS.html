@@ -427,8 +427,8 @@ function addToCart(e, item, tagText) {
   cart.push({
     ...item,
     groupName: item.groupName || CONFIG.SHEET_NAME,
-    currentStatus: hasStock ? "現貨" : ""
-});
+    currentStatus: hasStock ? "現貨" : "預訂"
+  });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -612,7 +612,7 @@ async function handleFinalCheckout() {
         name: item.name,
         price: item.price,
         sn: item.sn || "",
-        stock: item.currentStatus || "現貨",
+        stock: item.currentStatus || "預訂",
         note: item.groupName
       };
     });
