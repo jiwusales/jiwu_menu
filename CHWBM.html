@@ -26,9 +26,9 @@
       DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec"
     };
   </script>
-
-  <script src="common.js"></script>
-
+  
+<script src="common.js"></script>
+  
   <style>
     :root { 
       --theme-color: #FBCC7E; 
@@ -81,7 +81,7 @@
     .scroll-container::-webkit-scrollbar { display: none; }
     .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
     .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
-    .nav-bar a.active-role { font-weight: bold; }
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color); }
     .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
     .nav-bar a:last-child::after { content: ""; }
 
@@ -172,7 +172,7 @@
 </head>
 <body>
  <div class="top-bar">
-    <div class="menu-btn" onclick="toggleMenu(true)"></div>
+    <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
     <span class="pulse-text" id="top-msg" style="color: #fff;">載入中...</span>
   </div>
 
@@ -187,14 +187,14 @@
 
   <div class="header-fixed">
     <div class="nav-bar-wrapper">
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)"></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(-150,0)">❮</div>
       <div class="scroll-container" id="role-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
-      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)"></div>
+      <div class="nav-arrow" onclick="document.getElementById('role-scroll').scrollBy(150,0)">❯</div>
     </div>
     <div class="filter-bar-wrapper">
-      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)"></div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(-150,0)">❮</div>
       <div class="scroll-container" id="filter-scroll"><div id="filter-bar" style="display: inline-block;"></div></div>
-      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)"></div>
+      <div class="nav-arrow" onclick="document.getElementById('filter-scroll').scrollBy(150,0)">❯</div>
     </div>
   </div>
 
@@ -209,7 +209,7 @@
   <div id="cart-panel">
     <div class="cart-header">
       <span>購物車</span>
-      <span style="cursor:pointer; font-size: 20px;" onclick="toggleCart(false)"></span>
+      <span style="cursor:pointer; font-size: 20px;" onclick="toggleCart(false)">✕</span>
     </div>
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
@@ -232,7 +232,7 @@
       <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
       <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
       <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
-      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc"></span>
+      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
     <div class="modal-content qr-box" id="step-2">
@@ -294,7 +294,7 @@ function loadData() {
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
-      renderSideMenu(); // 自動生成側邊選單
+      renderSideMenu();
       renderRoleNav();
       renderFilters();
       renderItems();
@@ -303,7 +303,6 @@ function loadData() {
   });
 }
 
-// 自動生成側邊選單 (依據 CONFIG 設定或其他靜態連結)
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
   const links = [
@@ -343,7 +342,6 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-// 處理顯示價格的通用邏輯
 function getDisplayPrice(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "組合出售";
@@ -352,7 +350,6 @@ function getDisplayPrice(price) {
   return p;
 }
 
-// 處理 LINE 訊息的價格轉換邏輯
 function getLinePriceText(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "詢問組合";
@@ -386,7 +383,7 @@ function updateCartUI() {
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
-      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})"></span>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
     `;
     list.appendChild(div);
   });
@@ -400,9 +397,9 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成
+// 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
+  let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
@@ -457,11 +454,6 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
-  if (lineName || igAccount) {
-    msg += "\n\n--------------------------";
-    if (lineName) msg += `\nLINE：${lineName}`;
-    if (igAccount) msg += `\nIG：${igAccount}`;
-  }
   return encodeURIComponent(msg);
 }
 
@@ -534,19 +526,17 @@ async function handleFinalCheckout() {
   try {
     const cartData = cart.map(item => ({
       kind: item.kind,      
-      role: item.kind,           // 供 GAS 寫入「團名」
       type: item.type,      
       style: item.style,    
       name: item.name,      
       price: item.price,    
       sn: item.sn,          
-      stock: item.currentStatus, // 供 GAS 寫入「貨況」
       status: item.currentStatus,
       note: item.groupName
     }));
 
     const postData = { 
-      source: "電腦版下單",      // 與 GAS doGet/doPost 判斷一致
+      source: "電腦",          
       lineName: lineName,   
       igAccount: igAcc,     
       cartItems: cartData 
@@ -554,9 +544,7 @@ async function handleFinalCheckout() {
 
     await fetch(CONFIG.DEPLOY_URL, { 
       method: 'POST', 
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
+      mode: 'no-cors', 
       body: JSON.stringify(postData) 
     });
   } catch (e) {
@@ -578,12 +566,9 @@ async function handleFinalCheckout() {
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
   const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
-  
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
-    const activeColor = roleColors[cat] || CONFIG.ACTIVE_COLOR;
-    const activeStyle = isSelected ? `style="color:${activeColor};"` : "";
-    return `<a class="${isSelected ? 'active-role' : ''}" ${activeStyle} onclick="toggleRole('${cat}')">${cat}</a>`;
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
   }).join('');
 }
 
@@ -646,15 +631,25 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
-  card.style.borderColor = roleColors[item.kind] || CONFIG.THEME_COLOR;
+  // 移除 roleColors，邊框統一使用 THEME_COLOR
+  card.style.borderColor = CONFIG.THEME_COLOR;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (item.colOrder !== "") { tagText = "受注"; tagBg = "#B1DEC1"; } 
-  else if (item.colStock === "" && item.colShop === "") { tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { tagText = "搭機中"; tagBg = "#6C95B0"; }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { tagText = "需預訂"; tagBg = "#C197D2"; }
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; }
+  if (item.colOrder !== "") { 
+    tagText = "受注"; tagBg = "#B1DEC1"; 
+  } 
+  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { 
+    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; 
+  }
+  else if (item.colStock === "" && item.colShop === "") { 
+    tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; 
+  }
+  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { 
+    tagText = "搭機中"; tagBg = "#6C95B0"; 
+  }
+  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { 
+    tagText = "需預訂"; tagBg = "#C197D2"; 
+  }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
@@ -664,20 +659,7 @@ function createCard(item) {
   return card;
 }
 
-function formatName(n) {
-  if (!n) return n;
-  let formatted = n.replace(/[\s\u3000]+/g, '___');
-  let parts = formatted.split('___').map(part => {
-    let result = "";
-    let temp = part;
-    while (temp.length > 9) {
-      result += temp.slice(0, 9) + '<br>';
-      temp = temp.slice(9);
-    }
-    return result + temp;
-  });
-  return parts.join('<br>');
-}
+function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
