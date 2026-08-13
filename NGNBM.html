@@ -399,7 +399,7 @@ function removeFromCart(index) {
 
 // 結帳訊息生成（統一格式：依團名/分頁分組）
 function generateLineMessage(lineName = "", igAccount = "") {
-  let msg = "你好，我想詢問跟購買以下酷東西(৹˙꒳​˙ฅ)：\n";
+  let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
   const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
@@ -603,7 +603,7 @@ function renderItems() {
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
   
   if (filteredItems.length === 0) {
-    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西( ´･ᴗ･` )</div>";
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
     return;
   }
 
