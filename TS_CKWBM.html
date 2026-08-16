@@ -350,7 +350,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: CONFIG.IP_NAME || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, groupName: CONFIG.IP_NAME || item.ip || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -421,14 +421,13 @@ function generateLineMessage() {
   let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
   let hasInquiry = false;
-  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
 
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
     const gName = (item.groupName && item.groupName.toString().trim())
       ? item.groupName.toString().trim()
-      : (CONFIG.IP_NAME || "商品");
+      : (CONFIG.IP_NAME || item.ip || "商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -459,14 +458,8 @@ function generateLineMessage() {
       }
       total += priceVal;
 
-      const roleName = item.role || "";
-      let displayName = item.name;
-      if (roleName && !excludeRoles.includes(roleName)) {
-        displayName = `${item.name} ${roleName}`;
-      }
-
       const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
-      msg += `${index}.${statusText}${displayName} ${priceText}\n`;
+      msg += `${index}.${statusText}${item.name} ${priceText}\n`;
       index++;
     });
   });
@@ -542,22 +535,13 @@ async function handleFinalCheckout() {
   btn.disabled = true; 
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
-  const excludeRoles = ["綜合角色", "三小隻", "其他角色"];
-
   try {
     const cartData = cart.map(item => {
-      // 處理名稱後面加上角色
-      const roleName = item.role || "";
-      let displayName = item.name;
-      if (roleName && !excludeRoles.includes(roleName)) {
-        displayName = `${item.name} ${roleName}`;
-      }
-
       return {
-        ip: CONFIG.IP_NAME || item.ip, // 顯示 IP 名稱（團名）
+        ip: CONFIG.IP_NAME || item.ip, // 正確帶入 IP 名稱
         role: item.role,      
         type: item.type,      
-        name: displayName,             // 角色放在名稱後面
+        name: item.name,              // 直接保持原始品名，不自動拼接角色
         originalPrice: item.originalPrice,
         price: item.price,    
         colStock: item.colStock,
