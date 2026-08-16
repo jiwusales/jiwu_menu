@@ -120,6 +120,7 @@
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
+    .stock-tag.sold-out { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 8px; letter-spacing: -1px; }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -652,7 +653,7 @@ function createCard(item) {
   const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
-  let tagText = "", tagBg = "#fab460", tagColor = "white";
+  let tagText = "", tagBg = "#fab460", tagColor = "white", tagClass = "";
 
   const stockNum = parseFloat(item.colStock) || 0;
   const shopNum = parseFloat(item.colShop) || 0;
@@ -660,7 +661,7 @@ function createCard(item) {
   const nonStockRaw = item.colNonStock.toLowerCase();
 
   if (item.colStock === "-") {
-    tagText = "補貨登記"; tagBg = "#D2EAF1"; tagColor = "#333";
+    tagText = "S☹LD OUT"; tagBg = "#D2EAF1"; tagColor = "#333"; tagClass = "sold-out";
   }
   else if (stockNum > 0 || shopNum > 0) {
     tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
@@ -675,7 +676,8 @@ function createCard(item) {
     tagText = "預訂"; tagBg = "#C197D2";
   }
 
-  let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
+  let finalTagClass = tagClass ? tagClass : (tagText.length >= 2 ? "vertical" : "");
+  let tagHtml = tagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
