@@ -124,7 +124,8 @@
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
     .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
-    .card .price { font-size: 10px; margin: 1px auto 5px; color: #666; }
+    .card .price { font-size: 10px; margin: 1px auto 1px; color: #F5B080; }
+    .card .size { font-size: 8px; margin: 0 auto 5px; color: #888888; }
     
     .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
@@ -676,8 +677,9 @@ function createCard(item) {
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>`;
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
   card.onclick = () => zoomCard(card);
   return card;
 }
