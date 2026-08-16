@@ -13,21 +13,40 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
   
   <script>
+    /* =========================================================
+     *  IP 與 頁面 控制設定區 (不同 IP HTML 頁面請修改此處)
+     * ========================================================= */
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",
-      ACTIVE_COLOR: "#f5b080",
-      SHEET_ID: "1iCEqgnGGa_TVVbx90xNWxDzwKtz94VfqF8IsXRvpKMY", 
-      SHEET_NAME: "ちいかわ",                                     
+      IP_NAME: "吉伊卡哇",                                       // 當前 IP 名稱
+      THEME_COLOR: "#FBCC7E",                                  // 主要色系
+      ACTIVE_COLOR: "#f5b080",                                 // 高亮 / 啟用色系
+      SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
+      SHEET_NAME: "商品庫存",                                   // 分頁名稱
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec"
+      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
+
+      // 同 IP 下不同角色的商品卡邊框顏色對照表 (未設定的角色會預設使用 THEME_COLOR)
+      ROLE_BORDER_COLORS: {
+        "吉伊": "#d77485",
+        "小八": "#6293b8",
+        "兔兔": "#f9be3c",
+        "小桃": "#838BC2",
+        "師傅": "#CCAFA5",
+        "栗子": "#94C973",
+        "獅薩": "#FBAA60",
+        "古本": "#eb9e97",
+        "綜合角色": "#989FC0",
+        "全角色": "#E24C60",
+        "其他角色": "#45818e"
+      }
     };
   </script>
   
-<script src="common.js"></script>
+  <script src="common.js"></script>
   
   <style>
     :root { 
@@ -264,7 +283,7 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料
+// 載入試算表資料 (對應欄位：IP 角色 種類 名稱 原價 售價 庫存 店面 非現 狀態 貨號 圖片 商品網址 尺寸 備註)
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -276,20 +295,28 @@ function loadData() {
           return (val !== null && val !== undefined) ? val.toString().trim() : "";
         };
         return {
-          kind: getV(0) || "其他角色",
-          type: getV(1) || "其他",
-          style: getV(2),      
-          name: getV(3),       
-          price: r.c[5]?.v,    
-          colStock: getV(6),   
-          colShop: getV(7),    
-          colNonStock: getV(8),
-          colList: getV(9),    
-          colOrder: getV(10),  
-          sn: getV(11),        
-          img: getV(12) || "https://i.postimg.cc/bv5xRs04/image.png" 
+          ip: getV(0),            // IP
+          kind: getV(1) || "其他角色", // 角色
+          type: getV(2) || "其他",     // 種類
+          name: getV(3),          // 名稱
+          originalPrice: getV(4), // 原價
+          price: r.c[5]?.v,       // 售價
+          colStock: getV(6),      // 庫存
+          colShop: getV(7),       // 店面
+          colNonStock: getV(8),   // 非現
+          status: getV(9),        // 狀態
+          sn: getV(10),           // 貨號
+          img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png", // 圖片
+          url: getV(12),          // 商品網址
+          size: getV(13),         // 尺寸
+          note: getV(14)          // 備註
         };
-      }).filter(item => item.colList === "" && item.colStock.toLowerCase() !== 'x');
+      }).filter(item => {
+        // 若設定了 CONFIG.IP_NAME 且不為空，僅載入該 IP 的商品
+        if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
+        // 排除庫存為 x 的商品
+        return item.colStock.toLowerCase() !== 'x';
+      });
 
       allCategories = [...new Set(allItems.map(i => i.kind))];
       allTypes = [...new Set(allItems.map(i => i.type))];
@@ -323,7 +350,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  cart.push({ ...item, groupName: CONFIG.IP_NAME || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -346,14 +373,6 @@ function getDisplayPrice(price) {
   const p = (price || "").toString().trim();
   if (p.indexOf('-') !== -1) return "組合出售";
   if (p === "") return "詢問花花";
-  if (/^[0-9]+$/.test(p)) return `$${p}`;
-  return p;
-}
-
-function getLinePriceText(price) {
-  const p = (price || "").toString().trim();
-  if (p.indexOf('-') !== -1) return "詢問組合";
-  if (p === "") return "詢問報價";
   if (/^[0-9]+$/.test(p)) return `$${p}`;
   return p;
 }
@@ -397,7 +416,7 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成（統一格式：依團名/分頁分組）
+// 結帳訊息生成（依 IP 分組）
 function generateLineMessage(lineName = "", igAccount = "") {
   let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
@@ -409,7 +428,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
   cart.forEach(item => {
     const gName = (item.groupName && item.groupName.toString().trim())
       ? item.groupName.toString().trim()
-      : (CONFIG.SHEET_NAME || "商品");
+      : (CONFIG.IP_NAME || "商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -440,7 +459,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
       }
       total += priceVal;
 
-      const roleName = item.kind || item.role || "";
+      const roleName = item.kind || "";
       let displayName = item.name;
       if (roleName && !excludeRoles.includes(roleName)) {
         displayName = `${roleName} ${item.name}`;
@@ -525,9 +544,9 @@ async function handleFinalCheckout() {
 
   try {
     const cartData = cart.map(item => ({
+      ip: item.ip,
       kind: item.kind,      
       type: item.type,      
-      style: item.style,    
       name: item.name,      
       price: item.price,    
       sn: item.sn,          
@@ -561,11 +580,10 @@ async function handleFinalCheckout() {
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
-  
+
 // 渲染導覽與篩選
 function renderRoleNav() {
   const nav = document.getElementById('dynamic-nav');
-  const roleColors = { "吉伊": "#d77485", "小八": "#6293b8", "兔兔": "#f9be3c", "小桃": "#838BC2", "師傅": "#CCAFA5", "栗子": "#94C973", "獅薩": "#FBAA60", "古本": "#eb9e97", "綜合角色": "#989FC0", "全角色": "#E24C60", "其他角色": "#45818e" };
   nav.innerHTML = allCategories.map(cat => {
     const isSelected = selectedRole === cat;
     return `<a class="${isSelected ? 'active-role' : ''}" onclick="toggleRole('${cat}')">${cat}</a>`;
@@ -631,24 +649,41 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  // 移除 roleColors，邊框統一使用 THEME_COLOR
-  card.style.borderColor = CONFIG.THEME_COLOR;
+  
+  // 依角色使用特定邊框顏色，若未特別定義則使用全區主題色 THEME_COLOR
+  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.kind] || CONFIG.THEME_COLOR;
+  card.style.borderColor = borderCol;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
-  if (item.colOrder !== "") { 
-    tagText = "受注"; tagBg = "#B1DEC1"; 
-  } 
-  else if (parseFloat(item.colStock) > 0 || parseFloat(item.colShop) > 0) { 
-    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333"; 
+
+  // 解析數量與數值
+  const stockNum = parseFloat(item.colStock) || 0;
+  const shopNum = parseFloat(item.colShop) || 0;
+  const nonStockNum = parseFloat(item.colNonStock) || 0;
+  const nonStockRaw = item.colNonStock.toLowerCase();
+
+  /* ---------------------------------------------------------
+   * 商品狀態判定邏輯：
+   * 1. 補貨登記：庫存欄顯示 "-"
+   * 2. 現貨：庫存欄 > 0 或 店面欄 > 0
+   * 3. 受注：非現 > 0 且結尾是 v
+   * 4. 路上：非現 > 0
+   * 5. 預訂：庫存欄 = 0 且 店面欄空白
+   * --------------------------------------------------------- */
+  if (item.colStock === "-") {
+    tagText = "補貨登記"; tagBg = "#D2EAF1"; tagColor = "#333";
   }
-  else if (item.colStock === "" && item.colShop === "") { 
-    tagText = "點名中"; tagBg = "#D2EAF1"; tagColor = "#333"; 
+  else if (stockNum > 0 || shopNum > 0) {
+    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
   }
-  else if (item.colStock === "0" && parseFloat(item.colNonStock) > 0) { 
-    tagText = "搭機中"; tagBg = "#6C95B0"; 
+  else if (nonStockNum > 0 && nonStockRaw.endsWith('v')) {
+    tagText = "受注"; tagBg = "#B1DEC1";
   }
-  else if (item.colStock === "0" && (item.colShop === "0" || item.colShop === "")) { 
-    tagText = "需預訂"; tagBg = "#C197D2"; 
+  else if (nonStockNum > 0) {
+    tagText = "路上"; tagBg = "#6C95B0";
+  }
+  else if (item.colStock === "0" && item.colShop === "") {
+    tagText = "預訂"; tagBg = "#C197D2";
   }
 
   let tagHtml = tagText ? `<div class="stock-tag ${tagText.length >= 2 ? "vertical" : ""}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
@@ -705,11 +740,12 @@ function zoomCard(c) {
     }
   };
   el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCart(true); });
-  el.addEventListener('mousedown', dragStart); el.addEventListener('touchstart', dragStart, { passive: false });
+  el.addEventListener('mousedown', dragStart);
+  el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
-// 啟動資料載入
-loadData();
+// 頁面初始化
+window.onload = loadData;
 </script>
 </body>
 </html>
