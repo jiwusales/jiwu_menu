@@ -118,9 +118,21 @@
     @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
     
     .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    .card.is-sold-out { filter: grayscale(100%); border-color: #999 !important; }
     .stock-tag { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; }
     .stock-tag.vertical { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 9px; }
-    .stock-tag.sold-out { writing-mode: vertical-rl; text-orientation: upright; width: 20px; height: auto; border-radius: 10px; padding: 4px 0; font-size: 8px; letter-spacing: -1px; }
+    .stock-tag.sold-out { 
+      writing-mode: horizontal-tb; 
+      top: 0; 
+      left: 0; 
+      width: auto; 
+      height: 20px; 
+      border-radius: 0 0 8px 0; 
+      padding: 0 8px; 
+      font-size: 10px; 
+      letter-spacing: 0px; 
+      font-weight: bold; 
+    }
     .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
     .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
@@ -142,6 +154,11 @@
       top: 3px;
       left: 3px;
       font-size: 10px;
+    }
+    .card-overlay .stock-tag.sold-out {
+      border-radius: 0 0 4px 0 !important;
+      top: 0 !important;
+      left: 0 !important;
     }
     .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; } 
 
@@ -663,7 +680,8 @@ function createCard(item) {
   const nonStockRaw = String(item.colNonStock).toLowerCase();
 
   if (item.colStock === "-") {
-    tagText = "S☹LD OUT"; tagBg = "#D2EAF1"; tagColor = "#333"; tagClass = "sold-out";
+    tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
+    card.classList.add('is-sold-out');
   }
   else if (stockNum > 0 || shopNum > 0) {
     tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
