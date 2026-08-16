@@ -296,7 +296,7 @@ function loadData() {
         };
         return {
           ip: getV(0),            // IP
-          kind: getV(1) || "其他角色", // 角色
+          role: getV(1) || "其他角色", // 角色
           type: getV(2) || "其他",     // 種類
           name: getV(3),          // 名稱
           originalPrice: getV(4), // 原價
@@ -318,7 +318,7 @@ function loadData() {
         return item.colStock.toLowerCase() !== 'x';
       });
 
-      allCategories = [...new Set(allItems.map(i => i.kind))];
+      allCategories = [...new Set(allItems.map(i => i.role))];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
       renderSideMenu();
@@ -459,7 +459,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
       }
       total += priceVal;
 
-      const roleName = item.kind || "";
+      const roleName = item.role || "";
       let displayName = item.name;
       if (roleName && !excludeRoles.includes(roleName)) {
         displayName = `${roleName} ${item.name}`;
@@ -545,13 +545,20 @@ async function handleFinalCheckout() {
   try {
     const cartData = cart.map(item => ({
       ip: item.ip,
-      kind: item.kind,      
+      role: item.role,      
       type: item.type,      
       name: item.name,      
+      originalPrice: item.originalPrice,
       price: item.price,    
+      colStock: item.colStock,
+      colShop: item.colShop,
+      colNonStock: item.colNonStock,
+      status: item.status,
       sn: item.sn,          
-      status: item.currentStatus,
-      note: item.groupName
+      img: item.img,
+      url: item.url,
+      size: item.size,
+      note: item.note
     }));
 
     const postData = { 
@@ -618,7 +625,7 @@ function renderItems() {
   container.innerHTML = "";
   const isFilterMode = selectedTypes.length > 0;
   let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
-  if (selectedRole) { filteredItems = filteredItems.filter(i => i.kind === selectedRole); }
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.role === selectedRole); }
   
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
@@ -627,7 +634,7 @@ function renderItems() {
 
   if (!isFilterMode && !selectedRole) {
     allCategories.forEach(cat => {
-      const catItems = filteredItems.filter(i => i.kind === cat);
+      const catItems = filteredItems.filter(i => i.role === cat);
       if (catItems.length === 0) return;
       const div = document.createElement('div');
       div.className = 'type-divider'; div.id = cat; div.textContent = cat;
@@ -651,7 +658,7 @@ function createCard(item) {
   card.className = 'card';
   
   // 依角色使用特定邊框顏色，若未特別定義則使用全區主題色 THEME_COLOR
-  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.kind] || CONFIG.THEME_COLOR;
+  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
