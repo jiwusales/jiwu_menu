@@ -256,8 +256,9 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">記得去官Line找花花確認！感謝你(๑•̀ω•́)ノ</p>
-      <button class="btn-checkout" style="margin-top:15px;" onclick="closeModal()">關閉視窗</button>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">記得去官Line找花花確認！感謝你(๑•̀ω•向)ノ</p>
+      <button class="btn-checkout" style="margin-top:10px;" id="copy-btn">複製訂購文字</button>
+      <button class="btn-checkout" style="margin-top:8px; background-color:#aaa;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
 
@@ -473,7 +474,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
 
   msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
 
-  return encodeURIComponent(msg);
+  return msg;
 }
 
 function handleCheckoutEntry() {
@@ -481,7 +482,7 @@ function handleCheckoutEntry() {
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   if (isMobileDevice) {
     const msg = generateLineMessage();
-    window.location.href = CONFIG.LINE_MSG_URL + msg;
+    window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(msg);
     setTimeout(() => { 
       cart = []; saveCart(); updateCartUI(); toggleCart(false); 
     }, 1500);
@@ -588,8 +589,17 @@ async function handleFinalCheckout() {
     console.error("GAS 傳送失敗", e);
   }
 
-  const msg = generateLineMessage(lineName, igAcc);
-  window.location.href = CONFIG.LINE_MSG_URL + msg;
+  const msgText = generateLineMessage(lineName, igAcc);
+  
+  // 設定複製按鈕事件
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(msgText).then(() => {
+      alert("訂購訊息已複製到剪貼簿！請至 LINE 貼上傳送給花花。");
+    }).catch(err => {
+      alert("複製失敗，請手動選擇複製。");
+    });
+  };
 
   cart = []; 
   saveCart(); 
