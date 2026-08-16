@@ -256,7 +256,7 @@
 
     <div class="modal-content qr-box" id="step-2">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">訂單已傳送成功！記得去官Line找花花確認唷(๑•̀ω•向)ノ</p>
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">訂購完成！點選下方按鈕傳送訂單給花花(ฅ'ω'ฅ)</p>
       <button class="btn-checkout" style="margin-top:10px;" onclick="closeModal()">關閉視窗</button>
     </div>
   </div>
@@ -283,7 +283,7 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料 (對應欄位：IP 角色 種類 名稱 原價 售價 庫存 店面 非現 狀態 貨號 圖片 商品網址 尺寸 備註)
+// 載入試算表資料
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -312,9 +312,7 @@ function loadData() {
           note: getV(14)          // 備註
         };
       }).filter(item => {
-        // 若設定了 CONFIG.IP_NAME 且不為空，僅載入該 IP 的商品
         if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
-        // 排除庫存為 x 的商品
         return item.colStock.toLowerCase() !== 'x';
       });
 
@@ -350,7 +348,9 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  cart.push({ ...item, groupName: CONFIG.IP_NAME || item.ip || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  // 優先使用商品本身的 ip 欄位，若沒有則使用 CONFIG.IP_NAME
+  const itemIp = (item.ip && item.ip.toString().trim()) ? item.ip.toString().trim() : (CONFIG.IP_NAME || "");
+  cart.push({ ...item, ip: itemIp, groupName: itemIp || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
   const btn = e.target;
@@ -416,7 +416,6 @@ function removeFromCart(index) {
   if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
 }
 
-// 結帳訊息生成（手機版 LINE 轉跳使用）
 function generateLineMessage() {
   let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total = 0;
@@ -425,9 +424,9 @@ function generateLineMessage() {
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
-    const gName = (item.groupName && item.groupName.toString().trim())
-      ? item.groupName.toString().trim()
-      : (CONFIG.IP_NAME || item.ip || "商品");
+    const gName = (item.ip && item.ip.toString().trim())
+      ? item.ip.toString().trim()
+      : (CONFIG.IP_NAME || "商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -538,10 +537,10 @@ async function handleFinalCheckout() {
   try {
     const cartData = cart.map(item => {
       return {
-        ip: CONFIG.IP_NAME || item.ip, // 正確帶入 IP 名稱
+        ip: item.ip || CONFIG.IP_NAME || "", 
         role: item.role,      
         type: item.type,      
-        name: item.name,              // 直接保持原始品名，不自動拼接角色
+        name: item.name,              
         originalPrice: item.originalPrice,
         price: item.price,    
         colStock: item.colStock,
@@ -649,26 +648,16 @@ function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
   
-  // 依角色使用特定邊框顏色，若未特別定義則使用全區主題色 THEME_COLOR
   const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
   let tagText = "", tagBg = "#fab460", tagColor = "white";
 
-  // 解析數量與數值
   const stockNum = parseFloat(item.colStock) || 0;
   const shopNum = parseFloat(item.colShop) || 0;
   const nonStockNum = parseFloat(item.colNonStock) || 0;
   const nonStockRaw = item.colNonStock.toLowerCase();
 
-  /* ---------------------------------------------------------
-   * 商品狀態判定邏輯：
-   * 1. 補貨登記：庫存欄顯示 "-"
-   * 2. 現貨：庫存欄 > 0 或 店面欄 > 0
-   * 3. 受注：非現 > 0 且結尾是 v
-   * 4. 路上：非現 > 0
-   * 5. 預訂：庫存欄 = 0 且 店面欄空白
-   * --------------------------------------------------------- */
   if (item.colStock === "-") {
     tagText = "補貨登記"; tagBg = "#D2EAF1"; tagColor = "#333";
   }
