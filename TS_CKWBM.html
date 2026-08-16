@@ -285,7 +285,7 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 載入試算表資料
+// 載入試算表資料（安全轉換字串型態）
 function loadData() {
   const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
@@ -293,8 +293,10 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
       allItems = data.table.rows.map(r => {
         const getV = (idx) => {
-          const val = r.c[idx]?.v;
-          return (val !== null && val !== undefined) ? val.toString().trim() : "";
+          if (!r.c || !r.c[idx]) return "";
+          const cell = r.c[idx];
+          const val = cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || "");
+          return String(val).trim();
         };
         return {
           ip: getV(0),            // IP
@@ -302,7 +304,7 @@ function loadData() {
           type: getV(2) || "其他",     // 種類
           name: getV(3),          // 名稱
           originalPrice: getV(4), // 原價
-          price: r.c[5]?.v,       // 售價
+          price: getV(5),         // 售價
           colStock: getV(6),      // 庫存
           colShop: getV(7),       // 店面
           colNonStock: getV(8),   // 非現
@@ -315,7 +317,8 @@ function loadData() {
         };
       }).filter(item => {
         if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
-        return item.colStock.toLowerCase() !== 'x';
+        const stockVal = String(item.colStock).trim().toLowerCase();
+        return stockVal !== 'x' && stockVal !== 'ｘ';
       });
 
       allCategories = [...new Set(allItems.map(i => i.role))];
@@ -350,8 +353,7 @@ function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e, item, tagText, tagBg, tagColor) {
   e.stopPropagation();
-  // 優先使用商品本身的 ip 欄位，若沒有則使用 CONFIG.IP_NAME
-  const itemIp = (item.ip && item.ip.toString().trim()) ? item.ip.toString().trim() : (CONFIG.IP_NAME || "");
+  const itemIp = (item.ip && String(item.ip).trim()) ? String(item.ip).trim() : (CONFIG.IP_NAME || "");
   cart.push({ ...item, ip: itemIp, groupName: itemIp || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
   saveCart();
   updateCartUI();
@@ -372,7 +374,7 @@ function toggleCart(isOpen) {
 }
 
 function getDisplayPrice(price) {
-  const p = (price || "").toString().trim();
+  const p = String(price || "").trim();
   if (p.indexOf('-') !== -1) return "組合出售";
   if (p === "") return "詢問花花";
   if (/^[0-9]+$/.test(p)) return `$${p}`;
@@ -388,7 +390,7 @@ function updateCartUI() {
   let hasInquiry = false;
 
   cart.forEach((item, index) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
     if (!isNumeric) hasInquiry = true;
     total += priceVal;
@@ -426,8 +428,8 @@ function generateLineMessage() {
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
-    const gName = (item.ip && item.ip.toString().trim())
-      ? item.ip.toString().trim()
+    const gName = (item.ip && String(item.ip).trim())
+      ? String(item.ip).trim()
       : (CONFIG.IP_NAME || "商品");
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
@@ -440,7 +442,7 @@ function generateLineMessage() {
   groupOrder.forEach(gName => {
     msg += `\n【${gName}】\n`;
     groupedCart[gName].forEach(item => {
-      const priceRaw = (item.price !== undefined && item.price !== null) ? item.price.toString().trim() : "";
+      const priceRaw = String(item.price || "").trim();
       let priceText = "";
       let priceVal = 0;
 
@@ -500,7 +502,7 @@ function renderCheckoutSummary() {
   let hasInquiry = false;
 
   cart.forEach((item) => {
-    const isNumeric = /^[0-9]+$/.test((item.price || "").toString().trim());
+    const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
     if (!isNumeric) hasInquiry = true;
     total += priceVal;
@@ -658,7 +660,7 @@ function createCard(item) {
   const stockNum = parseFloat(item.colStock) || 0;
   const shopNum = parseFloat(item.colShop) || 0;
   const nonStockNum = parseFloat(item.colNonStock) || 0;
-  const nonStockRaw = item.colNonStock.toLowerCase();
+  const nonStockRaw = String(item.colNonStock).toLowerCase();
 
   if (item.colStock === "-") {
     tagText = "S☹LD OUT"; tagBg = "#D2EAF1"; tagColor = "#333"; tagClass = "sold-out";
