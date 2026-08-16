@@ -462,7 +462,7 @@ function generateLineMessage(lineName = "", igAccount = "") {
       const roleName = item.role || "";
       let displayName = item.name;
       if (roleName && !excludeRoles.includes(roleName)) {
-        displayName = `${roleName} ${item.name}`;
+        displayName = `${item.name} ${roleName}`;
       }
 
       const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
