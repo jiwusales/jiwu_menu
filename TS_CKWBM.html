@@ -29,6 +29,10 @@
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
       DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
 
+      // 這個頁面要顯示哪些貨況標籤？把不想顯示的名稱刪掉即可（順序不影響顯示邏輯）
+      // 可用選項："現貨"、"SOLD OUT"、"受注"、"路上"、"預訂"
+      VISIBLE_STOCK_TAGS: ["現貨", "SOLD OUT", "路上", "受注", "預訂"],
+
       // 同 IP 下不同角色的商品卡邊框顏色對照表 (未設定的角色會預設使用 THEME_COLOR)
       ROLE_BORDER_COLORS: {
         "吉伊": "#d77485",
@@ -112,6 +116,7 @@
     .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
     #card-container { padding: 115px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    #banner-wrapper img { width: 100%; display: block; border-radius: 10px; margin-bottom: 4px; }
     .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 120px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
@@ -236,7 +241,10 @@
     </div>
   </div>
 
-  <div id="card-container"></div>
+  <div id="card-container">
+    <div id="banner-wrapper"></div>
+    <div id="items-wrapper"></div>
+  </div>
 
   <div id="cart-trigger">
     <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" alt="cart">
@@ -287,6 +295,13 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+let selectedStockFilters = [];
+// 貨況勾選項目：key 對應 getStockInfo() 回傳的 tagKey，label 是勾選欄位顯示的文字
+const STOCK_FILTER_OPTIONS = [
+  { key: "現貨", label: "現貨" },
+  { key: "預訂", label: "預訂" },
+  { key: "SOLD OUT", label: "補貨登記" }
+];
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 // 側邊選單開關
@@ -304,35 +319,49 @@ function toggleMenu(isOpen) {
 
 // 載入試算表資料（安全轉換字串型態）
 function loadData() {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
-      allItems = data.table.rows.map(r => {
-        const getV = (idx) => {
-          if (!r.c || !r.c[idx]) return "";
-          const cell = r.c[idx];
-          const val = cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || "");
-          return String(val).trim();
-        };
-        return {
-          ip: getV(0),            // IP
-          role: getV(1) || "其他角色", // 角色
-          type: getV(2) || "其他",     // 種類
-          name: getV(3),          // 名稱
-          originalPrice: getV(4), // 原價
-          price: getV(5),         // 售價
-          colStock: getV(6),      // 庫存
-          colShop: getV(7),       // 店面
-          colNonStock: getV(8),   // 非現
-          status: getV(9),        // 狀態
-          sn: getV(10),           // 貨號
-          img: getV(11) || "https://i.postimg.cc/bv5xRs04/image.png", // 圖片
-          url: getV(12),          // 商品網址
-          size: getV(13),         // 尺寸
-          note: getV(14)          // 備註
-        };
-      }).filter(item => {
+
+      // 依標題名稱找出每個欄位在試算表中的實際位置
+      const HEADER_NAMES = { ip: "IP", role: "角色", type: "種類", name: "名稱", originalPrice: "原價", price: "售價", colStock: "庫存", colShop: "店面", colNonStock: "非現", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸", note: "備註" };
+      const colLabels = (data.table.cols || []).map(c => String(c.label || "").trim());
+      const COL = {};
+      Object.keys(HEADER_NAMES).forEach(key => {
+        COL[key] = colLabels.indexOf(HEADER_NAMES[key]);
+      });
+
+      const getV = (r, idx) => {
+        if (!r.c || !r.c[idx]) return "";
+        const cell = r.c[idx];
+        const val = cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || "");
+        return String(val).trim();
+      };
+      const rawItems = data.table.rows.map(r => ({
+        ip: getV(r, COL.ip),
+        role: getV(r, COL.role) || "其他角色",
+        type: getV(r, COL.type) || "其他",
+        name: getV(r, COL.name),
+        originalPrice: getV(r, COL.originalPrice),
+        price: getV(r, COL.price),
+        colStock: getV(r, COL.colStock),
+        colShop: getV(r, COL.colShop),
+        colNonStock: getV(r, COL.colNonStock),
+        status: getV(r, COL.status),
+        sn: getV(r, COL.sn),
+        img: getV(r, COL.img) || "https://i.postimg.cc/bv5xRs04/image.png",
+        url: getV(r, COL.url),
+        size: getV(r, COL.size),
+        note: getV(r, COL.note)
+      }));
+
+      // 取得同 IP 名稱底下第一列的備註欄，作為頁面最上方的 banner 圖片網址
+      const ipRows = CONFIG.IP_NAME ? rawItems.filter(i => i.ip === CONFIG.IP_NAME) : rawItems;
+      const bannerUrl = ipRows.length > 0 ? ipRows[0].note : "";
+      renderBanner(bannerUrl);
+
+      allItems = rawItems.filter(item => {
         if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
         const stockVal = String(item.colStock).trim().toLowerCase();
         return stockVal !== 'x' && stockVal !== 'ｘ';
@@ -346,8 +375,16 @@ function loadData() {
       renderFilters();
       renderItems();
       updateCartUI();
-    } catch (e) { document.getElementById('card-container').innerHTML = "載入失敗。"; }
+    } catch (e) { document.getElementById('items-wrapper').innerHTML = "載入失敗。"; }
   });
+}
+
+// 渲染頁面最上方的 banner 圖片（網址取自同 IP 名稱第一列的備註欄）
+function renderBanner(url) {
+  const wrapper = document.getElementById('banner-wrapper');
+  if (!wrapper) return;
+  const trimmed = (url || "").trim();
+  wrapper.innerHTML = trimmed ? `<img src="${trimmed}" alt="banner">` : "";
 }
 
 function renderSideMenu() {
@@ -618,10 +655,19 @@ function toggleRole(cat) {
 
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
-  filterBar.innerHTML = allTypes.map(t => {
+  const typeHtml = allTypes.map(t => {
     const isActive = selectedTypes.includes(t);
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
   }).join('');
+
+  // 只顯示目前商品清單裡實際存在的貨況（例如沒有任何商品是「-」，就不顯示「補貨登記」勾選項）
+  const availableStockKeys = new Set(allItems.map(i => getStockInfo(i).tagKey).filter(Boolean));
+  const stockHtml = STOCK_FILTER_OPTIONS.filter(opt => availableStockKeys.has(opt.key)).map(opt => {
+    const isActive = selectedStockFilters.includes(opt.key);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleStockFilter('${opt.key}')">${opt.label}</label>`;
+  }).join('');
+
+  filterBar.innerHTML = stockHtml + typeHtml;
 }
 
 function toggleType(type) {
@@ -631,12 +677,22 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
+function toggleStockFilter(key) {
+  if (selectedStockFilters.includes(key)) { selectedStockFilters = selectedStockFilters.filter(k => k !== key); }
+  else { selectedStockFilters.push(key); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderFilters(); renderItems();
+}
+
 // 渲染商品卡片
 function renderItems() {
-  const container = document.getElementById('card-container');
+  const container = document.getElementById('items-wrapper');
   container.innerHTML = "";
-  const isFilterMode = selectedTypes.length > 0;
-  let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  const isFilterMode = selectedTypes.length > 0 || selectedStockFilters.length > 0;
+  let filteredItems = selectedTypes.length > 0 ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  if (selectedStockFilters.length > 0) {
+    filteredItems = filteredItems.filter(i => selectedStockFilters.includes(getStockInfo(i).tagKey));
+  }
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.role === selectedRole); }
   
   if (filteredItems.length === 0) {
@@ -665,14 +721,10 @@ function renderItems() {
   }
 }
 
-function createCard(item) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  
-  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
-  card.style.borderColor = borderCol;
-
-  let tagText = "", tagBg = "#fab460", tagColor = "white", tagClass = "";
+// 依商品的庫存/店面/非現/欄位資料，計算這個商品目前的貨況狀態
+// 回傳 { tagKey, tagText, tagBg, tagColor, tagClass }，tagKey 是給篩選/顯示設定用的識別字串
+function getStockInfo(item) {
+  let tagKey = "", tagText = "", tagBg = "#fab460", tagColor = "white", tagClass = "";
 
   const stockNum = parseFloat(item.colStock) || 0;
   const shopNum = parseFloat(item.colShop) || 0;
@@ -680,25 +732,46 @@ function createCard(item) {
   const nonStockRaw = String(item.colNonStock).toLowerCase();
 
   if (item.colStock === "-") {
+    tagKey = "SOLD OUT";
     tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
-    card.classList.add('is-sold-out');
   }
   else if (stockNum > 0 || shopNum > 0) {
+    tagKey = "現貨";
     tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
   }
   else if (nonStockNum > 0 && nonStockRaw.endsWith('v')) {
+    tagKey = "受注";
     tagText = "受注"; tagBg = "#B1DEC1";
   }
   else if (nonStockNum > 0) {
+    tagKey = "路上";
     tagText = "路上"; tagBg = "#6C95B0";
   }
   else if (item.colStock === "0" && item.colShop === "") {
+    tagKey = "預訂";
     tagText = "預訂"; tagBg = "#C197D2";
   }
 
-  let finalTagClass = tagClass ? tagClass : (tagText.length >= 2 ? "vertical" : "");
-  let tagHtml = tagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  return { tagKey, tagText, tagBg, tagColor, tagClass };
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
+  card.style.borderColor = borderCol;
+
+  const { tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item);
+  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out'); // 灰階效果不受標籤顯示設定影響，只要是售完狀態就套用
+
+  // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
+  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
+  const displayTagText = shouldShowTag ? tagText : "";
+
+  let finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
+  let tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
@@ -706,7 +779,12 @@ function createCard(item) {
   return card;
 }
 
-function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function formatName(n) {
+  if (!n) return n;
+  // 如果名稱中有空白鍵，直接在空白處換行
+  if (n.indexOf(' ') !== -1) return n.split(' ').join('<br>');
+  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+}
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
