@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物寶寶目錄</title>
+  <title>JIWU吉物·人魚島目錄</title>
 
   <meta property="og:title" content="JIWU吉物寶寶目錄" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
@@ -297,6 +297,7 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let selectedStockFilters = [];
 // 貨況勾選項目：key 對應 getStockInfo() 回傳的 tagKey，label 是勾選欄位顯示的文字
+// 「路上」已經在 getStockInfo() 裡直接併入「現貨」的 key，所以這裡不用另外列
 const STOCK_FILTER_OPTIONS = [
   { key: "現貨", label: "現貨" },
   { key: "預訂", label: "預訂" },
@@ -744,7 +745,7 @@ function getStockInfo(item) {
     tagText = "受注"; tagBg = "#B1DEC1";
   }
   else if (nonStockNum > 0) {
-    tagKey = "路上";
+    tagKey = "現貨"; // 路上直接併入現貨的 key，勾選「現貨」時會一起抓出來
     tagText = "路上"; tagBg = "#6C95B0";
   }
   else if (item.colStock === "0" && item.colShop === "") {
