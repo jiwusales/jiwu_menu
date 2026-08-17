@@ -296,7 +296,7 @@ let selectedStockFilters = [];
 const STOCK_FILTER_OPTIONS = [
   { key: "現貨", label: "現貨" },
   { key: "預訂", label: "預訂" },
-  { key: "SOLD OUT", label: "缺貨" }
+  { key: "SOLD OUT", label: "補貨登記" }
 ];
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
@@ -634,14 +634,14 @@ function renderFilters() {
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
   }).join('');
 
-  // 只顯示目前商品清單裡實際存在的貨況（例如沒有任何商品是「-」缺貨，就不顯示「缺貨」勾選項）
+  // 只顯示目前商品清單裡實際存在的貨況（例如沒有任何商品是「-」，就不顯示「補貨登記」勾選項）
   const availableStockKeys = new Set(allItems.map(i => getStockInfo(i).tagKey).filter(Boolean));
   const stockHtml = STOCK_FILTER_OPTIONS.filter(opt => availableStockKeys.has(opt.key)).map(opt => {
     const isActive = selectedStockFilters.includes(opt.key);
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleStockFilter('${opt.key}')">${opt.label}</label>`;
   }).join('');
 
-  filterBar.innerHTML = typeHtml + stockHtml;
+  filterBar.innerHTML = stockHtml + typeHtml;
 }
 
 function toggleType(type) {
@@ -707,7 +707,7 @@ function getStockInfo(item) {
 
   if (item.colStock === "-") {
     tagKey = "SOLD OUT";
-    tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
+    tagText = "補貨登記"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
   }
   else if (stockNum > 0 || shopNum > 0) {
     tagKey = "現貨";
