@@ -29,6 +29,10 @@
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
       DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
 
+      // 這個頁面要顯示哪些貨況標籤？把不想顯示的名稱刪掉即可（順序不影響顯示邏輯）
+      // 可用選項："現貨"、"SOLD OUT"、"受注"、"路上"、"預訂"
+      VISIBLE_STOCK_TAGS: ["現貨", "SOLD OUT"],
+
       // 同 IP 下不同角色的商品卡邊框顏色對照表 (未設定的角色會預設使用 THEME_COLOR)
       ROLE_BORDER_COLORS: {
         "吉伊": "#d77485",
@@ -287,6 +291,13 @@ document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR
 document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
+let selectedStockFilters = [];
+// 貨況勾選項目：key 對應 getStockInfo() 回傳的 tagKey，label 是勾選欄位顯示的文字
+const STOCK_FILTER_OPTIONS = [
+  { key: "現貨", label: "現貨" },
+  { key: "預訂", label: "預訂" },
+  { key: "SOLD OUT", label: "缺貨" }
+];
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
 
 // 側邊選單開關
@@ -618,10 +629,19 @@ function toggleRole(cat) {
 
 function renderFilters() {
   const filterBar = document.getElementById('filter-bar');
-  filterBar.innerHTML = allTypes.map(t => {
+  const typeHtml = allTypes.map(t => {
     const isActive = selectedTypes.includes(t);
     return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleType('${t}')">${t}</label>`;
   }).join('');
+
+  // 只顯示目前商品清單裡實際存在的貨況（例如沒有任何商品是「-」缺貨，就不顯示「缺貨」勾選項）
+  const availableStockKeys = new Set(allItems.map(i => getStockInfo(i).tagKey).filter(Boolean));
+  const stockHtml = STOCK_FILTER_OPTIONS.filter(opt => availableStockKeys.has(opt.key)).map(opt => {
+    const isActive = selectedStockFilters.includes(opt.key);
+    return `<label class="filter-item ${isActive ? 'active' : ''}"><input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleStockFilter('${opt.key}')">${opt.label}</label>`;
+  }).join('');
+
+  filterBar.innerHTML = typeHtml + stockHtml;
 }
 
 function toggleType(type) {
@@ -631,12 +651,22 @@ function toggleType(type) {
   renderFilters(); renderItems();
 }
 
+function toggleStockFilter(key) {
+  if (selectedStockFilters.includes(key)) { selectedStockFilters = selectedStockFilters.filter(k => k !== key); }
+  else { selectedStockFilters.push(key); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderFilters(); renderItems();
+}
+
 // 渲染商品卡片
 function renderItems() {
   const container = document.getElementById('card-container');
   container.innerHTML = "";
-  const isFilterMode = selectedTypes.length > 0;
-  let filteredItems = isFilterMode ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  const isFilterMode = selectedTypes.length > 0 || selectedStockFilters.length > 0;
+  let filteredItems = selectedTypes.length > 0 ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
+  if (selectedStockFilters.length > 0) {
+    filteredItems = filteredItems.filter(i => selectedStockFilters.includes(getStockInfo(i).tagKey));
+  }
   if (selectedRole) { filteredItems = filteredItems.filter(i => i.role === selectedRole); }
   
   if (filteredItems.length === 0) {
@@ -665,6 +695,40 @@ function renderItems() {
   }
 }
 
+// 依商品的庫存/店面/非現/欄位資料，計算這個商品目前的貨況狀態
+// 回傳 { tagKey, tagText, tagBg, tagColor, tagClass }，tagKey 是給篩選/顯示設定用的識別字串
+function getStockInfo(item) {
+  let tagKey = "", tagText = "", tagBg = "#fab460", tagColor = "white", tagClass = "";
+
+  const stockNum = parseFloat(item.colStock) || 0;
+  const shopNum = parseFloat(item.colShop) || 0;
+  const nonStockNum = parseFloat(item.colNonStock) || 0;
+  const nonStockRaw = String(item.colNonStock).toLowerCase();
+
+  if (item.colStock === "-") {
+    tagKey = "SOLD OUT";
+    tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
+  }
+  else if (stockNum > 0 || shopNum > 0) {
+    tagKey = "現貨";
+    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
+  }
+  else if (nonStockNum > 0 && nonStockRaw.endsWith('v')) {
+    tagKey = "受注";
+    tagText = "受注"; tagBg = "#B1DEC1";
+  }
+  else if (nonStockNum > 0) {
+    tagKey = "路上";
+    tagText = "路上"; tagBg = "#6C95B0";
+  }
+  else if (item.colStock === "0" && item.colShop === "") {
+    tagKey = "預訂";
+    tagText = "預訂"; tagBg = "#C197D2";
+  }
+
+  return { tagKey, tagText, tagBg, tagColor, tagClass };
+}
+
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -672,23 +736,16 @@ function createCard(item) {
   const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
-  let tagText = "", tagBg = "#fab460", tagColor = "white", tagClass = "";
+  const { tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item);
+  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out'); // 灰階效果不受標籤顯示設定影響，只要是售完狀態就套用
 
-  const stockNum = parseFloat(item.colStock) || 0;
-  const shopNum = parseFloat(item.colShop) || 0;
+  // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
+  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
+  const displayTagText = shouldShowTag ? tagText : "";
 
-  // 僅顯示「現貨」與「SOLD OUT」兩種狀態標籤，其餘狀態不顯示標籤
-  if (item.colStock === "-") {
-    tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
-    card.classList.add('is-sold-out');
-  }
-  else if (stockNum > 0 || shopNum > 0) {
-    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
-  }
-
-  let finalTagClass = tagClass ? tagClass : (tagText.length >= 2 ? "vertical" : "");
-  let tagHtml = tagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${tagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  let finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
+  let tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
@@ -696,7 +753,12 @@ function createCard(item) {
   return card;
 }
 
-function formatName(n) { return n && n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n; }
+function formatName(n) {
+  if (!n) return n;
+  // 如果名稱中有空白鍵，直接在空白處換行
+  if (n.indexOf(' ') !== -1) return n.split(' ').join('<br>');
+  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+}
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
