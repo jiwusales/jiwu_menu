@@ -531,7 +531,7 @@ function generateLineMessage() {
         priceVal = parseInt(priceRaw);
         priceText = `$${priceRaw}`;
       } else if (priceRaw.indexOf('-') !== -1) {
-        priceText = "組合出售";
+        priceText = "參考圖示";
         hasInquiry = true;
       } else if (priceRaw === "") {
         priceText = "詢問花花";
