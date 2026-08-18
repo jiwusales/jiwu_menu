@@ -336,7 +336,6 @@ function loadData() {
         color: getV(r, COL.color)
       }));
 
-      // 團名往下延續：若某列的「團名」欄位是空白，就沿用上一列（最近一個）非空白的團名，
       // 直到遇到下一個有填寫團名的列為止才換團。
       let lastGroup = "";
       rawItems.forEach(item => {
@@ -670,7 +669,6 @@ function getStockInfo(item) {
   return { tagKey: key, tagText: key, tagBg: style.bg, tagColor: style.color, tagClass: style.tagClass };
 }
 
-// 渲染商品卡片（顯示目前選中團的所有商品，不再依角色分隔線分區）
 function renderItems() {
   const container = document.getElementById('items-wrapper');
   container.innerHTML = "";
@@ -692,12 +690,25 @@ function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  // 主色系欄位：若有填寫但缺少 # 開頭，自動補上 #
   const rawColor = (item.color && item.color.trim()) ? item.color.trim() : "";
   const borderCol = rawColor ? (rawColor.startsWith('#') ? rawColor : '#' + rawColor) : CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
-  const { tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item);
+  const stockVal = String(item.stock || "").trim();
+  const isSoldOutByStock = stockVal === '-';
+
+  let tagKey, tagText, tagBg, tagColor, tagClass;
+  if (isSoldOutByStock) {
+    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
+    tagKey = "SOLD OUT";
+    tagText = "SOLD OUT";
+    tagBg = soldOutStyle.bg;
+    tagColor = soldOutStyle.color;
+    tagClass = soldOutStyle.tagClass;
+  } else {
+    ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
+  }
+
   if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
 
   // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
