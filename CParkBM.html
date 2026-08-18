@@ -83,8 +83,7 @@
       font-size: 20px; 
       cursor: pointer; 
     }
-    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .top-bar .pulse-text { display: inline-block; }
     
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; border-bottom: 1px solid #f0f0f0; }
@@ -342,7 +341,7 @@ function loadData() {
       };
       const rawItems = data.table.rows.map(r => ({
         ip: getV(r, COL.ip),
-        role: getV(r, COL.role) || "其他角色",
+        role: getV(r, COL.role) || " ",
         type: getV(r, COL.type) || "其他",
         name: getV(r, COL.name),
         originalPrice: getV(r, COL.originalPrice),
