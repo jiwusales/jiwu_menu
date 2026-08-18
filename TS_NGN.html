@@ -523,8 +523,7 @@ if (item.currentStatus === "S☹LD OUT") {
   statusText = `(${item.currentStatus})`;
 }
 
-const roleText = item.role ? ` ${item.role}` : "";
-msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
+msg += `${index}.${statusText}${item.name} ${priceText}\n`;
       index++;
     });
   });
