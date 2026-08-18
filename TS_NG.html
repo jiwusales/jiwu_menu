@@ -458,7 +458,7 @@ function toggleCart(isOpen) {
 
 function getDisplayPrice(price) {
   const p = String(price || "").trim();
-  if (p.indexOf('-') !== -1) return "組合出售";
+  if (p.indexOf('-') !== -1) return "參考圖示";
   if (p === "") return "詢問花花";
   if (/^[0-9]+$/.test(p)) return `$${p}`;
   return p;
