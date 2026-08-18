@@ -94,7 +94,7 @@
     .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
     #card-container { padding: 88px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-    #banner-wrapper img { width: 100%; display: block; border-radius: 10px; margin-bottom: 4px; }
+    #banner-wrapper img { width: 100%; max-width: 1080px; height: auto; max-height: 400px; object-fit: cover; display: block; border-radius: 10px; margin: 0 auto 4px; }
     .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); font-size: 16px; }
     .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
     .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
@@ -335,6 +335,18 @@ function loadData() {
         banner: getV(r, COL.banner),
         color: getV(r, COL.color)
       }));
+
+      // 團名往下延續：若某列的「團名」欄位是空白，就沿用上一列（最近一個）非空白的團名，
+      // 直到遇到下一個有填寫團名的列為止才換團。
+      let lastGroup = "";
+      rawItems.forEach(item => {
+        if (item.group && item.group.trim() !== "") {
+          lastGroup = item.group.trim();
+          item.group = lastGroup;
+        } else {
+          item.group = lastGroup;
+        }
+      });
 
       allItems = rawItems.filter(item => {
         if (!item.group) return false;
@@ -658,7 +670,7 @@ function getStockInfo(item) {
   return { tagKey: key, tagText: key, tagBg: style.bg, tagColor: style.color, tagClass: style.tagClass };
 }
 
-// 渲染商品卡片（只顯示目前選中團的商品，依角色分區塊）
+// 渲染商品卡片（顯示目前選中團的所有商品，不再依角色分隔線分區）
 function renderItems() {
   const container = document.getElementById('items-wrapper');
   container.innerHTML = "";
@@ -670,25 +682,19 @@ function renderItems() {
     return;
   }
 
-  const rolesInGroup = [...new Set(groupItems.map(i => i.role))];
-  rolesInGroup.forEach(roleName => {
-    const roleItems = groupItems.filter(i => i.role === roleName);
-    if (roleItems.length === 0) return;
-    const div = document.createElement('div');
-    div.className = 'type-divider'; div.id = roleName; div.textContent = roleName;
-    container.appendChild(div);
-    const grid = document.createElement('div');
-    grid.className = 'group-grid';
-    roleItems.forEach(item => grid.appendChild(createCard(item)));
-    container.appendChild(grid);
-  });
+  const grid = document.createElement('div');
+  grid.className = 'group-grid';
+  groupItems.forEach(item => grid.appendChild(createCard(item)));
+  container.appendChild(grid);
 }
 
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const borderCol = (item.color && item.color.trim()) ? item.color.trim() : CONFIG.THEME_COLOR;
+  // 主色系欄位：若有填寫但缺少 # 開頭，自動補上 #
+  const rawColor = (item.color && item.color.trim()) ? item.color.trim() : "";
+  const borderCol = rawColor ? (rawColor.startsWith('#') ? rawColor : '#' + rawColor) : CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
 
   const { tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item);
