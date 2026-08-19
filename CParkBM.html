@@ -516,9 +516,10 @@ function generateLineMessage() {
       }
       total += priceVal;
 
-      let statusText = "";
+      const stockInfo = getStockInfo(item);
+let statusText = "";
 
-if (stockInfo.tagKey === "S☹LD OUT") {
+if (stockInfo.tagKey === "SOLD OUT") {
   statusText = "(補貨登記)";
 } else if (stockInfo.tagText) {
   statusText = `(${stockInfo.tagText})`;
@@ -526,6 +527,7 @@ if (stockInfo.tagKey === "S☹LD OUT") {
 
 const hiddenRoles = ["三小隻", "其他角色", "綜合角色"];
 const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
+
 msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
       index++;
     });
