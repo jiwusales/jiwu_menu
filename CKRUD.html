@@ -482,28 +482,22 @@ function generateLineMessage() {
 
   const groupedCart = {};
   const groupOrder = [];
-
   cart.forEach(item => {
     const gName = (item.ip && String(item.ip).trim())
       ? String(item.ip).trim()
       : (CONFIG.IP_NAME || "商品");
-
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
     }
-
     groupedCart[gName].push(item);
   });
 
   let index = 1;
-
   groupOrder.forEach(gName => {
     msg += `\n【${gName}】\n`;
-
     groupedCart[gName].forEach(item => {
       const priceRaw = String(item.price || "").trim();
-
       let priceText = "";
       let priceVal = 0;
 
@@ -520,35 +514,19 @@ function generateLineMessage() {
         priceText = priceRaw;
         hasInquiry = true;
       }
-
       total += priceVal;
 
       let statusText = "";
 
-      if (item.currentStatus === "S☹LD OUT") {
-        statusText = "(補貨登記)";
-      } else if (item.currentStatus) {
-        statusText = `(${item.currentStatus})`;
-      }
+if (item.currentStatus === "S☹LD OUT") {
+  statusText = "(補貨登記)";
+} else if (item.currentStatus) {
+  statusText = `(${item.currentStatus})`;
+}
 
-      const hiddenRoles = ["三小隻", "其他角色", "綜合角色"];
-      const roleText = item.role && !hiddenRoles.includes(item.role)
-        ? ` ${item.role}`
-        : "";
-
-      // 商品名稱＋角色＋尺寸＋貨況＋售價
-      msg += `${index}. ${item.name}${roleText}`;
-
-      if (item.size) {
-        msg += ` ${item.size}`;
-      }
-
-      if (statusText) {
-        msg += ` ${statusText}`;
-      }
-
-      msg += ` ${priceText}\n`;
-
+const hiddenRoles = ["三小隻", "其他角色", "綜合角色"];
+const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
+msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
       index++;
     });
   });
