@@ -523,6 +523,7 @@ if (stockInfo.tagKey === "S☹LD OUT") {
 } else if (stockInfo.tagText) {
   statusText = `(${stockInfo.tagText})`;
 }
+
 const hiddenRoles = ["三小隻", "其他角色", "綜合角色"];
 const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
 msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
