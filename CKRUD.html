@@ -483,9 +483,7 @@ function generateLineMessage() {
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
-    const gName = (item.ip && String(item.ip).trim())
-      ? String(item.ip).trim()
-      : (CONFIG.IP_NAME || "商品");
+    const gName = (item.group && String(item.group).trim()) ? String(item.group).trim() : "商品";
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
