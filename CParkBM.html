@@ -518,12 +518,11 @@ function generateLineMessage() {
 
       let statusText = "";
 
-if (item.currentStatus === "S☹LD OUT") {
+if (stockInfo.tagKey === "S☹LD OUT") {
   statusText = "(補貨登記)";
-} else if (item.currentStatus) {
-  statusText = `(${item.currentStatus})`;
+} else if (stockInfo.tagText) {
+  statusText = `(${stockInfo.tagText})`;
 }
-
 const hiddenRoles = ["三小隻", "其他角色", "綜合角色"];
 const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
 msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
