@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>開團預覽</title>
 
-  <meta property="og:title" content="JIWU吉物寶寶目錄" />
+  <meta property="og:title" content="JIWU吉物最新開團" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png" />
   <meta property="og:type" content="website" />
@@ -17,11 +17,11 @@
      *  分頁與 頁面 控制設定區
      * ========================================================= */
     const CONFIG = {
-      THEME_COLOR: "#FBCC7E",                                  // 主要色系（找不到主色系欄位時的預設卡片邊框色）
+      THEME_COLOR: "#ffffff",                                  // 主要色系（找不到主色系欄位時的預設卡片邊框色）
       ACTIVE_COLOR: "#f5b080",                                 // 高亮 / 啟用色系
       SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
       SHEET_NAME: "尚未上架",                                   // 分頁名稱（改為直接抓這個分頁的資料，不再用 IP 篩選）
-      TOP_BAR_TEXT: "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)",
+      TOP_BAR_TEXT: " ",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales",
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
@@ -37,12 +37,12 @@
 
   <style>
     :root {
-      --theme-color: #FBCC7E;
+      --theme-color: #ffffff;
       --active-color: #f5b080;
       --nav-bg: #f9f9f9;
       --text-color: #333333;
     }
-    
+
     body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
 
     .top-bar {
@@ -66,8 +66,7 @@
       font-size: 20px;
       cursor: pointer;
     }
-    .top-bar .pulse-text { display: inline-block; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .top-bar .pulse-text { display: inline-block; }
 
     .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
     .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; }
@@ -295,9 +294,9 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 讀取目前網址 hash 對應的團名
-function getHashGroup() {
-  return decodeURIComponent((location.hash || '').replace(/^#/, ''));
+// 讀取目前網址 ?group= 對應的團名
+function getUrlGroup() {
+  return new URLSearchParams(location.search).get('group') || '';
 }
 
 // 載入試算表資料（安全轉換字串型態）
@@ -341,7 +340,7 @@ function loadData() {
 
         return {
           group: lastGroup,
-          role: getV(r, COL.role) || "其他角色",
+          role: getV(r, COL.role) || " ",
           name: getV(r, COL.name),
           originalPrice: getV(r, COL.originalPrice),
           price: getV(r, COL.price),
@@ -363,9 +362,16 @@ function loadData() {
       // 依出現順序取出所有團名
       allGroups = [...new Set(allItems.map(i => i.group))];
 
-      // 預設進第一團，若網址 hash 對應到有效的團名則優先採用
-      const hashGroup = getHashGroup();
-      selectedGroup = allGroups.includes(hashGroup) ? hashGroup : allGroups[0];
+      // 預設進第一團，若網址 ?group= 對應到有效的團名則優先採用
+      const urlGroup = getUrlGroup();
+      selectedGroup = allGroups.includes(urlGroup) ? urlGroup : allGroups[0];
+
+      // 網址沒有 group 時，自動補上目前第一團
+      if (!urlGroup && selectedGroup) {
+        const url = new URL(location.href);
+        url.searchParams.set('group', selectedGroup);
+        history.replaceState({}, '', url.pathname + '?' + url.searchParams.toString());
+      }
 
       renderSideMenu();
       renderGroupNav();
@@ -376,9 +382,9 @@ function loadData() {
   });
 }
 
-// 若使用者直接用網址列上/下一頁切換 hash，同步畫面
-window.addEventListener('hashchange', () => {
-  const g = getHashGroup();
+// 使用瀏覽器上一頁／下一頁時同步畫面
+window.addEventListener('popstate', () => {
+  const g = getUrlGroup();
   if (allGroups.includes(g) && g !== selectedGroup) {
     selectedGroup = g;
     renderGroupNav();
@@ -542,9 +548,20 @@ function generateLineMessage() {
       }
       total += priceVal;
 
-      const statusText = item.currentStatus ? `(${item.currentStatus})` : "";
-      msg += `${index}.${statusText}${item.name} ${priceText}\n`;
-      index++;
+      let statusText = "";
+
+if (item.currentStatus === "S☹LD OUT") {
+  statusText = "(補貨登記)";
+} else if (item.currentStatus) {
+  statusText = `(${item.currentStatus})`;
+}
+
+const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
+const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
+
+msg += `${index}. ${item.name}${roleText} ${priceText} ${statusText}\n`;
+
+index++;
     });
   });
 
@@ -660,7 +677,7 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
 
-// 渲染團名導覽列（點擊即切換該團，並更新網址 hash）
+// 渲染團名導覽列（點擊即切換該團，並更新網址 ?group=）
 function renderGroupNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allGroups.map(g => {
@@ -677,8 +694,10 @@ function selectGroup(name) {
   renderGroupNav();
   applyGroupSettings(selectedGroup);
   renderItems();
-  const newHash = '#' + encodeURIComponent(name);
-  if (location.hash !== newHash) location.hash = newHash;
+
+  const url = new URL(location.href);
+  url.searchParams.set('group', name);
+  history.pushState({}, '', url.pathname + '?' + url.searchParams.toString());
 }
 
 // 依「狀態」欄位取得貨況標籤樣式
