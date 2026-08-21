@@ -294,9 +294,9 @@ function toggleMenu(isOpen) {
   }
 }
 
-// 讀取目前網址 hash 對應的團名
-function getHashGroup() {
-  return decodeURIComponent((location.hash || '').replace(/^#/, ''));
+// 讀取目前網址 ?group= 對應的團名
+function getUrlGroup() {
+  return new URLSearchParams(location.search).get('group') || '';
 }
 
 // 載入試算表資料（安全轉換字串型態）
@@ -362,9 +362,16 @@ function loadData() {
       // 依出現順序取出所有團名
       allGroups = [...new Set(allItems.map(i => i.group))];
 
-      // 預設進第一團，若網址 hash 對應到有效的團名則優先採用
-      const hashGroup = getHashGroup();
-      selectedGroup = allGroups.includes(hashGroup) ? hashGroup : allGroups[0];
+      // 預設進第一團，若網址 ?group= 對應到有效的團名則優先採用
+      const urlGroup = getUrlGroup();
+      selectedGroup = allGroups.includes(urlGroup) ? urlGroup : allGroups[0];
+
+      // 網址沒有 group 時，自動補上目前第一團
+      if (!urlGroup && selectedGroup) {
+        const url = new URL(location.href);
+        url.searchParams.set('group', selectedGroup);
+        history.replaceState({}, '', url.pathname + '?' + url.searchParams.toString());
+      }
 
       renderSideMenu();
       renderGroupNav();
@@ -375,9 +382,9 @@ function loadData() {
   });
 }
 
-// 若使用者直接用網址列上/下一頁切換 hash，同步畫面
-window.addEventListener('hashchange', () => {
-  const g = getHashGroup();
+// 使用瀏覽器上一頁／下一頁時同步畫面
+window.addEventListener('popstate', () => {
+  const g = getUrlGroup();
   if (allGroups.includes(g) && g !== selectedGroup) {
     selectedGroup = g;
     renderGroupNav();
@@ -670,7 +677,7 @@ async function handleFinalCheckout() {
   document.getElementById('step-2').style.display = "block";
 }
 
-// 渲染團名導覽列（點擊即切換該團，並更新網址 hash）
+// 渲染團名導覽列（點擊即切換該團，並更新網址 ?group=）
 function renderGroupNav() {
   const nav = document.getElementById('dynamic-nav');
   nav.innerHTML = allGroups.map(g => {
@@ -687,8 +694,10 @@ function selectGroup(name) {
   renderGroupNav();
   applyGroupSettings(selectedGroup);
   renderItems();
-  const newHash = '#' + encodeURIComponent(name);
-  if (location.hash !== newHash) location.hash = newHash;
+
+  const url = new URL(location.href);
+  url.searchParams.set('group', name);
+  history.pushState({}, '', url.pathname + '?' + url.searchParams.toString());
 }
 
 // 依「狀態」欄位取得貨況標籤樣式
