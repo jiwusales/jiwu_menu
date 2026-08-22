@@ -484,55 +484,54 @@ function removeFromCart(index) {
 }
 
 function generateLineMessage() {
-  let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
-  let total = 0;
-  let hasInquiry = false;
+  let msg="你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n",total=0,hasInquiry=false;
+  const groupedCart={},groupOrder=[];
 
-  const groupedCart = {};
-  const groupOrder = [];
-  cart.forEach(item => {
+  cart.forEach(item=>{
     const gName=getCartSourceName(item);
+    if(!groupedCart[gName]){
+      groupedCart[gName]=[];
+      groupOrder.push(gName);
+    }
+    groupedCart[gName].push(item);
+  });
 
-  let index = 1;
-  groupOrder.forEach(gName => {
-    msg += `\n【${gName}】\n`;
-    groupedCart[gName].forEach(item => {
-      const priceRaw = String(item.price || "").trim();
-      let priceText = "";
-      let priceVal = 0;
+  let index=1;
+  groupOrder.forEach(gName=>{
+    msg+=`\n【${gName}】\n`;
+    groupedCart[gName].forEach(item=>{
+      const p=String(item.price||"").trim();
+      let priceText="",priceVal=0;
 
-      if (/^[0-9]+$/.test(priceRaw)) {
-        priceVal = parseInt(priceRaw);
-        priceText = `$${priceRaw}`;
-      } else if (priceRaw.indexOf('-') !== -1) {
-        priceText = "組合出售";
-        hasInquiry = true;
-      } else if (priceRaw === "") {
-        priceText = "詢問花花";
-        hasInquiry = true;
-      } else {
-        priceText = priceRaw;
-        hasInquiry = true;
+      if(/^[0-9]+$/.test(p)){
+        priceVal=parseInt(p);
+        priceText=`$${p}`;
+      }else if(p.includes("-")){
+        priceText="組合出售";
+        hasInquiry=true;
+      }else if(!p){
+        priceText="詢問花花";
+        hasInquiry=true;
+      }else{
+        priceText=p;
+        hasInquiry=true;
       }
-      total += priceVal;
 
-      let statusText = "";
+      total+=priceVal;
 
-if (item.currentStatus === "S☹LD OUT") {
-  statusText = "(補貨登記)";
-} else if (item.currentStatus) {
-  statusText = `(${item.currentStatus})`;
-}
+      let statusText="";
+      if(item.currentStatus==="S☹LD OUT") statusText="(補貨登記)";
+      else if(item.currentStatus) statusText=`(${item.currentStatus})`;
 
-const hiddenRoles = ["水族", "食物", "動物", "其他角色", "綜合角色"];
-const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
-msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
+      const hiddenRoles=["三小隻","其他角色","綜合角色","水族","食物","動物"];
+      const roleText=item.role&&!hiddenRoles.includes(item.role)?` ${item.role}`:"";
+
+      msg+=`${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
       index++;
     });
   });
 
-  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
-
+  msg+=`\n總金額：$${total}${hasInquiry?" + 詢問報價":""}`;
   return msg;
 }
 
