@@ -304,7 +304,17 @@ const STOCK_FILTER_OPTIONS = [
   { key: "SOLD OUT", label: "補貨登記" }
 ];
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
-
+function getCartSourceName(item){
+  return String(
+    item.groupName ||
+    item.ipName ||
+    item.ip ||
+    item.group ||
+    (typeof selectedGroup !== "undefined" ? selectedGroup : "") ||
+    CONFIG.IP_NAME ||
+    ""
+  ).trim() || "商品";
+}
 // 側邊選單開關
 function toggleMenu(isOpen) {
   const menu = document.getElementById('side-menu');
@@ -406,15 +416,15 @@ function renderSideMenu() {
 // 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function addToCart(e, item, tagText, tagBg, tagColor) {
+function addToCart(e,item,tagText,tagBg,tagColor){
   e.stopPropagation();
-  const itemIp = (item.ip && String(item.ip).trim()) ? String(item.ip).trim() : (CONFIG.IP_NAME || "");
-  cart.push({ ...item, ip: itemIp, groupName: itemIp || CONFIG.SHEET_NAME, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  const source=(item.ip&&String(item.ip).trim())?String(item.ip).trim():(CONFIG.IP_NAME||"");
+  cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});
   saveCart();
   updateCartUI();
-  const btn = e.target;
-  btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = "#ddd"; }, 50); 
+  const btn=e.target;
+  btn.style.background="#fdd365";
+  setTimeout(()=>btn.style.background="#ddd",50);
 }
 
 function clearCart() {
@@ -483,9 +493,7 @@ function generateLineMessage() {
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
-    const gName = (item.ip && String(item.ip).trim())
-      ? String(item.ip).trim()
-      : (CONFIG.IP_NAME || "商品");
+    const gName=getCartSourceName(item);
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -603,25 +611,10 @@ async function handleFinalCheckout() {
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
   try {
-    const cartData = cart.map(item => {
-      return {
-        ip: item.ip || CONFIG.IP_NAME || "", 
-        role: item.role,      
-        type: item.type,      
-        name: item.name,              
-        originalPrice: item.originalPrice,
-        price: item.price,    
-        colStock: item.colStock,
-        colShop: item.colShop,
-        colNonStock: item.colNonStock,
-        status: item.status,
-        sn: item.sn,          
-        img: item.img,
-        url: item.url,
-        size: item.size,
-        note: item.note
-      };
-    });
+    const cartData=cart.map(item=>{
+  const source=getCartSourceName(item);
+  return {...item,ip:source,ipName:source,group:source,groupName:source};
+});
 
     const postData = { 
       source: "電腦",          
