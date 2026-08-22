@@ -280,7 +280,17 @@ const STOCK_STYLES = {
 };
 
 let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
-
+function getCartSourceName(item){
+  return String(
+    item.groupName ||
+    item.ipName ||
+    item.ip ||
+    item.group ||
+    (typeof selectedGroup !== "undefined" ? selectedGroup : "") ||
+    CONFIG.IP_NAME ||
+    ""
+  ).trim() || "商品";
+}
 // 側邊選單開關
 function toggleMenu(isOpen) {
   const menu = document.getElementById('side-menu');
@@ -440,15 +450,15 @@ function renderSideMenu() {
 // 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function addToCart(e, item, tagText, tagBg, tagColor) {
+function addToCart(e,item,tagText,tagBg,tagColor){
   e.stopPropagation();
-  const itemGroup = (item.group && String(item.group).trim()) ? String(item.group).trim() : selectedGroup;
-  cart.push({ ...item, group: itemGroup, groupName: itemGroup, currentStatus: tagText || "", tagBg: tagBg, tagColor: tagColor });
+  const source=(item.group&&String(item.group).trim())?String(item.group).trim():selectedGroup;
+  cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});
   saveCart();
   updateCartUI();
-  const btn = e.target;
-  btn.style.background = "#fdd365";
-  setTimeout(() => { btn.style.background = "#ddd"; }, 50);
+  const btn=e.target;
+  btn.style.background="#fdd365";
+  setTimeout(()=>btn.style.background="#ddd",50);
 }
 
 function clearCart() {
@@ -517,7 +527,7 @@ function generateLineMessage() {
   const groupedCart = {};
   const groupOrder = [];
   cart.forEach(item => {
-    const gName = (item.group && String(item.group).trim()) ? String(item.group).trim() : "商品";
+    const gName=getCartSourceName(item);
     if (!groupedCart[gName]) {
       groupedCart[gName] = [];
       groupOrder.push(gName);
@@ -637,21 +647,10 @@ async function handleFinalCheckout() {
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
   try {
-    const cartData = cart.map(item => {
-      return {
-        group: item.group || selectedGroup || "",
-        role: item.role,
-        name: item.name,
-        originalPrice: item.originalPrice,
-        price: item.price,
-        stock: item.stock,
-        status: item.status,
-        sn: item.sn,
-        img: item.img,
-        url: item.url,
-        size: item.size
-      };
-    });
+    const cartData=cart.map(item=>{
+  const source=getCartSourceName(item);
+  return {...item,ip:source,ipName:source,group:source,groupName:source};
+});
 
     const postData = {
       source: "電腦",
