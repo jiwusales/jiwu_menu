@@ -336,7 +336,7 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
 
       // 依標題名稱找出每個欄位在試算表中的實際位置
-      const HEADER_NAMES = { ip: "IP", role: "角色", type: "種類", name: "名稱", originalPrice: "原價", price: "售價", colStock: "庫存", colShop: "店面", colNonStock: "非現", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸", note: "備註" };
+      const HEADER_NAMES = { ip: "IP", role: "角色", type: "種類", name: "名稱", originalPrice: "原價", price: "售價", colStock: "庫存", colShop: "店面", colNonStock: "非現", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸", note: "首圖" };
       const colLabels = (data.table.cols || []).map(c => String(c.label || "").trim());
       const COL = {};
       Object.keys(HEADER_NAMES).forEach(key => {
