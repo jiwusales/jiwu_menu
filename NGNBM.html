@@ -526,7 +526,7 @@ function generateLineMessage() {
       if(item.currentStatus==="S☹LD OUT") statusText="(補貨登記)";
       else if(item.currentStatus) statusText=`(${item.currentStatus})`;
 
-      const hiddenRoles=["三小隻","其他角色","綜合角色","水族","食物","動物"];
+      const hiddenRoles=["三小隻","其他角色","綜合角色","水族","食物","動物","全角色"];
       const roleText=item.role&&!hiddenRoles.includes(item.role)?` ${item.role}`:"";
 
       msg+=`${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
