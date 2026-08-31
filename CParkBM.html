@@ -530,8 +530,9 @@ function generateLineMessage() {
       total+=priceVal;
 
       let statusText="";
-      if(item.currentStatus==="S☹LD OUT") statusText="(補貨登記)";
-      else if(item.currentStatus) statusText=`(${item.currentStatus})`;
+if(item.currentStatus==="S☹LD OUT") statusText="(補貨登記)";
+else if(item.currentStatus==="最後一個") statusText="(現貨)";
+else if(item.currentStatus) statusText=`(${item.currentStatus})`;
 
       const hiddenRoles=["三小隻","其他角色","綜合角色", "全角色"];
       const roleText=item.role&&!hiddenRoles.includes(item.role)?` ${item.role}`:"";
