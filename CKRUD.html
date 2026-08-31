@@ -737,25 +737,38 @@ function getStockInfo(item) {
 
   if (item.colStock === "-") {
     tagKey = "SOLD OUT";
-    tagText = "S☹LD OUT"; tagBg = "#3a3a3a"; tagColor = "#ffffff"; tagClass = "sold-out";
+    tagText = "S☹LD OUT";
+    tagBg = "#3a3a3a";
+    tagColor = "#ffffff";
+    tagClass = "sold-out";
+  }
+  else if (stockNum === 1) {
+    tagKey = "現貨";
+    tagText = "最後一個";
+    tagBg = "#E24C60";
+    tagColor = "#ffffff";
   }
   else if (stockNum > 0 || shopNum > 0) {
     tagKey = "現貨";
-    tagText = "現貨"; tagBg = "#FFF4BD"; tagColor = "#333";
+    tagText = "現貨";
+    tagBg = "#FFF4BD";
+    tagColor = "#333";
   }
   else if (nonStockNum > 0 && nonStockRaw.endsWith('v')) {
     tagKey = "受注";
-    tagText = "受注"; tagBg = "#B1DEC1";
+    tagText = "受注";
+    tagBg = "#B1DEC1";
   }
   else if (nonStockNum > 0) {
-    tagKey = "現貨"; // 路上直接併入現貨的 key，勾選「現貨」時會一起抓出來
-    tagText = "路上"; tagBg = "#6C95B0";
+    tagKey = "現貨";
+    tagText = "路上";
+    tagBg = "#6C95B0";
   }
   else if (item.colStock === "0" && item.colShop === "") {
     tagKey = "預訂";
-    tagText = "預訂"; tagBg = "#C197D2";
+    tagText = "預訂";
+    tagBg = "#C197D2";
   }
-
   return { tagKey, tagText, tagBg, tagColor, tagClass };
 }
 
