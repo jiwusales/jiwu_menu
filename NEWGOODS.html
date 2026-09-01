@@ -578,9 +578,7 @@ if (item.currentStatus === "S☹LD OUT") {
 
 const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
 const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
-
-msg += `${index}. ${item.name}${roleText} ${priceText} ${statusText}\n`;
-
+msg += `${index}. ${statusText}${statusText ? " " : ""}${item.name}${roleText} ${priceText}\n`;
 index++;
     });
   });
