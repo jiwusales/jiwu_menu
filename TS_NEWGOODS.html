@@ -2,8 +2,11 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>開團預覽</title>
+  <title>JIWU吉物最新開團</title>
 
   <meta property="og:title" content="JIWU吉物最新開團" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
@@ -13,22 +16,27 @@
   <link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png" type="image/png" />
 
   <script>
+    /* =========================================================
+     *  分頁與 頁面 控制設定區
+     * ========================================================= */
     const CONFIG = {
-      THEME_COLOR: "#ffffff",
-      ACTIVE_COLOR: "#f5b080",
-      SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",
-      SHEET_NAME: "尚未上架",
+      THEME_COLOR: "#ffffff",                                  // 主要色系（找不到主色系欄位時的預設卡片邊框色）
+      ACTIVE_COLOR: "#f5b080",                                 // 高亮 / 啟用色系
+      SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
+      SHEET_NAME: "尚未上架",                                   // 分頁名稱（改為直接抓這個分頁的資料，不再用 IP 篩選）
       TOP_BAR_TEXT: " ",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales",
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
       DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
+
+      // 可用選項："現貨"、"SOLD OUT"、"受注"、"路上"、"預訂"
       VISIBLE_STOCK_TAGS: ["現貨", "SOLD OUT"]
     };
   </script>
 
-  <script src="common.js"></script>
+  <script src="common.js?v=20260823-1544"></script>
 
   <style>
     :root {
@@ -38,511 +46,349 @@
       --text-color: #333333;
     }
 
-    body { font-family: Arial,sans-serif; background:#f9f9f9; margin:0; padding:0; color:var(--text-color); text-align:center; overflow-x:hidden; }
+    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: var(--text-color); text-align: center; overflow-x: hidden; }
 
     .top-bar {
-      background:var(--theme-color); color:#fff; padding:10px 0;
-      position:fixed; top:0; left:0; width:100%; z-index:999;
-      font-size:15px; display:flex; justify-content:center; align-items:center;
+      background: var(--theme-color);
+      color: #fff;
+      padding: 10px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 999;
+      font-size: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-
-    .top-bar .menu-btn { position:absolute; left:15px; color:#fff; font-size:20px; cursor:pointer; }
-    .top-bar .pulse-text { display:inline-block; }
-
-    .header-fixed {
-      position:fixed; top:40px; width:100%; background:var(--nav-bg);
-      z-index:998; border-bottom:1px solid #eee;
+    .top-bar .menu-btn {
+      position: absolute;
+      left: 15px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
     }
+    .top-bar .pulse-text { display: inline-block; }
 
-    .nav-bar-wrapper { display:flex; align-items:center; padding:0 5px; box-sizing:border-box; height:38px; }
+    .header-fixed { position: fixed; top: 40px; width: 100%; background: var(--nav-bg); z-index: 998; border-bottom: 1px solid #eee; }
+    .nav-bar-wrapper { display: flex; align-items: center; padding: 0 5px; box-sizing: border-box; height: 38px; }
 
-    #side-menu {
-      position:fixed; top:0; left:-250px; width:220px; height:100%;
-      background:#fff; z-index:10001; transition:.3s ease;
-      box-shadow:2px 0 10px rgba(0,0,0,.1); text-align:left;
-    }
+    #side-menu { position: fixed; top: 0; left: -250px; width: 220px; height: 100%; background: #fff; z-index: 10001; transition: 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); text-align: left; }
+    #side-menu.open { left: 0; }
 
-    #side-menu.open { left:0; }
+    .menu-header { padding: 10px; background: var(--theme-color); color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; text-decoration: none; }
+    .header-icon { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; }
 
-    .menu-header {
-      padding:10px; background:var(--theme-color); color:white;
-      font-weight:bold; cursor:pointer; display:flex; align-items:center;
-      text-decoration:none;
-    }
+    .menu-item { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .menu-item img { width: 36px; height: 36px; object-fit: contain; }
+    .menu-item:active { background: #f9f9f9; }
+    #menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; }
 
-    .header-icon { width:28px; height:28px; object-fit:contain; margin-right:10px; }
+    .scroll-container { flex: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .scroll-container::-webkit-scrollbar { display: none; }
+    .nav-bar { display: inline-block; padding: 8px 0; font-size: 10pt; }
+    .nav-bar a { color: var(--text-color); text-decoration: none; padding: 6px 0; display: inline-block; transition: 0.2s; cursor: pointer; }
+    .nav-bar a.active-role { font-weight: bold; color: var(--active-color); }
+    .nav-bar a::after { content: "｜"; color: #aaa; margin: 0 2px; font-weight: normal; }
+    .nav-bar a:last-child::after { content: ""; }
 
-    .menu-item {
-      padding:12px 20px; border-bottom:1px solid #f0f0f0;
-      color:#555; text-decoration:none; display:flex; align-items:center;
-      gap:10px; font-size:14px;
-    }
+    .nav-arrow { width: 24px; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none; color: #bbb; display: flex; justify-content: center; align-items: center; }
 
-    .menu-item img { width:36px; height:36px; object-fit:contain; }
-    .menu-item:active { background:#f9f9f9; }
+    #card-container { padding: 78px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+    #banner-wrapper { width: 720px; max-width: 100%; margin: 0 auto; }
+    #banner-wrapper img { width: 100%; height: auto; display: block; margin: 0 auto 4px; }
+    .type-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0 8px; font-weight: bold; scroll-margin-top: 95px; color: var(--text-color); font-size: 16px; }
+    .type-divider::before, .type-divider::after { content: ""; flex: 1; border-top: 1px solid #ddd; margin: 0 10px; }
+    .group-grid { display: grid; grid-template-columns: repeat(4, 1fr); justify-content: start; gap: 6px; }
+    @media (min-width: 480px) { .group-grid { grid-template-columns: repeat(auto-fill, 120px); } }
 
-    #menu-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,.4);
-      z-index:10000; display:none;
-    }
+    .card { border: 2px solid var(--theme-color); border-radius: 8px; background: #fff; text-align: center; cursor: pointer; overflow: hidden; transition: 0.2s; position: relative; }
+    .card.is-sold-out { filter: grayscale(100%); border-color: #999 !important; }
+    .stock-tag,
+.stock-tag.vertical,
+.stock-tag.sold-out {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 0 0 8px 0;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-sizing: border-box;
+}
+    .add-btn-tag { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #ddd; color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: none; }
 
-    .scroll-container {
-      flex:1; overflow-x:auto; white-space:nowrap;
-      -webkit-overflow-scrolling:touch; scrollbar-width:none;
-    }
+    .card img { height: 90px; width: auto; max-width: 90%; display: block; margin: 5px auto 0px; object-fit: contain; pointer-events: none; }
+    .card .name { margin: 1px auto; font-size: 9px; font-weight: bold; line-height: 1.2; padding: 0 2px; }
+    .card .price { font-size: 10px; margin: 1px auto 1px; color: #F5B080; }
+    .card .size { font-size: 8px; margin: 0 auto 5px; color: #888888; }
 
-    .scroll-container::-webkit-scrollbar { display:none; }
+    .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .card-overlay .card { transform: scale(3.1); background: white; width: 100px; padding: 15px 0 5px; pointer-events: none; border-width: 1.5px; }
 
-    .nav-bar { display:inline-block; padding:8px 0; font-size:10pt; }
-
-    .nav-bar a {
-      color:var(--text-color); text-decoration:none; padding:6px 0;
-      display:inline-block; transition:.2s; cursor:pointer;
-    }
-
-    .nav-bar a.active-role { font-weight:bold; color:var(--active-color); }
-    .nav-bar a::after { content:"｜"; color:#aaa; margin:0 2px; font-weight:normal; }
-    .nav-bar a:last-child::after { content:""; }
-
-    .nav-arrow {
-      width:24px; font-size:16px; cursor:pointer; flex-shrink:0;
-      user-select:none; color:#bbb; display:flex;
-      justify-content:center; align-items:center;
-    }
-
-    #card-container {
-      padding:78px 10px 10px; display:flex;
-      flex-direction:column; gap:8px;
-    }
-
-    #banner-wrapper { width:720px; max-width:100%; margin:0 auto; }
-
-    #banner-wrapper img {
-      width:100%; height:auto; display:block; margin:0 auto 4px;
-    }
-
-    .group-grid {
-      display:grid; grid-template-columns:repeat(4,1fr);
-      justify-content:start; gap:6px;
-    }
-
-    @media (min-width:480px) {
-      .group-grid { grid-template-columns:repeat(auto-fill,120px); }
-    }
-
-    .card {
-      border:2px solid var(--theme-color); border-radius:8px;
-      background:#fff; text-align:center; cursor:pointer;
-      overflow:hidden; transition:.2s; position:relative;
-    }
-
-    .card.is-sold-out {
-      filter:grayscale(100%);
-      border-color:#999 !important;
-    }
-
-    .stock-tag {
-      position:absolute; top:4px; left:4px; width:22px; height:22px;
-      border-radius:50%; font-size:11px; font-weight:bold;
-      display:flex; align-items:center; justify-content:center;
-      z-index:10; box-sizing:border-box;
-    }
-
-    .stock-tag.vertical {
-      writing-mode:vertical-rl; text-orientation:upright;
-      width:20px; height:auto; border-radius:10px;
-      padding:4px 0; font-size:9px;
-    }
-
-    .stock-tag.sold-out {
-      writing-mode:horizontal-tb; top:0; left:0;
-      width:auto; height:16px; border-radius:0 0 8px 0;
-      padding:0 4px; font-size:10px; letter-spacing:0;
-      font-weight:bold;
-    }
-
-    .add-btn-tag {
-      position:absolute; top:4px; right:4px;
-      width:18px; height:18px; border-radius:50%;
-      background:#ddd; color:#fff; font-size:14px;
-      font-weight:bold; display:flex; align-items:center;
-      justify-content:center; z-index:10; box-sizing:border-box;
-      cursor:pointer; pointer-events:auto;
-    }
-
-    .card img {
-      height:90px; width:auto; max-width:90%;
-      display:block; margin:5px auto 0;
-      object-fit:contain; pointer-events:none;
-    }
-
-    .card .name {
-      margin:1px auto; font-size:9px; font-weight:bold;
-      line-height:1.2; padding:0 2px;
-    }
-
-    .card .price {
-      font-size:10px; margin:1px auto;
-      color:#F5B080;
-    }
-
-    .card .size {
-      font-size:8px; margin:0 auto 5px;
-      color:#888;
-    }
-
-    .card-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,.7);
-      z-index:10000; display:flex; justify-content:center;
-      align-items:center; cursor:pointer;
-    }
-
-    .card-overlay .card {
-      transform:scale(3.1); background:white;
-      width:100px; padding:15px 0 5px;
-      pointer-events:none; border-width:1.5px;
-    }
-
-    .card-overlay .stock-tag {
-      transform:scale(.6); transform-origin:top left;
-      writing-mode:horizontal-tb !important;
-      width:auto !important; height:16px !important;
-      padding:0 5px !important; border-radius:4px !important;
-      top:3px; left:3px; font-size:10px;
-    }
-
-    .card-overlay .stock-tag.sold-out {
-      border-radius:0 0 4px 0 !important;
-      top:0 !important; left:0 !important;
-    }
-
-    .card-overlay .add-btn-tag {
-      transform:scale(.8);
-      transform-origin:center;
-    }
+    .card-overlay .stock-tag,
+.card-overlay .stock-tag.vertical,
+.card-overlay .stock-tag.sold-out {
+  transform: scale(1);
+  transform-origin: top left;
+  writing-mode: horizontal-tb !important;
+  width: 55px !important;
+  height: 16px !important;
+  padding: 0 5px !important;
+  border-radius: 0 0 8px 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  font-size: 10px;
+}
+    .card-overlay .add-btn-tag { transform: scale(0.8); transform-origin: center; }
 
     #cart-trigger {
-      position:fixed; top:88px; right:15px;
-      width:45px; height:45px; background:#fff;
-      border-radius:50%; display:flex;
-      justify-content:center; align-items:center;
-      box-shadow:0 2px 8px rgba(0,0,0,.15);
-      z-index:999; opacity:.8; cursor:move;
-      touch-action:none; user-select:none;
-      transition:left .3s ease,right .3s ease;
+      position: fixed;
+      top: 88px;
+      right: 15px;
+      width: 45px;
+      height: 45px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 999;
+      opacity: 0.8;
+      cursor: move;
+      touch-action: none;
+      user-select: none;
+      transition: left 0.3s ease, right 0.3s ease;
     }
+    #cart-trigger img { width: 28px; height: 28px; pointer-events: none; }
+    #cart-badge { position: absolute; top: -2px; right: -2px; background: #ff4d4f; color: white; font-size: 10px; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
-    #cart-trigger img {
-      width:28px; height:28px;
-      pointer-events:none;
-    }
+    #cart-panel { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
+    #cart-panel.open { right: 0; }
+    #cart-overlay-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; }
 
-    #cart-badge {
-      position:absolute; top:-2px; right:-2px;
-      background:#ff4d4f; color:white; font-size:10px;
-      border-radius:50%; width:18px; height:18px;
-      display:none; align-items:center; justify-content:center;
-      font-weight:bold;
-    }
+    .cart-header { padding: 12px 15px; background: var(--theme-color); color: white; font-weight: bold; font-size: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .cart-list { flex: 1; overflow-y: auto; padding: 10px; text-align: left; }
+    .cart-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 12px; }
+    .cart-item img { width: 45px; height: 45px; object-fit: contain; border-radius: 4px; }
+    .cart-item-info { flex: 1; }
+    .cart-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; color: white; margin-bottom: 3px; font-weight: bold; }
 
-    #cart-panel {
-      position:fixed; top:0; right:-300px;
-      width:280px; height:100%; background:white;
-      box-shadow:-5px 0 15px rgba(0,0,0,.1);
-      z-index:1001; transition:.3s ease;
-      display:flex; flex-direction:column;
-    }
+    .cart-footer { padding: 15px 15px 25px; border-top: 1px solid #eee; background: #fafafa; }
+    .text-clear { display: block; text-align: left; color: #aaa; font-size: 13px; text-decoration: underline; cursor: pointer; margin-bottom: 12px; font-weight: normal; }
+    .text-clear:hover { color: #888; }
+    .btn-checkout { background: var(--theme-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
-    #cart-panel.open { right:0; }
-
-    #cart-overlay-bg {
-      position:fixed; inset:0; background:rgba(0,0,0,.4);
-      z-index:1000; display:none;
-    }
-
-    .cart-header {
-      padding:12px 15px; background:var(--theme-color);
-      color:white; font-weight:bold; font-size:16px;
-      text-align:left; display:flex;
-      justify-content:space-between; align-items:center;
-    }
-
-    .cart-list {
-      flex:1; overflow-y:auto;
-      padding:10px; text-align:left;
-    }
-
-    .cart-item {
-      display:flex; align-items:center; gap:10px;
-      margin-bottom:12px; border-bottom:1px solid #f0f0f0;
-      padding-bottom:8px; font-size:12px;
-    }
-
-    .cart-item img {
-      width:45px; height:45px;
-      object-fit:contain; border-radius:4px;
-    }
-
-    .cart-item-info { flex:1; }
-
-    .cart-tag {
-      display:inline-block; font-size:10px;
-      padding:1px 6px; border-radius:4px;
-      color:white; margin-bottom:3px; font-weight:bold;
-    }
-
-    .cart-footer {
-      padding:15px 15px 25px;
-      border-top:1px solid #eee;
-      background:#fafafa;
-    }
-
-    .text-clear {
-      display:block; text-align:left; color:#aaa;
-      font-size:13px; text-decoration:underline;
-      cursor:pointer; margin-bottom:12px;
-    }
-
-    .btn-checkout {
-      background:var(--theme-color); color:white;
-      border:none; padding:12px; width:100%;
-      border-radius:8px; cursor:pointer;
-      font-weight:bold; font-size:14px;
-    }
-
-    #checkout-modal {
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.8);
-      z-index:2000; display:none;
-      align-items:center; justify-content:center;
-    }
-
-    .modal-content {
-      background:white; width:85%; max-width:380px;
-      border-radius:15px; padding:20px;
-      position:relative;
-    }
-
-    .input-box {
-      width:100%; padding:10px; margin:8px 0;
-      border:1px solid #ddd; border-radius:5px;
-      box-sizing:border-box; font-size:14px;
-    }
-
-    .summary-box {
-      background:#f9f9f9; padding:10px; border-radius:5px;
-      font-size:12px; max-height:250px; overflow-y:auto;
-      text-align:left; margin-bottom:10px;
-      border:1px solid #eee;
-    }
-
-    .qr-box { display:none; text-align:center; }
-    .qr-box img { width:180px; height:180px; margin:10px 0; }
+    #checkout-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 85%; max-width: 380px; border-radius: 15px; padding: 20px; position: relative; }
+    .input-box { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+    .summary-box { background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px; max-height: 250px; overflow-y: auto; text-align: left; margin-bottom: 10px; border: 1px solid #eee; }
+    .qr-box { display: none; text-align: center; }
+    .qr-box img { width: 180px; height: 180px; margin: 10px 0; }
   </style>
 </head>
-
 <body>
+ <div class="top-bar">
+    <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
+    <span class="pulse-text" id="top-msg" style="color: #fff;">載入中...</span>
+  </div>
 
-<div class="top-bar">
-  <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
-  <span class="pulse-text" id="top-msg" style="color:#fff;">載入中...</span>
-</div>
+  <div id="menu-overlay" onclick="toggleMenu(false)"></div>
+  <div id="side-menu">
+    <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
+      <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
+    </a>
+    <div id="side-menu-items">
+      </div>
+  </div>
 
-<div id="menu-overlay" onclick="toggleMenu(false)"></div>
-
-<div id="side-menu">
-  <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
-    <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon">
-    JIWU．吉物販售
-  </a>
-  <div id="side-menu-items"></div>
-</div>
-
-<div class="header-fixed">
-  <div class="nav-bar-wrapper">
-    <div class="nav-arrow" onclick="document.getElementById('group-scroll').scrollBy(-150,0)">❮</div>
-    <div class="scroll-container" id="group-scroll">
-      <div class="nav-bar" id="dynamic-nav"></div>
+  <div class="header-fixed">
+    <div class="nav-bar-wrapper">
+      <div class="nav-arrow" onclick="document.getElementById('group-scroll').scrollBy(-150,0)">❮</div>
+      <div class="scroll-container" id="group-scroll"><div class="nav-bar" id="dynamic-nav"></div></div>
+      <div class="nav-arrow" onclick="document.getElementById('group-scroll').scrollBy(150,0)">❯</div>
     </div>
-    <div class="nav-arrow" onclick="document.getElementById('group-scroll').scrollBy(150,0)">❯</div>
-  </div>
-</div>
-
-<div id="card-container">
-  <div id="banner-wrapper"></div>
-  <div id="items-wrapper"></div>
-</div>
-
-<div id="cart-trigger">
-  <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" alt="cart">
-  <div id="cart-badge">0</div>
-</div>
-
-<div id="cart-overlay-bg" onclick="toggleCart(false)"></div>
-
-<div id="cart-panel">
-  <div class="cart-header">
-    <span>購物車</span>
-    <span style="cursor:pointer;font-size:20px;" onclick="toggleCart(false)">✕</span>
   </div>
 
-  <div class="cart-list" id="cart-list"></div>
+  <div id="card-container">
+    <div id="banner-wrapper"></div>
+    <div id="items-wrapper"></div>
+  </div>
 
-  <div class="cart-footer">
-    <span class="text-clear" onclick="clearCart()">清空購物車</span>
+  <div id="cart-trigger">
+    <img src="https://images.icon-icons.com/2098/PNG/512/shopping_cart_icon_128753.png" alt="cart">
+    <div id="cart-badge">0</div>
+  </div>
 
-    <div style="margin-bottom:12px;font-weight:bold;display:flex;justify-content:space-between;font-size:15px;">
-      <span>總計金額</span>
-      <span id="cart-total" style="color:#e44d26;">$0</span>
+  <div id="cart-overlay-bg" onclick="toggleCart(false)"></div>
+  <div id="cart-panel">
+    <div class="cart-header">
+      <span>購物車</span>
+      <span style="cursor:pointer; font-size: 20px;" onclick="toggleCart(false)">✕</span>
     </div>
-
-    <button class="btn-checkout" onclick="handleCheckoutEntry()">確認結帳</button>
+    <div class="cart-list" id="cart-list"></div>
+    <div class="cart-footer">
+      <span class="text-clear" onclick="clearCart()">清空購物車</span>
+      <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
+        <span>總計金額</span>
+        <span id="cart-total" style="color: #e44d26;">$0</span>
+      </div>
+      <button class="btn-checkout" onclick="handleCheckoutEntry()">確認結帳</button>
+    </div>
   </div>
-</div>
 
-<div id="checkout-modal">
-
-  <div class="modal-content" id="step-1">
-    <h3 style="margin-top:0;font-size:18px;">確認訂購資料</h3>
-
-    <div class="summary-box" id="modal-summary-list"></div>
-
-    <div style="padding:5px 0;border-top:1px solid #eee;margin-bottom:5px;text-align:right;font-weight:bold;font-size:14px;">
-      總計：<span id="modal-total-price" style="color:#e44d26;">$0</span>
+  <div id="checkout-modal">
+    <div class="modal-content" id="step-1">
+      <h3 style="margin-top:0; font-size: 18px;">確認訂購資料</h3>
+      <div class="summary-box" id="modal-summary-list"></div>
+      <div style="padding: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px; text-align: right; font-weight: bold; font-size: 14px;">
+        總計：<span id="modal-total-price" style="color:#e44d26;">$0</span>
+      </div>
+      <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
+      <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
+      <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
+      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
     </div>
 
-    <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
-    <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
-
-    <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
-
-    <span onclick="closeModal()" style="position:absolute;top:10px;right:15px;cursor:pointer;color:#ccc">✕</span>
+    <div class="modal-content qr-box" id="step-2">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
+      <p style="font-weight:bold; font-size: 14px; margin: 10px 0;">再麻煩到官方Line(@jiwusales)確認訂單！</p>
+      <button class="btn-checkout" style="margin-top:10px;" onclick="closeModal()">關閉視窗</button>
+    </div>
   </div>
-
-  <div class="modal-content qr-box" id="step-2">
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/R/ti/p/@tei8245t" alt="QR">
-
-    <p style="font-weight:bold;font-size:14px;margin:10px 0;">
-      訂購完成！點選下方按鈕傳送訂單給花花(ฅ'ω'ฅ)
-    </p>
-
-    <button class="btn-checkout" style="margin-top:10px;" onclick="closeModal()">關閉視窗</button>
-  </div>
-
-</div>
 
 <script>
-document.documentElement.style.setProperty('--theme-color',CONFIG.THEME_COLOR);
-document.documentElement.style.setProperty('--active-color',CONFIG.ACTIVE_COLOR);
-document.getElementById('top-msg').textContent=CONFIG.TOP_BAR_TEXT;
+// 初始化設定
+document.documentElement.style.setProperty('--theme-color', CONFIG.THEME_COLOR);
+document.documentElement.style.setProperty('--active-color', CONFIG.ACTIVE_COLOR);
+document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
-let allItems=[],allGroups=[],selectedGroup=null,groupSettings={};
+let allItems = [], allGroups = [], selectedGroup = null;
+let groupSettings = {}; // 每個團的「主色系／首圖／備註」設定，只認團名那一列的值
 
-const STOCK_STYLES={
-  "現貨":{bg:"#FFF4BD",color:"#333",tagClass:""},
-  "SOLD OUT":{bg:"#3a3a3a",color:"#fff",tagClass:"sold-out"},
-  "受注":{bg:"#B1DEC1",color:"#fff",tagClass:""},
-  "路上":{bg:"#6C95B0",color:"#fff",tagClass:""},
-  "預訂":{bg:"#C197D2",color:"#fff",tagClass:""}
+// 貨況顯示樣式對照表（key 對應「狀態」欄位的文字內容）
+const STOCK_STYLES = {
+  "現貨":     { bg: "#FFF4BD", color: "#333",    tagClass: "" },
+  "SOLD OUT": { bg: "#3a3a3a", color: "#ffffff", tagClass: "sold-out" },
+  "受注":     { bg: "#B1DEC1", color: "#ffffff", tagClass: "" },
+  "路上":     { bg: "#6C95B0", color: "#ffffff", tagClass: "" },
+  "預訂":     { bg: "#C197D2", color: "#ffffff", tagClass: "" }
 };
 
-let cart=JSON.parse(localStorage.getItem('jiwu_cart'))||[];
-
-function toggleMenu(open){
-  document.getElementById('side-menu').classList.toggle('open',open);
-  document.getElementById('menu-overlay').style.display=open?'block':'none';
+let cart = JSON.parse(localStorage.getItem('jiwu_cart')) || [];
+function getCartSourceName(item){
+  return String(
+    item.groupName ||
+    item.ipName ||
+    item.ip ||
+    item.group ||
+    (typeof selectedGroup !== "undefined" ? selectedGroup : "") ||
+    CONFIG.IP_NAME ||
+    ""
+  ).trim() || "商品";
+}
+// 側邊選單開關
+function toggleMenu(isOpen) {
+  const menu = document.getElementById('side-menu');
+  const overlay = document.getElementById('menu-overlay');
+  if (isOpen) {
+    menu.classList.add('open');
+    overlay.style.display = 'block';
+  } else {
+    menu.classList.remove('open');
+    overlay.style.display = 'none';
+  }
 }
 
-function getUrlGroup(){
-  return new URLSearchParams(location.search).get('group')||'';
+// 讀取目前網址 ?group= 對應的團名
+function getUrlGroup() {
+  return new URLSearchParams(location.search).get('group') || '';
 }
 
-function getItemDisplayName(item){
-  const name=String(item.name||"").trim();
-  const role=String(item.role||"").trim();
-  return role?`${name} ${role}`:name;
-}
+// 載入試算表資料（安全轉換字串型態）
+function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
+  fetch(url).then(r => r.text()).then(t => {
+    try {
+      const data = JSON.parse(t.substr(47).slice(0,-2));
 
-function loadData(){
-  const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
-
-  fetch(url).then(r=>r.text()).then(t=>{
-    try{
-      const data=JSON.parse(t.substr(47).slice(0,-2));
-
-      const HEADER_NAMES={
-        group:"團名",role:"角色",name:"名稱",originalPrice:"原價",
-        price:"售價",stock:"庫存",status:"狀態",sn:"貨號",
-        img:"圖片",url:"商品網址",size:"尺寸",
-        note:"備註",banner:"首圖",color:"主色系"
-      };
-
-      const labels=(data.table.cols||[]).map(c=>String(c.label||"").trim());
-      const COL={};
-
-      Object.keys(HEADER_NAMES).forEach(k=>{
-        COL[k]=labels.indexOf(HEADER_NAMES[k]);
+      // 依標題名稱找出每個欄位在試算表中的實際位置
+      const HEADER_NAMES = { group: "團名", role: "角色", name: "名稱", originalPrice: "原價", price: "售價", stock: "庫存", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸", note: "備註", banner: "首圖", color: "主色系" };
+      const colLabels = (data.table.cols || []).map(c => String(c.label || "").trim());
+      const COL = {};
+      Object.keys(HEADER_NAMES).forEach(key => {
+        COL[key] = colLabels.indexOf(HEADER_NAMES[key]);
       });
 
-      const getV=(r,i)=>{
-        if(i===-1||!r.c||!r.c[i])return "";
-        const c=r.c[i];
-        return String(c.v!==null&&c.v!==undefined?c.v:(c.f||"")).trim();
+      const getV = (r, idx) => {
+        if (idx === -1 || !r.c || !r.c[idx]) return "";
+        const cell = r.c[idx];
+        const val = cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || "");
+        return String(val).trim();
       };
 
-      let lastGroup="",lastBanner="",lastColor="",lastNote="";
-      groupSettings={};
+      // 團名往下延續：若某列的「團名」欄位是空白，就沿用上一列（最近一個）非空白的團名，
+      // 直到遇到下一個有填寫團名的列為止才換團。
+      // 「主色系」「首圖」「備註」都只認「團名」那一列的值：只有在團名那一列有填，才更新這團的設定；
+      // 空白列不會覆蓋，一直沿用到下一個團名列出現。
+      let lastGroup = "", lastBanner = "", lastColor = "", lastNote = "";
+      groupSettings = {};
 
-      const rawItems=data.table.rows.map(r=>{
-        const rawGroup=getV(r,COL.group);
-
-        if(rawGroup!==""){
-          lastGroup=rawGroup;
-          lastBanner=getV(r,COL.banner)||lastBanner;
-          lastColor=getV(r,COL.color)||lastColor;
-          lastNote=getV(r,COL.note)||lastNote;
-
-          groupSettings[lastGroup]={
-            banner:lastBanner,
-            color:lastColor,
-            note:lastNote
-          };
+      const rawItems = data.table.rows.map(r => {
+        const rawGroup = getV(r, COL.group);
+        if (rawGroup !== "") {
+          lastGroup = rawGroup;
+          lastBanner = getV(r, COL.banner) || lastBanner;
+          lastColor = getV(r, COL.color) || lastColor;
+          lastNote = getV(r, COL.note) || lastNote;
+          groupSettings[lastGroup] = { banner: lastBanner, color: lastColor, note: lastNote };
         }
 
-        return{
-          group:lastGroup,
-          role:getV(r,COL.role),
-          name:getV(r,COL.name),
-          originalPrice:getV(r,COL.originalPrice),
-          price:getV(r,COL.price),
-          stock:getV(r,COL.stock),
-          status:getV(r,COL.status),
-          sn:getV(r,COL.sn),
-          img:getV(r,COL.img)||"https://i.postimg.cc/bv5xRs04/image.png",
-          url:getV(r,COL.url),
-          size:getV(r,COL.size)
+        return {
+          group: lastGroup,
+          role: getV(r, COL.role) || " ",
+          name: getV(r, COL.name),
+          originalPrice: getV(r, COL.originalPrice),
+          price: getV(r, COL.price),
+          stock: getV(r, COL.stock),
+          status: getV(r, COL.status),
+          sn: getV(r, COL.sn),
+          img: getV(r, COL.img) || "https://i.postimg.cc/bv5xRs04/image.png",
+          url: getV(r, COL.url),
+          size: getV(r, COL.size)
         };
       });
 
-      allItems=rawItems.filter(item=>{
-        if(!item.group)return false;
-
-        // 名稱空白就完全不顯示商品卡
-        if(!String(item.name||"").trim())return false;
-
-        const stock=String(item.stock||"").trim().toLowerCase();
-        return stock!=='x'&&stock!=='ｘ';
+      allItems = rawItems.filter(item => {
+        if (!item.group) return false;
+        const stockVal = String(item.stock).trim().toLowerCase();
+        return stockVal !== 'x' && stockVal !== 'ｘ';
       });
 
-      allGroups=[...new Set(allItems.map(i=>i.group))];
+      // 依出現順序取出所有團名
+      allGroups = [...new Set(allItems.map(i => i.group))];
 
-      const urlGroup=getUrlGroup();
-      selectedGroup=allGroups.includes(urlGroup)?urlGroup:allGroups[0];
+      // 預設進第一團，若網址 ?group= 對應到有效的團名則優先採用
+      const urlGroup = getUrlGroup();
+      selectedGroup = allGroups.includes(urlGroup) ? urlGroup : allGroups[0];
 
-      if(!urlGroup&&selectedGroup){
-        const u=new URL(location.href);
-        u.searchParams.set('group',selectedGroup);
-        history.replaceState({},'',u.pathname+'?'+u.searchParams.toString());
+      // 網址沒有 group 時，自動補上目前第一團
+      if (!urlGroup && selectedGroup) {
+        const url = new URL(location.href);
+        url.searchParams.set('group', selectedGroup);
+        history.replaceState({}, '', url.pathname + '?' + url.searchParams.toString());
       }
 
       renderSideMenu();
@@ -550,573 +396,493 @@ function loadData(){
       applyGroupSettings(selectedGroup);
       renderItems();
       updateCartUI();
-
-    }catch(e){
-      document.getElementById('items-wrapper').innerHTML="載入失敗。";
-      console.error(e);
-    }
+    } catch (e) { document.getElementById('items-wrapper').innerHTML = "載入失敗。"; }
   });
 }
 
-window.addEventListener('popstate',()=>{
-  const g=getUrlGroup();
-
-  if(allGroups.includes(g)&&g!==selectedGroup){
-    selectedGroup=g;
+// 使用瀏覽器上一頁／下一頁時同步畫面
+window.addEventListener('popstate', () => {
+  const g = getUrlGroup();
+  if (allGroups.includes(g) && g !== selectedGroup) {
+    selectedGroup = g;
     renderGroupNav();
     applyGroupSettings(selectedGroup);
     renderItems();
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 });
 
-function renderBanner(url){
-  const w=document.getElementById('banner-wrapper');
-  const u=(url||"").trim();
-  w.innerHTML=u?`<img src="${u}" alt="banner">`:"";
+// 渲染頁面最上方的 banner 圖片
+function renderBanner(url) {
+  const wrapper = document.getElementById('banner-wrapper');
+  if (!wrapper) return;
+  const trimmed = (url || "").trim();
+  wrapper.innerHTML = trimmed ? `<img src="${trimmed}" alt="banner">` : "";
 }
 
-function applyGroupSettings(groupName){
-  const s=groupSettings[groupName]||{};
+// 套用「這一團」的主色系／首圖／備註：
+// - 主色系會透過 CSS 變數 --theme-color 同時影響最上面的 bar 背景色跟所有商品卡的邊框
+// - 備註會顯示在最上面的 bar；沒有填就顯示預設文字
+// - 首圖沿用該團團名列填寫的圖片網址
+function applyGroupSettings(groupName) {
+  const settings = groupSettings[groupName] || {};
 
-  let color=s.color&&s.color.trim()?s.color.trim():CONFIG.THEME_COLOR;
-  if(color&&!color.startsWith('#'))color='#'+color;
+  let color = (settings.color && settings.color.trim()) ? settings.color.trim() : CONFIG.THEME_COLOR;
+  if (color && !color.startsWith('#')) color = '#' + color;
+  document.documentElement.style.setProperty('--theme-color', color);
+  CONFIG.THEME_COLOR = color;
 
-  document.documentElement.style.setProperty('--theme-color',color);
-  CONFIG.THEME_COLOR=color;
+  const topMsg = document.getElementById('top-msg');
+  if (topMsg) {
+    topMsg.textContent = (settings.note && settings.note.trim()) ? settings.note.trim() : CONFIG.TOP_BAR_TEXT;
+  }
 
-  document.getElementById('top-msg').textContent=
-    s.note&&s.note.trim()?s.note.trim():CONFIG.TOP_BAR_TEXT;
-
-  renderBanner(s.banner||"");
+  renderBanner(settings.banner || "");
 }
 
-function renderSideMenu(){
-  const links=[
-    {
-      name:"吉伊卡哇",
-      url:"https://jiwusales.github.io/jiwu_menu/CHWBM.html",
-      img:"https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"
-    },
-    {
-      name:"吉伊卡哇樂園",
-      url:"https://jiwusales.github.io/jiwu_menu/CParkBM.html",
-      img:"https://i.postimg.cc/50PqVSdK/ckwp-icon.png"
-    },
-    {
-      name:"Nagano白熊",
-      url:"https://jiwusales.github.io/jiwu_menu/NGNBM.html",
-      img:"https://i.postimg.cc/hP8v81NH/icon019.png"
-    }
+function renderSideMenu() {
+  const menuContainer = document.getElementById('side-menu-items');
+  const links = [
+    { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png" },
+    { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://i.postimg.cc/50PqVSdK/ckwp-icon.png" },
+    { name: "Nagano白熊", url: "https://jiwusales.github.io/jiwu_menu/NGNBM.html", img: "https://i.postimg.cc/hP8v81NH/icon019.png" }
   ];
 
-  document.getElementById('side-menu-items').innerHTML=links.map(x=>`
-    <a href="${x.url}" class="menu-item">
-      <img src="${x.img}"> ${x.name}
+  menuContainer.innerHTML = links.map(link => `
+    <a href="${link.url}" class="menu-item">
+      <img src="${link.img}"> ${link.name}
     </a>
   `).join('');
 }
 
-function saveCart(){
-  localStorage.setItem('jiwu_cart',JSON.stringify(cart));
-}
+// 購物車邏輯
+function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function addToCart(e,item,tagText,tagBg,tagColor){
-  e.stopPropagation();
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
 
-  const g=String(item.group||selectedGroup||"").trim();
+  const stockVal = String(item.stock || "").trim();
+  const isSoldOutByStock = stockVal === '-';
+  const noSale = /^n$/i.test(String(item.price || "").trim());
 
-  cart.push({
-    ...item,
-    group:g,
-    groupName:g,
-    currentStatus:tagText||"",
-    tagBg,
-    tagColor
-  });
+  let tagKey, tagText, tagBg, tagColor, tagClass;
 
-  saveCart();
-  updateCartUI();
-
-  const btn=e.target;
-  btn.style.background="#fdd365";
-  setTimeout(()=>btn.style.background="#ddd",50);
-}
-
-function clearCart(){
-  if(confirm("確定要清空購物車嗎？")){
-    cart=[];
-    saveCart();
-    updateCartUI();
-  }
-}
-
-function toggleCart(open){
-  document.getElementById('cart-panel').classList.toggle('open',open);
-  document.getElementById('cart-overlay-bg').style.display=open?'block':'none';
-}
-
-function getDisplayPrice(price){
-  const p=String(price||"").trim();
-  if(p.includes('-'))return "參考圖示";
-  if(!p)return "詢問花花";
-  if(/^[0-9]+$/.test(p))return `$${p}`;
-  return p;
-}
-
-function updateCartUI(){
-  const list=document.getElementById('cart-list');
-  const badge=document.getElementById('cart-badge');
-  let total=0,hasInquiry=false;
-
-  list.innerHTML="";
-
-  cart.forEach((item,index)=>{
-    const numeric=/^[0-9]+$/.test(String(item.price||"").trim());
-    const price=numeric?parseInt(item.price):0;
-
-    if(!numeric)hasInquiry=true;
-    total+=price;
-
-    const tag=item.currentStatus
-      ?`<div class="cart-tag" style="background:${item.tagBg};color:${item.tagColor||'white'};">${item.currentStatus}</div>`
-      :"";
-
-    const div=document.createElement('div');
-    div.className='cart-item';
-
-    div.innerHTML=`
-      <img src="${item.img}">
-      <div class="cart-item-info">
-        ${tag}
-        <div style="font-weight:bold;margin-bottom:2px;">${getItemDisplayName(item)}</div>
-        <div style="color:#e44d26;font-weight:bold;margin-top:2px;">${getDisplayPrice(item.price)}</div>
-      </div>
-      <span style="cursor:pointer;color:#ccc;padding:5px;" onclick="removeFromCart(${index})">✕</span>
-    `;
-
-    list.appendChild(div);
-  });
-
-  badge.textContent=cart.length;
-  badge.style.display=cart.length?'flex':'none';
-
-  document.getElementById('cart-total').textContent=
-    `$${total}${hasInquiry?" + 詢問報價":""}`;
-}
-
-function removeFromCart(index){
-  cart.splice(index,1);
-  saveCart();
-  updateCartUI();
-
-  if(document.getElementById('checkout-modal').style.display==="flex"){
-    renderCheckoutSummary();
-  }
-}
-
-function generateLineMessage(){
-  let msg="你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
-  let total=0,hasInquiry=false,index=1;
-
-  const grouped={},order=[];
-
-  cart.forEach(item=>{
-    const g=String(item.group||"商品").trim();
-
-    if(!grouped[g]){
-      grouped[g]=[];
-      order.push(g);
-    }
-
-    grouped[g].push(item);
-  });
-
-  order.forEach(g=>{
-    msg+=`\n【${g}】\n`;
-
-    grouped[g].forEach(item=>{
-      const p=String(item.price||"").trim();
-      let priceText="",priceVal=0;
-
-      if(/^[0-9]+$/.test(p)){
-        priceVal=parseInt(p);
-        priceText=`$${p}`;
-      }else if(p.includes('-')){
-        priceText="參考圖示";
-        hasInquiry=true;
-      }else if(!p){
-        priceText="詢問花花";
-        hasInquiry=true;
-      }else{
-        priceText=p;
-        hasInquiry=true;
-      }
-
-      total+=priceVal;
-
-      let statusText="";
-
-      if(item.currentStatus==="S☹LD OUT"){
-        statusText="(補貨登記)";
-      }else if(item.currentStatus){
-        statusText=`(${item.currentStatus})`;
-      }
-
-      const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
-      const role=String(item.role||"").trim();
-      const roleText=role&&!hiddenRoles.includes(role)?` ${role}`:"";
-
-      msg+=`${index}. ${item.name}${roleText} ${priceText} ${statusText}\n`;
-      index++;
-    });
-  });
-
-  msg+=`\n總金額：$${total}${hasInquiry?" + 詢問報價":""}`;
-
-  return msg;
-}
-
-function handleCheckoutEntry(){
-  if(!cart.length)return alert("購物車是空的唷！");
-
-  const mobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  if(mobile){
-    window.location.href=CONFIG.LINE_MSG_URL+encodeURIComponent(generateLineMessage());
-
-    setTimeout(()=>{
-      cart=[];
-      saveCart();
-      updateCartUI();
-      toggleCart(false);
-    },1500);
-
-  }else{
-    openCheckoutModal();
-  }
-}
-
-function openCheckoutModal(){
-  toggleCart(false);
-
-  document.getElementById('step-1').style.display="block";
-  document.getElementById('step-2').style.display="none";
-
-  renderCheckoutSummary();
-
-  document.getElementById('checkout-modal').style.display="flex";
-}
-
-function renderCheckoutSummary(){
-  const list=document.getElementById('modal-summary-list');
-  let total=0,hasInquiry=false;
-
-  list.innerHTML="";
-
-  cart.forEach(item=>{
-    const numeric=/^[0-9]+$/.test(String(item.price||"").trim());
-    const price=numeric?parseInt(item.price):0;
-
-    if(!numeric)hasInquiry=true;
-    total+=price;
-
-    const tag=item.currentStatus
-      ?`<div class="cart-tag" style="background:${item.tagBg};color:${item.tagColor||'white'};">${item.currentStatus}</div>`
-      :"";
-
-    const div=document.createElement('div');
-    div.className='cart-item';
-
-    div.innerHTML=`
-      <img src="${item.img}">
-      <div class="cart-item-info">
-        ${tag}
-        <div style="font-weight:bold;margin-bottom:2px;">${getItemDisplayName(item)}</div>
-        <div style="color:#e44d26;font-weight:bold;margin-top:2px;">${getDisplayPrice(item.price)}</div>
-      </div>
-    `;
-
-    list.appendChild(div);
-  });
-
-  document.getElementById('modal-total-price').textContent=
-    `$${total}${hasInquiry?" + 詢問報價":""}`;
-}
-
-function closeModal(){
-  document.getElementById('checkout-modal').style.display="none";
-}
-
-async function handleFinalCheckout(){
-  const lineName=document.getElementById('user-line').value.trim();
-  const igAcc=document.getElementById('user-ig').value.trim();
-
-  if(!lineName){
-    alert("請輸入LINE名稱方便核對ι(｀･-･´)/");
-    return;
+  if (isSoldOutByStock) {
+    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
+    tagKey = "SOLD OUT";
+    tagText = "S☹LD OUT";
+    tagBg = soldOutStyle.bg;
+    tagColor = soldOutStyle.color;
+    tagClass = soldOutStyle.tagClass;
+  } else {
+    ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
   }
 
-  const btn=document.getElementById('send-btn');
-  btn.disabled=true;
-  btn.textContent="傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
+  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
 
-  try{
-    const cartData=cart.map(item=>({
-      group:item.group||selectedGroup||"",
-      role:item.role,
-      name:item.name,
-      originalPrice:item.originalPrice,
-      price:item.price,
-      stock:item.stock,
-      status:item.status,
-      sn:item.sn,
-      img:item.img,
-      url:item.url,
-      size:item.size
-    }));
+  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
+  const displayTagText = shouldShowTag ? tagText : "";
 
-    await fetch(CONFIG.DEPLOY_URL,{
-      method:'POST',
-      mode:'no-cors',
-      body:JSON.stringify({
-        source:"電腦",
-        lineName,
-        igAccount:igAcc,
-        cartItems:cartData
-      })
-    });
+  const finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
+  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
 
-  }catch(e){
-    console.error("GAS 傳送失敗",e);
-  }
+  const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
+  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
 
-  cart=[];
-  saveCart();
-  updateCartUI();
-
-  document.getElementById('step-1').style.display="none";
-  document.getElementById('step-2').style.display="block";
-}
-
-function renderGroupNav(){
-  document.getElementById('dynamic-nav').innerHTML=allGroups.map(g=>{
-    const safe=g.replace(/'/g,"\\'");
-    return `<a class="${selectedGroup===g?'active-role':''}" onclick="selectGroup('${safe}')">${g}</a>`;
-  }).join('');
-}
-
-function selectGroup(name){
-  if(!allGroups.includes(name)||name===selectedGroup)return;
-
-  selectedGroup=name;
-
-  window.scrollTo({top:0,behavior:'smooth'});
-
-  renderGroupNav();
-  applyGroupSettings(selectedGroup);
-  renderItems();
-
-  const url=new URL(location.href);
-  url.searchParams.set('group',name);
-
-  history.pushState({},'',url.pathname+'?'+url.searchParams.toString());
-}
-
-function getStockInfo(item){
-  const key=String(item.status||"").trim();
-  const s=STOCK_STYLES[key];
-
-  if(!s){
-    return{
-      tagKey:"",
-      tagText:"",
-      tagBg:"#fab460",
-      tagColor:"white",
-      tagClass:""
-    };
-  }
-
-  return{
-    tagKey:key,
-    tagText:key,
-    tagBg:s.bg,
-    tagColor:s.color,
-    tagClass:s.tagClass
-  };
-}
-
-function renderItems(){
-  const container=document.getElementById('items-wrapper');
-  container.innerHTML="";
-
-  const items=allItems.filter(i=>
-    i.group===selectedGroup &&
-    String(i.name||"").trim()
-  );
-
-  if(!items.length){
-    container.innerHTML="<div style='padding:40px;color:#999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
-    return;
-  }
-
-  const grid=document.createElement('div');
-  grid.className='group-grid';
-
-  items.forEach(item=>grid.appendChild(createCard(item)));
-
-  container.appendChild(grid);
-}
-
-function createCard(item){
-  const card=document.createElement('div');
-  card.className='card';
-
-  const sold=String(item.stock||"").trim()==='-';
-
-  let tagKey,tagText,tagBg,tagColor,tagClass;
-
-  if(sold){
-    const s=STOCK_STYLES["SOLD OUT"];
-    tagKey="SOLD OUT";
-    tagText="S☹LD OUT";
-    tagBg=s.bg;
-    tagColor=s.color;
-    tagClass=s.tagClass;
-  }else{
-    ({tagKey,tagText,tagBg,tagColor,tagClass}=getStockInfo(item));
-  }
-
-  if(tagKey==="SOLD OUT")card.classList.add('is-sold-out');
-
-  const show=tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
-  const displayTag=show?tagText:"";
-  const cls=tagClass||(displayTag.length>=2?"vertical":"");
-
-  const tagHtml=displayTag
-    ?`<div class="stock-tag ${cls}" style="background:${tagBg};color:${tagColor};">${displayTag}</div>`
-    :"";
-
-  const addHtml=`<div class="add-btn-tag" onclick="addToCart(event,${JSON.stringify(item).replace(/"/g,'&quot;')},'${displayTag}','${tagBg}','${tagColor}')">＋</div>`;
-
-  const displayName=getItemDisplayName(item);
-
-  card.innerHTML=`
-    ${tagHtml}
-    ${addHtml}
-    <img src="${item.img}">
-    <div class="name">${formatName(displayName)}</div>
-    <div class="price">${getDisplayPrice(item.price)}</div>
-    <div class="size">${item.size||""}</div>
-  `;
-
-  card.onclick=()=>zoomCard(card);
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div>${priceHtml}${sizeHtml}`;
+  card.onclick = () => zoomCard(card);
 
   return card;
 }
 
-function formatName(n){
-  if(!n)return "";
-
-  if(n.includes(' ')){
-    return n.split(' ').join('<br>');
-  }
-
-  return n.length>9
-    ?n.slice(0,9)+"<br>"+n.slice(9)
-    :n;
+function clearCart() {
+  if (confirm("確定要清空購物車嗎？")) { cart = []; saveCart(); updateCartUI(); }
 }
 
-function zoomCard(c){
-  const ov=document.createElement('div');
-  ov.className='card-overlay';
-
-  ov.appendChild(c.cloneNode(true));
-  ov.onclick=()=>ov.remove();
-
-  document.body.appendChild(ov);
+function toggleCart(isOpen) {
+  const panel = document.getElementById('cart-panel');
+  const bg = document.getElementById('cart-overlay-bg');
+  if(isOpen) { panel.classList.add('open'); bg.style.display = 'block'; }
+  else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-(function(){
-  const el=document.getElementById('cart-trigger');
+function getDisplayPrice(price) {
+  const p = String(price || "").trim();
+  if (p.indexOf('-') !== -1) return "參考圖示";
+  if (p === "") return "詢問花花";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
+  return p;
+}
 
-  let dragging=false,startX,startY,initialX,initialY;
+function updateCartUI() {
+  const list = document.getElementById('cart-list');
+  const badge = document.getElementById('cart-badge');
+  const totalEl = document.getElementById('cart-total');
+  list.innerHTML = "";
+  let total = 0;
+  let hasInquiry = false;
 
-  const dragStart=e=>{
-    dragging=false;
-    el.style.transition='none';
+  cart.forEach((item, index) => {
+    const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
 
-    const p=e.type==='touchstart'?e.touches[0]:e;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
 
-    startX=p.clientX;
-    startY=p.clientY;
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+      <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
+    `;
+    list.appendChild(div);
+  });
+  badge.textContent = cart.length;
+  badge.style.display = cart.length > 0 ? "flex" : "none";
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+}
 
-    const rect=el.getBoundingClientRect();
+function removeFromCart(index) {
+  cart.splice(index, 1); saveCart(); updateCartUI();
+  if(document.getElementById('checkout-modal').style.display === "flex") renderCheckoutSummary();
+}
 
-    initialX=rect.left;
-    initialY=rect.top;
+function generateLineMessage() {
+  let msg = "你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
+  let total = 0;
+  let hasInquiry = false;
 
-    document.addEventListener('mousemove',dragMove);
-    document.addEventListener('touchmove',dragMove,{passive:false});
-    document.addEventListener('mouseup',dragEnd);
-    document.addEventListener('touchend',dragEnd);
-  };
-
-  const dragMove=e=>{
-    const p=e.type==='touchmove'?e.touches[0]:e;
-    const dx=p.clientX-startX;
-    const dy=p.clientY-startY;
-
-    if(Math.abs(dx)>5||Math.abs(dy)>5){
-      dragging=true;
-
-      if(e.cancelable)e.preventDefault();
-
-      el.style.left=(initialX+dx)+'px';
-      el.style.top=(initialY+dy)+'px';
-      el.style.right='auto';
+  const groupedCart = {};
+  const groupOrder = [];
+  cart.forEach(item => {
+    const gName=getCartSourceName(item);
+    if (!groupedCart[gName]) {
+      groupedCart[gName] = [];
+      groupOrder.push(gName);
     }
-  };
-
-  const dragEnd=()=>{
-    document.removeEventListener('mousemove',dragMove);
-    document.removeEventListener('touchmove',dragMove);
-    document.removeEventListener('mouseup',dragEnd);
-    document.removeEventListener('touchend',dragEnd);
-
-    if(dragging){
-      el.style.transition='left .3s ease,right .3s ease,top .3s ease';
-
-      const rect=el.getBoundingClientRect();
-
-      el.style.left=
-        rect.left+rect.width/2<innerWidth/2
-          ?'10px'
-          :(innerWidth-rect.width-10)+'px';
-
-      if(rect.top<50)el.style.top='50px';
-
-      if(rect.top>innerHeight-60){
-        el.style.top=(innerHeight-60)+'px';
-      }
-    }
-  };
-
-  el.addEventListener('click',e=>{
-    if(dragging)e.preventDefault();
-    else toggleCart(true);
+    groupedCart[gName].push(item);
   });
 
-  el.addEventListener('mousedown',dragStart);
-  el.addEventListener('touchstart',dragStart,{passive:false});
+  let index = 1;
+  groupOrder.forEach(gName => {
+    msg += `\n【${gName}】\n`;
+    groupedCart[gName].forEach(item => {
+      const priceRaw = String(item.price || "").trim();
+      let priceText = "";
+      let priceVal = 0;
+
+      if (/^[0-9]+$/.test(priceRaw)) {
+        priceVal = parseInt(priceRaw);
+        priceText = `$${priceRaw}`;
+      } else if (priceRaw.indexOf('-') !== -1) {
+        priceText = "參考圖示";
+        hasInquiry = true;
+      } else if (priceRaw === "") {
+        priceText = "詢問花花";
+        hasInquiry = true;
+      } else {
+        priceText = priceRaw;
+        hasInquiry = true;
+      }
+      total += priceVal;
+
+      let statusText = "";
+
+if (item.currentStatus === "S☹LD OUT") {
+  statusText = "(補貨登記)";
+} else if (item.currentStatus === "最後一個") {
+  statusText = "(現貨)";
+} else if (item.currentStatus) {
+  statusText = `(${item.currentStatus})`;
+}
+
+const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
+const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
+      
+msg += `${index}. ${statusText}${statusText ? " " : ""}${item.name}${roleText} ${priceText}\n`;
+index++;
+    });
+  });
+
+  msg += `\n總金額：$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+
+  return msg;
+}
+
+function handleCheckoutEntry() {
+  if (cart.length === 0) return alert("購物車是空的唷！");
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (isMobileDevice) {
+    const msg = generateLineMessage();
+    window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(msg);
+    setTimeout(() => {
+      cart = []; saveCart(); updateCartUI(); toggleCart(false);
+    }, 1500);
+  } else {
+    openCheckoutModal();
+  }
+}
+
+function openCheckoutModal() {
+  toggleCart(false);
+  document.getElementById('step-1').style.display = "block";
+  document.getElementById('step-2').style.display = "none";
+  renderCheckoutSummary();
+  document.getElementById('checkout-modal').style.display = "flex";
+}
+
+function renderCheckoutSummary() {
+  const summaryList = document.getElementById('modal-summary-list');
+  const totalEl = document.getElementById('modal-total-price');
+  summaryList.innerHTML = "";
+  let total = 0;
+  let hasInquiry = false;
+
+  cart.forEach((item) => {
+    const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
+    const priceVal = isNumeric ? parseInt(item.price) : 0;
+    if (!isNumeric) hasInquiry = true;
+    total += priceVal;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
+    div.innerHTML = `
+      <img src="${item.img}">
+      <div class="cart-item-info">
+        ${tagHtml}
+        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
+      </div>
+    `;
+    summaryList.appendChild(div);
+  });
+  totalEl.textContent = `$${total}${hasInquiry ? " + 詢問報價" : ""}`;
+}
+
+function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
+
+async function handleFinalCheckout() {
+  const lineName = document.getElementById('user-line').value.trim();
+  const igAcc = document.getElementById('user-ig').value.trim();
+
+  if (!lineName) {
+    alert("請輸入LINE名稱方便核對ι(｀･-･´)/");
+    return;
+  }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
+
+  try {
+    const cartData=cart.map(item=>{
+  const source=getCartSourceName(item);
+  return {...item,ip:source,ipName:source,group:source,groupName:source};
+});
+
+    const postData = {
+      source: "電腦",
+      lineName: lineName,
+      igAccount: igAcc,
+      cartItems: cartData
+    };
+
+    await fetch(CONFIG.DEPLOY_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(postData)
+    });
+  } catch (e) {
+    console.error("GAS 傳送失敗", e);
+  }
+
+  cart = [];
+  saveCart();
+  updateCartUI();
+
+  document.getElementById('step-1').style.display = "none";
+  document.getElementById('step-2').style.display = "block";
+}
+
+// 渲染團名導覽列（點擊即切換該團，並更新網址 ?group=）
+function renderGroupNav() {
+  const nav = document.getElementById('dynamic-nav');
+  nav.innerHTML = allGroups.map(g => {
+    const isSelected = selectedGroup === g;
+    const safeName = g.replace(/'/g, "\\'");
+    return `<a class="${isSelected ? 'active-role' : ''}" onclick="selectGroup('${safeName}')">${g}</a>`;
+  }).join('');
+}
+
+function selectGroup(name) {
+  if (!allGroups.includes(name) || name === selectedGroup) return;
+  selectedGroup = name;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderGroupNav();
+  applyGroupSettings(selectedGroup);
+  renderItems();
+
+  const url = new URL(location.href);
+  url.searchParams.set('group', name);
+  history.pushState({}, '', url.pathname + '?' + url.searchParams.toString());
+}
+
+// 依「狀態」欄位取得貨況標籤樣式
+function getStockInfo(item) {
+  const stockNum = parseFloat(item.stock) || 0;
+
+  if (stockNum === 1) {
+    return {
+      tagKey: "現貨",
+      tagText: "最後一個",
+      tagBg: "#E24C60",
+      tagColor: "#ffffff",
+      tagClass: ""
+    };
+  }
+  const key = String(item.status || "").trim();
+  const style = STOCK_STYLES[key];
+
+  if (!style) {
+    return {
+      tagKey: "",
+      tagText: "",
+      tagBg: "#fab460",
+      tagColor: "white",
+      tagClass: ""
+    };
+  }
+  return {
+    tagKey: key,
+    tagText: key,
+    tagBg: style.bg,
+    tagColor: style.color,
+    tagClass: style.tagClass
+  };
+}
+
+// 渲染商品卡片（顯示目前選中團的所有商品，不再依角色分隔線分區）
+function renderItems() {
+  const container = document.getElementById('items-wrapper');
+  container.innerHTML = "";
+
+  const groupItems = allItems.filter(i => i.group === selectedGroup);
+
+  if (groupItems.length === 0) {
+    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'group-grid';
+  groupItems.forEach(item => grid.appendChild(createCard(item)));
+  container.appendChild(grid);
+}
+
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  // 邊框顏色改用整團共用的主色系（CSS 變數 --theme-color），不再依商品逐列的顏色欄位
+
+  const stockVal = String(item.stock || "").trim();
+  const isSoldOutByStock = stockVal === '-';
+
+  let tagKey, tagText, tagBg, tagColor, tagClass;
+  if (isSoldOutByStock) {
+    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
+    tagKey = "SOLD OUT";
+    tagText = "S☹LD OUT";
+    tagBg = soldOutStyle.bg;
+    tagColor = soldOutStyle.color;
+    tagClass = soldOutStyle.tagClass;
+  } else {
+    ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
+  }
+
+  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
+
+  // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
+  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
+  const displayTagText = shouldShowTag ? tagText : "";
+
+  let finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
+  let tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
+  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
+
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
+  card.onclick = () => zoomCard(card);
+  return card;
+}
+
+function formatName(n) {
+  if (!n) return n;
+  // 如果名稱中有空白鍵，直接在空白處換行
+  if (n.indexOf(' ') !== -1) return n.split(' ').join('<br>');
+  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+}
+
+function zoomCard(c) {
+  const ov = document.createElement('div'); ov.className = 'card-overlay';
+  const clone = c.cloneNode(true); ov.appendChild(clone);
+  ov.onclick = () => ov.remove(); document.body.appendChild(ov);
+}
+
+// 懸浮購物車拖動邏輯
+(function initDraggableCart() {
+  const el = document.getElementById('cart-trigger');
+  let isDragging = false;
+  let startX, startY, initialX, initialY;
+  const dragStart = (e) => {
+    isDragging = false; el.style.transition = 'none';
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    startX = clientX; startY = clientY;
+    const rect = el.getBoundingClientRect();
+    initialX = rect.left; initialY = rect.top;
+    document.addEventListener('mousemove', dragMove); document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('mouseup', dragEnd); document.addEventListener('touchend', dragEnd);
+  };
+  const dragMove = (e) => {
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - startX, dy = clientY - startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      isDragging = true; if (e.cancelable) e.preventDefault();
+      el.style.left = (initialX + dx) + 'px'; el.style.top = (initialY + dy) + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto';
+    }
+  };
+  const dragEnd = () => {
+    document.removeEventListener('mousemove', dragMove); document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('mouseup', dragEnd); document.removeEventListener('touchend', dragEnd);
+    if (isDragging) {
+      el.style.transition = 'left 0.3s ease, right 0.3s ease, top 0.3s ease';
+      const rect = el.getBoundingClientRect(), screenWidth = window.innerWidth;
+      if (rect.left + rect.width / 2 < screenWidth / 2) el.style.left = '10px';
+      else el.style.left = (screenWidth - rect.width - 10) + 'px';
+      if (rect.top < 50) el.style.top = '50px';
+      if (rect.top > window.innerHeight - 60) el.style.top = (window.innerHeight - 60) + 'px';
+    }
+  };
+  el.addEventListener('click', (e) => { if (isDragging) e.preventDefault(); else toggleCart(true); });
+  el.addEventListener('mousedown', dragStart);
+  el.addEventListener('touchstart', dragStart, { passive: false });
 })();
 
-window.onload=loadData;
+// 頁面初始化
+window.onload = loadData;
 </script>
-
-<div style="text-align:center;font-size:11px;color:#999;padding:10px;margin-top:10px;border-top:1px solid #eee;">
-  模擬圖僅供參考，以實際商品為準，有問題請私訊官方LINE @jiwusales
-</div>
-
+  <div style="text-align: center; font-size: 11px; color: #999; padding: 10px; margin-top: 10px; border-top: 1px solid #eee;">
+    模擬圖僅供參考，以實際商品為準，有問題請私訊官方LINE @jiwusales
+</div>  
 </body>
 </html>
