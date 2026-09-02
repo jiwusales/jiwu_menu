@@ -458,43 +458,18 @@ function renderSideMenu() {
 // 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
-function createCard(item) {
-  const card = document.createElement('div');
-  card.className = 'card';
+function addToCart(e,item,tagText,tagBg,tagColor){
+  e.stopPropagation();
+  if (/^n$/i.test(String(item.price || "").trim())) return;
 
-  const stockVal = String(item.stock || "").trim();
-  const isSoldOutByStock = stockVal === '-';
-  const noSale = /^n$/i.test(String(item.price || "").trim());
+  const source=(item.group&&String(item.group).trim())?String(item.group).trim():selectedGroup;
+  cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});
+  saveCart();
+  updateCartUI();
 
-  let tagKey, tagText, tagBg, tagColor, tagClass;
-
-  if (isSoldOutByStock) {
-    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
-    tagKey = "SOLD OUT";
-    tagText = "S☹LD OUT";
-    tagBg = soldOutStyle.bg;
-    tagColor = soldOutStyle.color;
-    tagClass = soldOutStyle.tagClass;
-  } else {
-    ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
-  }
-
-  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
-
-  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
-  const displayTagText = shouldShowTag ? tagText : "";
-
-  const finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
-  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
-
-  const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
-  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
-
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div>${priceHtml}${sizeHtml}`;
-  card.onclick = () => zoomCard(card);
-
-  return card;
+  const btn=e.target;
+  btn.style.background="#fdd365";
+  setTimeout(()=>btn.style.background="#ddd",50);
 }
 
 function clearCart() {
@@ -790,12 +765,13 @@ function renderItems() {
 function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
-  // 邊框顏色改用整團共用的主色系（CSS 變數 --theme-color），不再依商品逐列的顏色欄位
 
   const stockVal = String(item.stock || "").trim();
   const isSoldOutByStock = stockVal === '-';
+  const noSale = /^n$/i.test(String(item.price || "").trim());
 
   let tagKey, tagText, tagBg, tagColor, tagClass;
+
   if (isSoldOutByStock) {
     const soldOutStyle = STOCK_STYLES["SOLD OUT"];
     tagKey = "SOLD OUT";
@@ -809,17 +785,19 @@ function createCard(item) {
 
   if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
 
-  // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
   const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
   const displayTagText = shouldShowTag ? tagText : "";
 
-  let finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
-  let tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
+  const finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
+  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
 
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
+  const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+  const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
+  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
+
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div>${priceHtml}${sizeHtml}`;
   card.onclick = () => zoomCard(card);
+
   return card;
 }
 
