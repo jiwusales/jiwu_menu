@@ -372,10 +372,10 @@ function loadData() {
       });
 
       allItems = rawItems.filter(item => {
-        if (!item.group) return false;
-        const stockVal = String(item.stock).trim().toLowerCase();
-        return stockVal !== 'x' && stockVal !== 'ｘ';
-      });
+  if (!item.group || !String(item.name).trim()) return false;
+  const stockVal = String(item.stock).trim().toLowerCase();
+  return stockVal !== 'x' && stockVal !== 'ｘ';
+});
 
       // 依出現順序取出所有團名
       allGroups = [...new Set(allItems.map(i => i.group))];
@@ -768,7 +768,7 @@ function createCard(item) {
 
   const stockVal = String(item.stock || "").trim();
   const isSoldOutByStock = stockVal === '-';
-  const noSale = /^n$/i.test(String(item.price || "").trim());
+  const noSale = String(item.price || "").trim() === "0";
 
   let tagKey, tagText, tagBg, tagColor, tagClass;
 
