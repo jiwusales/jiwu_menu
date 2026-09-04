@@ -769,16 +769,15 @@ function createCard(item) {
   const stockVal = String(item.stock || "").trim();
   const isSoldOutByStock = stockVal === '-';
   const noSale = String(item.price || "").trim() === "0";
-
   let tagKey, tagText, tagBg, tagColor, tagClass;
 
   if (isSoldOutByStock) {
-    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
+    const s = STOCK_STYLES["SOLD OUT"];
     tagKey = "SOLD OUT";
     tagText = "S☹LD OUT";
-    tagBg = soldOutStyle.bg;
-    tagColor = soldOutStyle.color;
-    tagClass = soldOutStyle.tagClass;
+    tagBg = s.bg;
+    tagColor = s.color;
+    tagClass = s.tagClass;
   } else {
     ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
   }
@@ -787,17 +786,18 @@ function createCard(item) {
 
   const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
   const displayTagText = shouldShowTag ? tagText : "";
-
-  const finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
-  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
-
+  const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
+  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
   const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
-  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
+  const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div>${priceHtml}${sizeHtml}`;
+  const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
+  const role = String(item.role || "").trim();
+  const displayName = item.name + (role && !hiddenRoles.includes(role) ? ` ${role}` : "");
+
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
   card.onclick = () => zoomCard(card);
-
   return card;
 }
 
