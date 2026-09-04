@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>開團預覽</title>
+  <title>JIWU吉物最新開團</title>
 
   <meta property="og:title" content="JIWU吉物最新開團" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
@@ -23,7 +23,7 @@
       THEME_COLOR: "#ffffff",                                  // 主要色系（找不到主色系欄位時的預設卡片邊框色）
       ACTIVE_COLOR: "#f5b080",                                 // 高亮 / 啟用色系
       SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
-      SHEET_NAME: "尚未上架",                                   // 分頁名稱（改為直接抓這個分頁的資料，不再用 IP 篩選）
+      SHEET_NAME: "最新開團",                                   // 分頁名稱（改為直接抓這個分頁的資料，不再用 IP 篩選）
       TOP_BAR_TEXT: " ",
       FAVICON: "https://i.postimg.cc/3R7nNT0k/icon.png",
       LINE_ID: "@jiwusales",
@@ -769,16 +769,15 @@ function createCard(item) {
   const stockVal = String(item.stock || "").trim();
   const isSoldOutByStock = stockVal === '-';
   const noSale = String(item.price || "").trim() === "0";
-
   let tagKey, tagText, tagBg, tagColor, tagClass;
 
   if (isSoldOutByStock) {
-    const soldOutStyle = STOCK_STYLES["SOLD OUT"];
+    const s = STOCK_STYLES["SOLD OUT"];
     tagKey = "SOLD OUT";
     tagText = "S☹LD OUT";
-    tagBg = soldOutStyle.bg;
-    tagColor = soldOutStyle.color;
-    tagClass = soldOutStyle.tagClass;
+    tagBg = s.bg;
+    tagColor = s.color;
+    tagClass = s.tagClass;
   } else {
     ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
   }
@@ -787,17 +786,18 @@ function createCard(item) {
 
   const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
   const displayTagText = shouldShowTag ? tagText : "";
-
-  const finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
-  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
-
+  const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
+  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
   const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
-  const sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
+  const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div>${priceHtml}${sizeHtml}`;
+  const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
+  const role = String(item.role || "").trim();
+  const displayName = item.name + (role && !hiddenRoles.includes(role) ? ` ${role}` : "");
+
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
   card.onclick = () => zoomCard(card);
-
   return card;
 }
 
