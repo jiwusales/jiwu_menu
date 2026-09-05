@@ -693,37 +693,34 @@ function toggleStockFilter(key) {
 function renderItems() {
   const container = document.getElementById('items-wrapper');
   container.innerHTML = "";
-  const isFilterMode = selectedTypes.length > 0 || selectedStockFilters.length > 0;
-  let filteredItems = selectedTypes.length > 0 ? allItems.filter(i => selectedTypes.includes(i.type)) : allItems;
-  if (selectedStockFilters.length > 0) {
-    filteredItems = filteredItems.filter(i => selectedStockFilters.includes(getStockInfo(i).tagKey));
+
+  let filteredItems = allItems;
+
+  if (selectedRole) {
+    filteredItems = filteredItems.filter(i => i.role === selectedRole);
   }
-  if (selectedRole) { filteredItems = filteredItems.filter(i => i.role === selectedRole); }
-  
-  if (filteredItems.length === 0) {
-    container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
+
+  if (selectedTypes.length > 0) {
+    filteredItems = filteredItems.filter(i => selectedTypes.includes(i.type));
+  }
+
+  if (selectedStockFilters.length > 0) {
+    filteredItems = filteredItems.filter(i =>
+      selectedStockFilters.includes(getStockInfo(i).tagKey)
+    );
+  }
+
+  if (!filteredItems.length) {
+    container.innerHTML = "<div style='padding:40px;color:#999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
     return;
   }
 
-  if (!isFilterMode && !selectedRole) {
-    allCategories.forEach(cat => {
-      const catItems = filteredItems.filter(i => i.role === cat);
-      if (catItems.length === 0) return;
-      const div = document.createElement('div');
-      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
-      container.appendChild(div);
-      const grid = document.createElement('div');
-      grid.className = 'group-grid';
-      catItems.forEach(item => grid.appendChild(createCard(item)));
-      container.appendChild(grid);
-    });
-  } else {
-    const grid = document.createElement('div');
-    grid.className = 'group-grid';
-    grid.style.paddingTop = "10px";
-    filteredItems.forEach(item => grid.appendChild(createCard(item)));
-    container.appendChild(grid);
-  }
+  const grid = document.createElement('div');
+  grid.className = 'group-grid';
+  grid.style.paddingTop = "10px";
+
+  filteredItems.forEach(item => grid.appendChild(createCard(item)));
+  container.appendChild(grid);
 }
 
 // 依商品的庫存/店面/非現/欄位資料，計算這個商品目前的貨況狀態
