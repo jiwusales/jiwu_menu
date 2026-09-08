@@ -713,16 +713,15 @@ function selectGroup(name) {
 
 // 依「狀態」欄位取得貨況標籤樣式
 function getStockInfo(item) {
-  const raw = String(item.stock ?? "").trim();
-  const isNum = raw !== "" && /^\d+(\.\d+)?$/.test(raw);
-  const stockNum = isNum ? Number(raw) : null;
+  const raw = String(item.stock || "").trim();
 
-  if (isNum && stockNum > 0) {
+  if (/^\d+$/.test(raw) && Number(raw) > 0) {
+    const n = Number(raw);
     return {
       tagKey: "現貨",
-      tagText: stockNum === 1 ? "最後1個" : stockNum <= 5 ? `剩餘${stockNum}個` : "還有餘量",
-      tagBg: stockNum === 1 ? "#E24C60" : "#FFF4BD",
-      tagColor: stockNum === 1 ? "#ffffff" : "#333333",
+      tagText: n === 1 ? "最後1個" : n <= 5 ? `剩餘${n}個` : "還有餘量",
+      tagBg: n === 1 ? "#E24C60" : "#FFF4BD",
+      tagColor: n === 1 ? "#ffffff" : "#333",
       tagClass: ""
     };
   }
