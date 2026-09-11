@@ -19,19 +19,19 @@ function initCommonMenu() {
     <div id="menu-overlay" onclick="toggleMenu(false)"></div>
     <div id="side-menu">
       <a href="https://jiwusales.github.io/jiwu_menu/index.html" class="menu-header">
-        <img src="https://i.postimg.cc/TPBCSXmJ/she-jiaoicon-W.png" class="header-icon"> JIWU．吉物販售
+        <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/she-jiaoicon-W_3aa0fd03.png" class="header-icon"> JIWU．吉物販售
       </a>
       <a href="https://jiwusales.github.io/jiwu_menu/CHWBM.html" class="menu-item">
-        <img src="https://i.postimg.cc/MHGy2vVz/12-2025xia-ri-1.png"> 吉伊卡哇
+        <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/12-2025xia-ri-1_9ee5e5c6.png"> 吉伊卡哇
       </a>
       <a href="https://jiwusales.github.io/jiwu_menu/CParkBM.html" class="menu-item">
-        <img src="https://i.postimg.cc/50PqVSdK/ckwp-icon.png"> 吉伊卡哇樂園
+        <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/ckwp-icon_3c0d01bb.png"> 吉伊卡哇樂園
       </a>
       <a href="https://jiwusales.github.io/jiwu_menu/CKRUD.html" class="menu-item">
-        <img src="https://i.postimg.cc/Pr60BNgV/image.png"> 劇場版人魚島
+        <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_5ac485f6.png"> 劇場版人魚島
       </a>
       <a href="https://jiwusales.github.io/jiwu_menu/NGNBM.html" class="menu-item">
-        <img src="https://i.postimg.cc/hP8v81NH/icon019.png"> Nagano白熊
+        <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon019_c9abf023.png"> Nagano白熊
       </a>
     </div>
   `;
