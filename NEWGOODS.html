@@ -788,7 +788,8 @@ function createCard(item) {
   const displayTagText = shouldShowTag ? tagText : "";
   const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
 const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
-const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+const orderStatus = tagText || "預訂";
+const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${orderStatus}', '${tagBg}', '${tagColor}')">＋</div>`;
   const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
   const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
