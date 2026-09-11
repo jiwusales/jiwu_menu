@@ -787,8 +787,8 @@ function createCard(item) {
   const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
   const displayTagText = shouldShowTag ? tagText : "";
   const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
-  const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
-  const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
+const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
+const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${tagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
   const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
