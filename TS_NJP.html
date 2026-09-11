@@ -9,9 +9,9 @@
 <title>JIWU吉物景品開團</title>
 <meta property="og:title" content="JIWU吉物景品開團">
 <meta property="og:description" content="官LINE請搜尋（@jiwusales）">
-<meta property="og:image" content="https://i.postimg.cc/3R7nNT0k/icon.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png">
 <meta property="og:type" content="website">
-<link rel="icon" href="https://i.postimg.cc/3R7nNT0k/icon.png">
+<link rel="icon" href="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png">
 
 <script>
 const CONFIG={THEME_COLOR:"#ffffff",ACTIVE_COLOR:"#f5b080",SHEET_ID:"10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",SHEET_NAME:"景品開團",TOP_BAR_TEXT:" ",LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",DEPLOY_URL:"https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]};
@@ -109,7 +109,7 @@ const data=JSON.parse(t.substr(47).slice(0,-2)),H={group:"團名",role:"角色",
 Object.keys(H).forEach(k=>C[k]=labels.indexOf(H[k]));
 const v=(r,i)=>i===-1||!r.c||!r.c[i]?"":String(r.c[i].v??r.c[i].f??"").trim();
 let g="",banner="",color="",note="";groupSettings={};
-const raw=data.table.rows.map(r=>{const rg=v(r,C.group);if(rg){g=rg;banner=v(r,C.banner)||banner;color=v(r,C.color)||color;note=v(r,C.note)||note;groupSettings[g]={banner,color,note}}return{group:g,role:v(r,C.role)||" ",name:v(r,C.name),originalPrice:v(r,C.originalPrice),price:v(r,C.price),stock:v(r,C.stock),status:v(r,C.status),sn:v(r,C.sn),img:v(r,C.img)||"https://i.postimg.cc/bv5xRs04/image.png",url:v(r,C.url),size:v(r,C.size)}});
+const raw=data.table.rows.map(r=>{const rg=v(r,C.group);if(rg){g=rg;banner=v(r,C.banner)||banner;color=v(r,C.color)||color;note=v(r,C.note)||note;groupSettings[g]={banner,color,note}}return{group:g,role:v(r,C.role)||" ",name:v(r,C.name),originalPrice:v(r,C.originalPrice),price:v(r,C.price),stock:v(r,C.stock),status:v(r,C.status),sn:v(r,C.sn),img:v(r,C.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png",url:v(r,C.url),size:v(r,C.size)}});
 allItems=raw.filter(i=>i.group&&String(i.name).trim()&&!["x","ｘ"].includes(String(i.stock).trim().toLowerCase()));
 allGroups=[...new Set(allItems.map(i=>i.group))];
 const ug=getUrlGroup();selectedGroup=allGroups.includes(ug)?ug:allGroups[0];
