@@ -604,45 +604,41 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
-async function handleFinalCheckout() {
+function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
-  
+
   if (!lineName) {
     alert("請輸入LINE名稱方便核對ι(｀･-･´)/");
     return;
   }
 
   const btn = document.getElementById('send-btn');
-  btn.disabled = true; 
+  btn.disabled = true;
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
-  try {
-    const cartData=cart.map(item=>{
-  const source=getCartSourceName(item);
-  return {...item,ip:source,ipName:source,group:source,groupName:source};
-});
+  const cartData = cart.map(item => {
+    const source = getCartSourceName(item);
+    return {...item, ip:source, ipName:source, group:source, groupName:source};
+  });
 
-    const postData = { 
-      source: "電腦",          
-      lineName: lineName,   
-      igAccount: igAcc,     
-      cartItems: cartData 
-    };
+  const postData = {
+    source: "電腦",
+    lineName,
+    igAccount: igAcc,
+    cartItems: cartData
+  };
 
-    await fetch(CONFIG.DEPLOY_URL, { 
-      method: 'POST', 
-      mode: 'no-cors', 
-      body: JSON.stringify(postData) 
-    });
-  } catch (e) {
-    console.error("GAS 傳送失敗", e);
-  }
+  fetch(CONFIG.DEPLOY_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(postData)
+  }).catch(e => console.error("GAS 傳送失敗", e));
 
-  cart = []; 
-  saveCart(); 
+  cart = [];
+  saveCart();
   updateCartUI();
-  
+
   document.getElementById('step-1').style.display = "none";
   document.getElementById('step-2').style.display = "block";
 }
