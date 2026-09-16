@@ -2,18 +2,17 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物寶寶目錄</title>
 
   <meta property="og:title" content="JIWU吉物寶寶目錄" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png" />
+  <meta property="og:image" content="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" />
   <meta property="og:type" content="website" />
 
-  <link rel="icon" href="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png" type="image/png" />
+  <link rel="icon" href="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" type="image/png" />
   
   <script>
     /* =========================================================
@@ -26,7 +25,7 @@
       SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
       SHEET_NAME: "商品庫存",                                   // 分頁名稱
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)",
-      FAVICON: "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png",
+      FAVICON: "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
@@ -228,7 +227,7 @@
   <div id="menu-overlay" onclick="toggleMenu(false)"></div>
   <div id="side-menu">
     <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
-      <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/she-jiaoicon-W_3aa0fd03.png" class="header-icon"> JIWU．吉物販售
+      <img src="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/she-jiaoicon-W_3aa0fd03.png" class="header-icon"> JIWU．吉物販售
     </a>
     <div id="side-menu-items">
       </div>
@@ -302,6 +301,13 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let selectedStockFilters = [];
+
+function fastImg(url) {
+  return String(url || "").trim().replace(
+    /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
+    "https://cdn.jsdelivr.net/gh/$1/$2@$3/$4"
+  );
+}
 // 貨況勾選項目：key 對應 getStockInfo() 回傳的 tagKey，label 是勾選欄位顯示的文字
 // 「路上」已經在 getStockInfo() 裡直接併入「現貨」的 key，所以這裡不用另外列
 const STOCK_FILTER_OPTIONS = [
@@ -401,7 +407,7 @@ function renderBanner(url) {
   const wrapper = document.getElementById('banner-wrapper');
   if (!wrapper) return;
   const trimmed = (url || "").trim();
-  wrapper.innerHTML = trimmed ? `<img src="${trimmed}" alt="banner">` : "";
+  wrapper.innerHTML = trimmed ? `<img src="${fastImg(trimmed)}" alt="banner" fetchpriority="high" decoding="async">` : "";
 }
 
 function renderSideMenu() {
@@ -414,7 +420,7 @@ function renderSideMenu() {
   
   menuContainer.innerHTML = links.map(link => `
     <a href="${link.url}" class="menu-item">
-      <img src="${link.img}"> ${link.name}
+      <img src="${fastImg(link.img)}" loading="lazy" decoding="async"> ${link.name}
     </a>
   `).join('');
 }
@@ -471,7 +477,7 @@ function updateCartUI() {
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     
     div.innerHTML = `
-      <img src="${item.img}">
+      <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
@@ -583,7 +589,7 @@ function renderCheckoutSummary() {
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     div.innerHTML = `
-      <img src="${item.img}">
+      <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
@@ -786,7 +792,8 @@ function createCard(item) {
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
+  const fullImg = fastImg(item.img);
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
   card.onclick = () => zoomCard(card);
   return card;
 }
@@ -800,7 +807,10 @@ function formatName(n) {
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
-  const clone = c.cloneNode(true); ov.appendChild(clone);
+  const clone = c.cloneNode(true);
+  const img = clone.querySelector('img');
+  if (img) { img.src = img.dataset.full || img.src; img.removeAttribute('loading'); img.decoding = 'async'; }
+  ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 
