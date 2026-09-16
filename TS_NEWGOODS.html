@@ -762,9 +762,11 @@ function createCard(item) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const stockVal = String(item.stock || "").trim();
-  const isSoldOutByStock = stockVal === '-';
-  const noSale = String(item.price || "").trim() === "0";
+  const stockVal=String(item.stock||"").trim();
+const priceVal=String(item.price||"").trim();
+const isSoldOutByStock=stockVal==='-';
+const hidePrice=priceVal==="0";
+const disableCart=hidePrice||/^v$/i.test(stockVal);
   let tagKey, tagText, tagBg, tagColor, tagClass;
 
   if (isSoldOutByStock) {
@@ -785,8 +787,8 @@ function createCard(item) {
   const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
 const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
 const orderStatus = tagText || "預訂";
-const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${orderStatus}', '${tagBg}', '${tagColor}')">＋</div>`;
-  const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
+const addBtnHtml=disableCart?"":`<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g,'&quot;')}, '${orderStatus}', '${tagBg}', '${tagColor}')">＋</div>`;
+const priceHtml=hidePrice?"":`<div class="price">${getDisplayPrice(item.price)}</div>`;
   const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
   const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
