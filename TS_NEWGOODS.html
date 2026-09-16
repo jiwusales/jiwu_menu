@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>開團預覽</title>
+  <title>JIWU吉物最新開團</title>
 
   <meta property="og:title" content="JIWU吉物最新開團" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
@@ -483,11 +483,11 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
-function getDisplayPrice(price){
-  const p=String(price||"").trim();
-  if(/^n$/i.test(p)||p.includes('-'))return "參考圖示";
-  if(p==="")return "詢問花花";
-  if(/^[0-9]+$/.test(p))return `$${p}`;
+function getDisplayPrice(price) {
+  const p = String(price || "").trim();
+  if (p.indexOf('-') !== -1) return "參考圖示";
+  if (p === "") return "詢問花花";
+  if (/^[0-9]+$/.test(p)) return `$${p}`;
   return p;
 }
 
@@ -645,7 +645,7 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
-async function handleFinalCheckout() {
+function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
 
@@ -658,27 +658,23 @@ async function handleFinalCheckout() {
   btn.disabled = true;
   btn.textContent = "傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";
 
-  try {
-    const cartData=cart.map(item=>{
-  const source=getCartSourceName(item);
-  return {...item,ip:source,ipName:source,group:source,groupName:source};
-});
+  const cartData = cart.map(item => {
+    const source = getCartSourceName(item);
+    return {...item, ip:source, ipName:source, group:source, groupName:source};
+  });
 
-    const postData = {
-      source: "電腦",
-      lineName: lineName,
-      igAccount: igAcc,
-      cartItems: cartData
-    };
+  const postData = {
+    source: "電腦",
+    lineName,
+    igAccount: igAcc,
+    cartItems: cartData
+  };
 
-    await fetch(CONFIG.DEPLOY_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(postData)
-    });
-  } catch (e) {
-    console.error("GAS 傳送失敗", e);
-  }
+  fetch(CONFIG.DEPLOY_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(postData)
+  }).catch(e => console.error("GAS 傳送失敗", e));
 
   cart = [];
   saveCart();
@@ -762,45 +758,43 @@ function renderItems() {
   container.appendChild(grid);
 }
 
-function createCard(item){
-  const card=document.createElement('div');
-  card.className='card';
+function createCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
 
-  const stockVal=String(item.stock||"").trim();
-  const priceVal=String(item.price||"").trim();
-  const isSoldOutByStock=stockVal==='-';
-  const noSale=priceVal==="0";
-  const noCart=/^n$/i.test(priceVal);
-  let tagKey,tagText,tagBg,tagColor,tagClass;
+  const stockVal = String(item.stock || "").trim();
+  const isSoldOutByStock = stockVal === '-';
+  const noSale = String(item.price || "").trim() === "0";
+  let tagKey, tagText, tagBg, tagColor, tagClass;
 
-  if(isSoldOutByStock){
-    const s=STOCK_STYLES["SOLD OUT"];
-    tagKey="SOLD OUT";
-    tagText="S☹LD OUT";
-    tagBg=s.bg;
-    tagColor=s.color;
-    tagClass=s.tagClass;
-  }else{
-    ({tagKey,tagText,tagBg,tagColor,tagClass}=getStockInfo(item));
+  if (isSoldOutByStock) {
+    const s = STOCK_STYLES["SOLD OUT"];
+    tagKey = "SOLD OUT";
+    tagText = "S☹LD OUT";
+    tagBg = s.bg;
+    tagColor = s.color;
+    tagClass = s.tagClass;
+  } else {
+    ({ tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item));
   }
 
-  if(tagKey==="SOLD OUT")card.classList.add('is-sold-out');
+  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out');
 
-  const shouldShowTag=tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
-  const displayTagText=shouldShowTag?tagText:"";
-  const finalTagClass=tagClass||(displayTagText.length>=2?"vertical":"");
-  const tagHtml=displayTagText?`<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>`:"";
+  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
+  const displayTagText = shouldShowTag ? tagText : "";
+  const finalTagClass = tagClass || (displayTagText.length >= 2 ? "vertical" : "");
+const tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>` : "";
+const orderStatus = tagText || "預訂";
+const addBtnHtml = noSale ? "" : `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${orderStatus}', '${tagBg}', '${tagColor}')">＋</div>`;
+  const priceHtml = noSale ? "" : `<div class="price">${getDisplayPrice(item.price)}</div>`;
+  const sizeHtml = `<div class="size">${item.size || ""}</div>`;
 
-  const addBtnHtml=(noSale||noCart)?"":`<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g,'&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  const priceHtml=noSale?"":`<div class="price">${getDisplayPrice(item.price)}</div>`;
-  const sizeHtml=`<div class="size">${item.size||""}</div>`;
+  const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "水族", "動物", "食物"];
+  const role = String(item.role || "").trim();
+  const displayName = item.name + (role && !hiddenRoles.includes(role) ? ` ${role}` : "");
 
-  const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
-  const role=String(item.role||"").trim();
-  const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
-
-  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
-  card.onclick=()=>zoomCard(card);
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
+  card.onclick = () => zoomCard(card);
   return card;
 }
 
