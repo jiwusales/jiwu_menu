@@ -2,15 +2,17 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物寶寶目錄</title>
 
   <meta property="og:title" content="JIWU吉物寶寶目錄" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png" />
+  <meta property="og:image" content="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" />
   <meta property="og:type" content="website" />
 
-  <link rel="icon" href="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png" type="image/png" />
+  <link rel="icon" href="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" type="image/png" />
   
   <script>
     /* =========================================================
@@ -23,7 +25,7 @@
       SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
       SHEET_NAME: "商品庫存",                                   // 分頁名稱
       TOP_BAR_TEXT: "點擊卡片可放大圖片唷！(⌯'Ⱉ'⌯)",
-      FAVICON: "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png",
+      FAVICON: "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png",
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
@@ -227,7 +229,7 @@
   <div id="menu-overlay" onclick="toggleMenu(false)"></div>
   <div id="side-menu">
     <a href="https://jiwusales.github.io/jiwu_menu/" class="menu-header">
-      <img src="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/she-jiaoicon-W_3aa0fd03.png" class="header-icon"> JIWU．吉物販售
+      <img src="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/she-jiaoicon-W_3aa0fd03.png" class="header-icon" decoding="async"> JIWU．吉物販售
     </a>
     <div id="side-menu-items">
       </div>
@@ -301,6 +303,14 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let selectedStockFilters = [];
+
+// GitHub Raw 圖片自動改走 jsDelivr CDN
+function fastImg(url){
+  return String(url||"").trim().replace(
+    /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
+    "https://cdn.jsdelivr.net/gh/$1/$2@$3/$4"
+  );
+}
 // 貨況勾選項目：key 對應 getStockInfo() 回傳的 tagKey，label 是勾選欄位顯示的文字
 // 「路上」已經在 getStockInfo() 裡直接併入「現貨」的 key，所以這裡不用另外列
 const STOCK_FILTER_OPTIONS = [
@@ -366,7 +376,7 @@ function loadData() {
         colNonStock: getV(r, COL.colNonStock),
         status: getV(r, COL.status),
         sn: getV(r, COL.sn),
-        img: getV(r, COL.img) || "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png",
+        img: getV(r, COL.img) || "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/image_885310d2.png",
         url: getV(r, COL.url),
         size: getV(r, COL.size),
         note: getV(r, COL.note)
@@ -400,20 +410,20 @@ function renderBanner(url) {
   const wrapper = document.getElementById('banner-wrapper');
   if (!wrapper) return;
   const trimmed = (url || "").trim();
-  wrapper.innerHTML = trimmed ? `<img src="${trimmed}" alt="banner">` : "";
+  wrapper.innerHTML = trimmed ? `<img src="${fastImg(trimmed)}" alt="banner" fetchpriority="high" decoding="async">` : "";
 }
 
 function renderSideMenu() {
   const menuContainer = document.getElementById('side-menu-items');
   const links = [
-    { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/12-2025xia-ri-1_9ee5e5c6.png" },
-    { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/ckwp-icon_3c0d01bb.png" },
-    { name: "Nagano白熊", url: "https://jiwusales.github.io/jiwu_menu/NGNBM.html", img: "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon019_c9abf023.png" }
+    { name: "吉伊卡哇", url: "https://jiwusales.github.io/jiwu_menu/CHWBM.html", img: "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/12-2025xia-ri-1_9ee5e5c6.png" },
+    { name: "吉伊卡哇樂園", url: "https://jiwusales.github.io/jiwu_menu/CParkBM.html", img: "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/ckwp-icon_3c0d01bb.png" },
+    { name: "Nagano白熊", url: "https://jiwusales.github.io/jiwu_menu/NGNBM.html", img: "https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon019_c9abf023.png" }
   ];
   
   menuContainer.innerHTML = links.map(link => `
     <a href="${link.url}" class="menu-item">
-      <img src="${link.img}"> ${link.name}
+      <img src="${fastImg(link.img)}" loading="lazy" decoding="async"> ${link.name}
     </a>
   `).join('');
 }
@@ -470,7 +480,7 @@ function updateCartUI() {
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     
     div.innerHTML = `
-      <img src="${item.img}">
+      <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
@@ -590,7 +600,7 @@ function renderCheckoutSummary() {
     div.className = 'cart-item';
     const tagHtml = item.currentStatus ? `<div class="cart-tag" style="background-color:${item.tagBg}; color:${item.tagColor || 'white'};">${item.currentStatus}</div>` : "";
     div.innerHTML = `
-      <img src="${item.img}">
+      <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
@@ -793,7 +803,7 @@ function createCard(item) {
   let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
   let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
   
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${item.img}"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
+  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${fastImg(item.img)}" loading="lazy" decoding="async"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
   card.onclick = () => zoomCard(card);
   return card;
 }
