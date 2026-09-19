@@ -574,7 +574,6 @@ function openVariantPicker(e,variants){
       <img id="variant-img" src="${fastImg(first.img)}">
       <div class="variant-name">${formatName(first.name)}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
-      ${getColorDotsHtml(available)}
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section" id="variant-size-section">
@@ -687,11 +686,7 @@ function openVariantPicker(e,variants){
       const b=document.createElement('button');
       b.className='variant-option';
       b.dataset.value=color;
-      const sample=available.find(x=>parseVariant(x.size).color===color);
-      const code=sample?parseVariant(sample.size).colorCode:"";
-      const c=String(code||"").toLowerCase().replace("#","");
-      const white=c==="fff"||c==="ffffff";
-      b.innerHTML=`${code?`<span class="color-dot" style="background:${code};vertical-align:-1px;margin-right:4px;${white?"border:1px solid #bbb":""}"></span>`:""}${color}`;
+      b.textContent=color;
       b.onclick=ev=>{
         ev.stopPropagation();
         if(b.disabled)return;
