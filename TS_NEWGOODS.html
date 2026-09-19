@@ -459,40 +459,46 @@ function addToCart(e,item,tagText,tagBg,tagColor){
 function parseVariant(value){
   const raw=String(value||"").trim();
   const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
-  const isColorCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
+  const isCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
+  const code=s=>s?(String(s).startsWith("#")?String(s):"#"+s):"";
+  const isSize=s=>/^(XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|FREE|F)$/i.test(String(s||"").trim());
 
   if(p.length>=4){
-    const code=p[2]||"";
-    return{
-      size:p[0]||"",
-      color:p[1]||"",
-      colorCode:code?(code.startsWith("#")?code:"#"+code):"",
-      realSize:p.slice(3).join("/")||""
-    };
+    return{size:p[0]||"",color:p[1]||"",colorCode:isCode(p[2])?code(p[2]):"",realSize:p.slice(3).join("/")||""};
   }
 
   if(p.length===3){
-    if(isColorCode(p[2])){
-      const code=p[2];
-      return{
-        size:p[0]||"",
-        color:p[1]||"",
-        colorCode:code.startsWith("#")?code:"#"+code,
-        realSize:""
-      };
+    if(isCode(p[2])){
+      return isSize(p[0])
+        ?{size:p[0],color:p[1],colorCode:code(p[2]),realSize:""}
+        :{size:"",color:p[0],colorCode:code(p[2]),realSize:p[1]||""};
     }
     return{size:p[0]||"",color:p[1]||"",colorCode:"",realSize:p[2]||""};
   }
 
   if(p.length===2){
+    if(isCode(p[1])){
+      return isSize(p[0])
+        ?{size:p[0],color:"",colorCode:code(p[1]),realSize:""}
+        :{size:"",color:p[0],colorCode:code(p[1]),realSize:""};
+    }
+
     const second=p[1]||"";
-    const looksLikeSize=/\d|cm|mm|H|W|D|×|x|約|φ|Φ|直徑|寬|高|長/i.test(second);
-    return looksLikeSize
-      ?{size:p[0]||"",color:"",colorCode:"",realSize:second}
-      :{size:p[0]||"",color:second,colorCode:"",realSize:""};
+    const looksLikeRealSize=/\d|cm|mm|×|約|φ|Φ|直徑|胸寬|衣長|袖長|肩寬|高|寬|長/i.test(second);
+    return isSize(p[0])
+      ?(looksLikeRealSize
+        ?{size:p[0],color:"",colorCode:"",realSize:second}
+        :{size:p[0],color:second,colorCode:"",realSize:""})
+      :{size:"",color:p[0],colorCode:"",realSize:second};
   }
 
-  return{size:p[0]||"",color:"",colorCode:"",realSize:""};
+  if(p.length===1){
+    return isSize(p[0])
+      ?{size:p[0],color:"",colorCode:"",realSize:""}
+      :{size:"",color:p[0],colorCode:"",realSize:""};
+  }
+
+  return{size:"",color:"",colorCode:"",realSize:""};
 }
 
 function getVariantKey(item){
@@ -550,7 +556,7 @@ function openVariantPicker(e,variants){
 
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
   const fv=parseVariant(first.size);
-  let selectedSize=fv.size,selectedColor=fv.color,selectedItem=null;
+  let selectedSize=fv.size||"",selectedColor=fv.color||"",selectedItem=null;
 
   const ov=document.createElement('div');
   ov.className='variant-overlay';
@@ -568,7 +574,7 @@ function openVariantPicker(e,variants){
       ${getColorDotsHtml(available)}
       <div class="variant-real-size" id="variant-real-size"></div>
 
-      <div class="variant-section">
+      <div class="variant-section" id="variant-size-section">
         <div class="variant-label">尺寸</div>
         <div class="variant-options" id="variant-size-options"></div>
       </div>
@@ -582,6 +588,7 @@ function openVariantPicker(e,variants){
     </div>`;
 
   const imgEl=ov.querySelector('#variant-img');
+  const sizeSection=ov.querySelector('#variant-size-section');
   const sizeBox=ov.querySelector('#variant-size-options');
   const colorSection=ov.querySelector('#variant-color-section');
   const colorBox=ov.querySelector('#variant-color-options');
@@ -592,9 +599,12 @@ function openVariantPicker(e,variants){
 
   const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
   const colors=[...new Set(available.map(x=>parseVariant(x.size).color).filter(Boolean))];
+  const hasSizes=sizes.length>0;
 
   function findItem(){
-    const matches=available.filter(x=>parseVariant(x.size).size===selectedSize);
+    const matches=hasSizes
+      ?available.filter(x=>parseVariant(x.size).size===selectedSize)
+      :available;
     if(colors.length){
       let item=matches.find(x=>parseVariant(x.size).color===selectedColor);
       if(!item){
@@ -610,7 +620,7 @@ function openVariantPicker(e,variants){
   function updateColorButtons(){
     const valid=new Set(
       available
-        .filter(x=>parseVariant(x.size).size===selectedSize)
+        .filter(x=>!hasSizes||parseVariant(x.size).size===selectedSize)
         .map(x=>parseVariant(x.size).color)
         .filter(Boolean)
     );
@@ -653,6 +663,8 @@ function openVariantPicker(e,variants){
     addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
     addBtn.disabled=false;
   }
+
+  if(!hasSizes)sizeSection.style.display='none';
 
   sizes.forEach(size=>{
     const b=document.createElement('button');
