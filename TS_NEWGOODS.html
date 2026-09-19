@@ -98,19 +98,20 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .qr-box img{width:180px;height:180px;margin:10px 0}
 
 .variant-overlay{position:fixed;inset:0;background:#000b;z-index:20000;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
-.variant-card{width:320px;max-width:94vw;max-height:92vh;overflow-y:auto;background:#fff;border:2px solid var(--theme-color);border-radius:16px;padding:18px 16px 16px;position:relative;text-align:center;box-shadow:0 8px 30px #0004}
-.variant-close{position:absolute;top:8px;right:12px;font-size:22px;color:#aaa;cursor:pointer;z-index:2}
-.variant-card img{width:190px;height:190px;object-fit:contain;display:block;margin:0 auto 4px}
-.variant-card .variant-name{font-size:15px;font-weight:bold;line-height:1.35;margin:4px 0}
-.variant-card .variant-price{font-size:14px;font-weight:bold;color:#F5B080;margin:3px 0}
-.variant-real-size{min-height:18px;font-size:11px;color:#888;margin:2px 0 12px}
-.variant-section{margin-top:10px;text-align:left}
-.variant-label{font-size:12px;font-weight:bold;color:#555;margin-bottom:6px}
-.variant-options{display:flex;flex-wrap:wrap;gap:7px}
-.variant-option{min-width:52px;border:1px solid #ddd;background:#fff;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer}
+.variant-card{width:310px;max-width:88vw;max-height:88vh;overflow-y:auto;background:#fff;border:2px solid var(--theme-color);border-radius:10px;padding:18px 14px 14px;position:relative;text-align:center;box-shadow:0 8px 30px #0004}
+.variant-close{position:absolute;top:7px;right:10px;font-size:20px;color:#bbb;cursor:pointer;z-index:20}
+.variant-stock{position:absolute;top:0;left:0;width:55px;height:16px;padding:0 4px;border-radius:0 0 8px 0;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;z-index:10;box-sizing:border-box}
+.variant-card img{height:220px;width:auto;max-width:90%;object-fit:contain;display:block;margin:4px auto 0}
+.variant-card .variant-name{font-size:15px;font-weight:bold;line-height:1.25;margin:4px 0 2px}
+.variant-card .variant-price{font-size:14px;font-weight:bold;color:#F5B080;margin:2px 0}
+.variant-real-size{min-height:16px;font-size:12px;color:#888;margin:1px 0 8px}
+.variant-section{margin-top:8px;text-align:center}
+.variant-label{font-size:11px;font-weight:bold;color:#666;margin-bottom:5px}
+.variant-options{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.variant-option{min-width:44px;border:1px solid #ddd;background:#fff;border-radius:7px;padding:6px 9px;font-size:11px;cursor:pointer}
 .variant-option.active{border-color:var(--theme-color);box-shadow:0 0 0 1px var(--theme-color) inset;font-weight:bold}
 .variant-option:disabled{background:#eee;color:#aaa;cursor:not-allowed}
-.variant-add{width:100%;margin-top:14px;border:0;border-radius:9px;padding:11px;background:var(--theme-color);color:#fff;font-weight:bold;font-size:14px;cursor:pointer}
+.variant-add{width:100%;margin-top:10px;border:0;border-radius:8px;padding:9px;background:var(--theme-color);color:#fff;font-weight:bold;font-size:12px;cursor:pointer}
 .variant-add:disabled{background:#ddd;color:#999;cursor:not-allowed}
 </style>
 </head>
@@ -493,11 +494,14 @@ function openVariantPicker(e,variants){
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
   const ov=document.createElement('div');
   ov.className='variant-overlay';
+  const firstInfo=getItemOrderInfo(first);
+  const showFirstTag=firstInfo.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(firstInfo.tagKey);
   ov.innerHTML=`
     <div class="variant-card">
+      ${showFirstTag?`<div class="variant-stock" id="variant-stock" style="background:${firstInfo.tagBg};color:${firstInfo.tagColor}">${firstInfo.tagText}</div>`:`<div class="variant-stock" id="variant-stock" style="display:none"></div>`}
       <div class="variant-close">✕</div>
       <img src="${fastImg(first.img)}">
-      <div class="variant-name">${first.name}</div>
+      <div class="variant-name">${formatName(first.name)}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
       <div class="variant-real-size" id="variant-real-size"></div>
       <div class="variant-section">
@@ -516,6 +520,7 @@ function openVariantPicker(e,variants){
   const colorBox=ov.querySelector('#variant-color-options');
   const realSizeEl=ov.querySelector('#variant-real-size');
   const priceEl=ov.querySelector('#variant-price');
+  const stockEl=ov.querySelector('#variant-stock');
   const addBtn=ov.querySelector('#variant-add');
 
   const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
@@ -532,8 +537,21 @@ function openVariantPicker(e,variants){
       selectedItem={...selectedItem,selectedSize:v.size,selectedColor:v.color,actualSize:v.realSize};
       priceEl.textContent=getDisplayPrice(selectedItem.price);
       realSizeEl.textContent=v.realSize||realSizeEl.textContent;
+      const info=getItemOrderInfo(selectedItem);
+      const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+      stockEl.style.display=showTag?"flex":"none";
+      if(showTag){
+        stockEl.textContent=info.tagText;
+        stockEl.style.background=info.tagBg;
+        stockEl.style.color=info.tagColor;
+      }
+      addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
       addBtn.disabled=false;
-    }else addBtn.disabled=true;
+    }else{
+      stockEl.style.display="none";
+      addBtn.textContent="加入購物車";
+      addBtn.disabled=true;
+    }
   }
 
   function renderColors(){
@@ -1012,7 +1030,10 @@ function createCard(variants){
     };
   }
 
-  card.onclick=()=>zoomCard(card);
+  card.onclick=e=>{
+    if(isVariant)openVariantPicker(e,variants);
+    else zoomCard(card);
+  };
   return card;
 }
 
