@@ -747,9 +747,9 @@ function generateLineMessage(){
         ?` ${item.role}`
         :"";
 
-      const variantText=getVariantDisplay(item);
-      const optionText=variantText?`【${variantText}】`:"";
-      msg+=`${index}. ${statusText}${statusText?" ":""}${item.name}${roleText}${optionText} ${priceText}\n`;
+      const variantText=getVariantDisplay(item).replaceAll("／","/");
+const optionText=variantText?` ${variantText}`:"";
+msg+=`${index}. ${statusText}${statusText?" ":""}${item.name}${roleText}${optionText} ${priceText}\n`;
 
       index++;
     });
