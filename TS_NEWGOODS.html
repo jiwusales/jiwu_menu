@@ -453,10 +453,11 @@ function addToCart(e,item,tagText,tagBg,tagColor){
 
 function parseVariant(value){
   const raw=String(value||"").trim();
-  const p=raw.split(/[\/／]/).map(x=>x.trim());
+  const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
   if(p.length>=3)return{size:p[0]||"",color:p[1]||"",realSize:p.slice(2).join("/")||""};
-  if(p.length===2)return{size:p[0]||"",color:"",realSize:p[1]||""};
-  return{size:p[0]||"",color:"",realSize:""};
+  if(p.length===2)return{size:p[0]||"",color:p[1]||"",realSize:""};
+  if(p.length===1)return{size:p[0]||"",color:"",realSize:""};
+  return{size:"",color:"",realSize:""};
 }
 
 function getVariantKey(item){
@@ -490,114 +491,92 @@ function openVariantPicker(e,variants){
   const available=variants.filter(canAddItem);
   if(!available.length)return;
 
-  let selectedSize="",selectedColor="",selectedItem=null;
+  let selectedItem=null;
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
+
   const ov=document.createElement('div');
   ov.className='variant-overlay';
+
   const firstInfo=getItemOrderInfo(first);
   const showFirstTag=firstInfo.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(firstInfo.tagKey);
+
   ov.innerHTML=`
     <div class="variant-card">
       ${showFirstTag?`<div class="variant-stock" id="variant-stock" style="background:${firstInfo.tagBg};color:${firstInfo.tagColor}">${firstInfo.tagText}</div>`:`<div class="variant-stock" id="variant-stock" style="display:none"></div>`}
       <div class="variant-close">✕</div>
-      <img src="${fastImg(first.img)}">
+      <img id="variant-img" src="${fastImg(first.img)}">
       <div class="variant-name">${formatName(first.name)}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
       <div class="variant-real-size" id="variant-real-size"></div>
       <div class="variant-section">
-        <div class="variant-label">尺寸</div>
-        <div class="variant-options" id="variant-size-options"></div>
-      </div>
-      <div class="variant-section" id="variant-color-section" style="display:none">
-        <div class="variant-label">顏色</div>
-        <div class="variant-options" id="variant-color-options"></div>
+        <div class="variant-label">規格</div>
+        <div class="variant-options" id="variant-options"></div>
       </div>
       <button class="variant-add" id="variant-add" disabled>加入購物車</button>
     </div>`;
 
-  const sizeBox=ov.querySelector('#variant-size-options');
-  const colorSection=ov.querySelector('#variant-color-section');
-  const colorBox=ov.querySelector('#variant-color-options');
+  const imgEl=ov.querySelector('#variant-img');
+  const optionBox=ov.querySelector('#variant-options');
   const realSizeEl=ov.querySelector('#variant-real-size');
   const priceEl=ov.querySelector('#variant-price');
   const stockEl=ov.querySelector('#variant-stock');
   const addBtn=ov.querySelector('#variant-add');
 
-  const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
-
-  function setRealSize(items){
-    const rs=[...new Set(items.map(x=>parseVariant(x.size).realSize).filter(Boolean))];
-    realSizeEl.textContent=rs.length===1?rs[0]:"";
+  function getOptionText(item){
+    const v=parseVariant(item.size);
+    return [v.size,v.color].filter(Boolean).join("/")||"單一規格";
   }
 
   function setChosen(item){
     selectedItem=item||null;
-    if(selectedItem){
-      const v=parseVariant(selectedItem.size);
-      selectedItem={...selectedItem,selectedSize:v.size,selectedColor:v.color,actualSize:v.realSize};
-      priceEl.textContent=getDisplayPrice(selectedItem.price);
-      realSizeEl.textContent=v.realSize||realSizeEl.textContent;
-      const info=getItemOrderInfo(selectedItem);
-      const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
-      stockEl.style.display=showTag?"flex":"none";
-      if(showTag){
-        stockEl.textContent=info.tagText;
-        stockEl.style.background=info.tagBg;
-        stockEl.style.color=info.tagColor;
-      }
-      addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
-      addBtn.disabled=false;
-    }else{
+
+    if(!selectedItem){
       stockEl.style.display="none";
+      realSizeEl.textContent="";
       addBtn.textContent="加入購物車";
       addBtn.disabled=true;
-    }
-  }
-
-  function renderColors(){
-    selectedColor="";
-    selectedItem=null;
-    addBtn.disabled=true;
-    colorBox.innerHTML="";
-
-    const matches=available.filter(x=>parseVariant(x.size).size===selectedSize);
-    setRealSize(matches);
-    const colors=[...new Set(matches.map(x=>parseVariant(x.size).color).filter(Boolean))];
-
-    if(!colors.length){
-      colorSection.style.display='none';
-      setChosen(matches[0]);
       return;
     }
 
-    colorSection.style.display='block';
-    colors.forEach(color=>{
-      const b=document.createElement('button');
-      b.className='variant-option';
-      b.textContent=color;
-      b.onclick=ev=>{
-        ev.stopPropagation();
-        selectedColor=color;
-        colorBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active');
-        setChosen(matches.find(x=>parseVariant(x.size).color===color));
-      };
-      colorBox.appendChild(b);
-    });
+    const v=parseVariant(selectedItem.size);
+    selectedItem={...selectedItem,selectedSize:v.size,selectedColor:v.color,actualSize:v.realSize};
+
+    imgEl.src=fastImg(selectedItem.img||first.img);
+    priceEl.textContent=getDisplayPrice(selectedItem.price);
+    realSizeEl.textContent=v.realSize||"";
+
+    const info=getItemOrderInfo(selectedItem);
+    const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+
+    stockEl.style.display=showTag?"flex":"none";
+    if(showTag){
+      stockEl.textContent=info.tagText;
+      stockEl.style.background=info.tagBg;
+      stockEl.style.color=info.tagColor;
+    }
+
+    addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
+    addBtn.disabled=false;
   }
 
-  sizes.forEach(size=>{
+  available.forEach((item,idx)=>{
     const b=document.createElement('button');
     b.className='variant-option';
-    b.textContent=size;
+    b.textContent=getOptionText(item);
+
     b.onclick=ev=>{
       ev.stopPropagation();
-      selectedSize=size;
-      sizeBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
+      optionBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
-      renderColors();
+      setChosen(item);
     };
-    sizeBox.appendChild(b);
+
+    optionBox.appendChild(b);
+
+    if(item===first||idx===0){
+      b.classList.add('active');
+      setChosen(item);
+    }
   });
 
   addBtn.onclick=ev=>{
