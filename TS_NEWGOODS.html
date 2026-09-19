@@ -86,6 +86,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .cart-item img{width:45px;height:45px;object-fit:contain;border-radius:4px}
 .cart-item-info{flex:1}
 .cart-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;color:#fff;margin-bottom:3px;font-weight:bold}
+.cart-variant-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#eee;color:#555;margin:0 0 3px 4px;font-weight:bold}
 .cart-footer{padding:15px 15px 25px;border-top:1px solid #eee;background:#fafafa}
 .text-clear{display:block;text-align:left;color:#aaa;font-size:13px;text-decoration:underline;cursor:pointer;margin-bottom:12px;font-weight:normal}
 .text-clear:hover{color:#888}
@@ -455,9 +456,14 @@ function parseVariant(value){
   const raw=String(value||"").trim();
   const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
   if(p.length>=3)return{size:p[0]||"",color:p[1]||"",realSize:p.slice(2).join("/")||""};
-  if(p.length===2)return{size:p[0]||"",color:p[1]||"",realSize:""};
-  if(p.length===1)return{size:p[0]||"",color:"",realSize:""};
-  return{size:"",color:"",realSize:""};
+  if(p.length===2){
+    const second=p[1]||"";
+    const looksLikeSize=/\d|cm|mm|H|W|D|×|x|約|φ|Φ|直徑|寬|高|長/i.test(second);
+    return looksLikeSize
+      ?{size:p[0]||"",color:"",realSize:second}
+      :{size:p[0]||"",color:second,realSize:""};
+  }
+  return{size:p[0]||"",color:"",realSize:""};
 }
 
 function getVariantKey(item){
@@ -482,7 +488,13 @@ function getVariantDisplay(item){
   const size=String(item.selectedSize||"").trim();
   const color=String(item.selectedColor||"").trim();
   if(!size&&!color)return"";
-  return [size,color].filter(Boolean).join("／");
+  return [size,color].filter(Boolean).join("/");
+}
+
+function getCartVariantTags(item){
+  const size=String(item.selectedSize||"").trim();
+  const color=String(item.selectedColor||"").trim();
+  return [size,color].filter(Boolean).map(x=>`<span class="cart-variant-tag">${x}</span>`).join("");
 }
 
 function openVariantPicker(e,variants){
@@ -491,8 +503,9 @@ function openVariantPicker(e,variants){
   const available=variants.filter(canAddItem);
   if(!available.length)return;
 
-  let selectedItem=null;
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
+  const fv=parseVariant(first.size);
+  let selectedSize=fv.size,selectedColor=fv.color,selectedItem=null;
 
   const ov=document.createElement('div');
   ov.className='variant-overlay';
@@ -508,32 +521,68 @@ function openVariantPicker(e,variants){
       <div class="variant-name">${formatName(first.name)}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
       <div class="variant-real-size" id="variant-real-size"></div>
+
       <div class="variant-section">
-        <div class="variant-label">規格</div>
-        <div class="variant-options" id="variant-options"></div>
+        <div class="variant-label">尺寸</div>
+        <div class="variant-options" id="variant-size-options"></div>
       </div>
-      <button class="variant-add" id="variant-add" disabled>加入購物車</button>
+
+      <div class="variant-section" id="variant-color-section">
+        <div class="variant-label">顏色</div>
+        <div class="variant-options" id="variant-color-options"></div>
+      </div>
+
+      <button class="variant-add" id="variant-add">加入購物車</button>
     </div>`;
 
   const imgEl=ov.querySelector('#variant-img');
-  const optionBox=ov.querySelector('#variant-options');
+  const sizeBox=ov.querySelector('#variant-size-options');
+  const colorSection=ov.querySelector('#variant-color-section');
+  const colorBox=ov.querySelector('#variant-color-options');
   const realSizeEl=ov.querySelector('#variant-real-size');
   const priceEl=ov.querySelector('#variant-price');
   const stockEl=ov.querySelector('#variant-stock');
   const addBtn=ov.querySelector('#variant-add');
 
-  function getOptionText(item){
-    const v=parseVariant(item.size);
-    return [v.size,v.color].filter(Boolean).join("/")||"單一規格";
+  const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
+  const colors=[...new Set(available.map(x=>parseVariant(x.size).color).filter(Boolean))];
+
+  function findItem(){
+    const matches=available.filter(x=>parseVariant(x.size).size===selectedSize);
+    if(colors.length){
+      let item=matches.find(x=>parseVariant(x.size).color===selectedColor);
+      if(!item){
+        const firstMatch=matches[0];
+        selectedColor=firstMatch?parseVariant(firstMatch.size).color:"";
+        item=firstMatch||null;
+      }
+      return item;
+    }
+    return matches[0]||null;
   }
 
-  function setChosen(item){
-    selectedItem=item||null;
+  function updateColorButtons(){
+    const valid=new Set(
+      available
+        .filter(x=>parseVariant(x.size).size===selectedSize)
+        .map(x=>parseVariant(x.size).color)
+        .filter(Boolean)
+    );
+    colorBox.querySelectorAll('.variant-option').forEach(b=>{
+      b.disabled=!valid.has(b.dataset.value);
+      b.classList.toggle('active',b.dataset.value===selectedColor&&!b.disabled);
+    });
+  }
+
+  function setChosen(){
+    selectedItem=findItem();
+
+    sizeBox.querySelectorAll('.variant-option').forEach(b=>{
+      b.classList.toggle('active',b.dataset.value===selectedSize);
+    });
+    updateColorButtons();
 
     if(!selectedItem){
-      stockEl.style.display="none";
-      realSizeEl.textContent="";
-      addBtn.textContent="加入購物車";
       addBtn.disabled=true;
       return;
     }
@@ -559,25 +608,38 @@ function openVariantPicker(e,variants){
     addBtn.disabled=false;
   }
 
-  available.forEach((item,idx)=>{
+  sizes.forEach(size=>{
     const b=document.createElement('button');
     b.className='variant-option';
-    b.textContent=getOptionText(item);
-
+    b.dataset.value=size;
+    b.textContent=size;
     b.onclick=ev=>{
       ev.stopPropagation();
-      optionBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      setChosen(item);
+      selectedSize=size;
+      setChosen();
     };
-
-    optionBox.appendChild(b);
-
-    if(item===first||idx===0){
-      b.classList.add('active');
-      setChosen(item);
-    }
+    sizeBox.appendChild(b);
   });
+
+  if(colors.length){
+    colors.forEach(color=>{
+      const b=document.createElement('button');
+      b.className='variant-option';
+      b.dataset.value=color;
+      b.textContent=color;
+      b.onclick=ev=>{
+        ev.stopPropagation();
+        if(b.disabled)return;
+        selectedColor=color;
+        setChosen();
+      };
+      colorBox.appendChild(b);
+    });
+  }else{
+    colorSection.style.display='none';
+  }
+
+  setChosen();
 
   addBtn.onclick=ev=>{
     ev.stopPropagation();
@@ -595,7 +657,7 @@ function openVariantPicker(e,variants){
 function getVariantGroupPrice(items){
   const prices=[...new Set(items.map(x=>String(x.price||"").trim()).filter(x=>/^\d+$/.test(x)))].map(Number).sort((a,b)=>a-b);
   if(!prices.length)return getDisplayPrice(items[0]?.price||"");
-  return prices.length===1?`$${prices[0]}`:`$${prices[0]} 起`;
+  return prices.length===1?`$${prices[0]}`:`$${prices[0]}~$${prices[prices.length-1]}`;
 }
 
 function clearCart(){
@@ -657,9 +719,8 @@ function updateCartUI(){
     div.innerHTML=`
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
-        ${tagHtml}
+        <div>${tagHtml}${getCartVariantTags(item)}</div>
         <div style="font-weight:bold;margin-bottom:2px">${item.name}</div>
-        ${getVariantDisplay(item)?`<div style="font-size:11px;color:#777">${getVariantDisplay(item)}</div>`:""}
         <div style="color:#e44d26;font-weight:bold;margin-top:2px">${getDisplayPrice(item.price)}</div>
       </div>
       <span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${index})">✕</span>
@@ -814,9 +875,8 @@ function renderCheckoutSummary(){
     div.innerHTML=`
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
-        ${tagHtml}
+        <div>${tagHtml}${getCartVariantTags(item)}</div>
         <div style="font-weight:bold;margin-bottom:2px">${item.name}</div>
-        ${getVariantDisplay(item)?`<div style="font-size:11px;color:#777">${getVariantDisplay(item)}</div>`:""}
         <div style="color:#e44d26;font-weight:bold;margin-top:2px">${getDisplayPrice(item.price)}</div>
       </div>
     `;
