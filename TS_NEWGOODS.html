@@ -88,7 +88,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .cart-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;color:#fff;margin-bottom:3px;font-weight:bold}
 .cart-variant-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#eee;color:#555;margin:0 0 3px 4px;font-weight:bold}
 .color-dots{display:flex;justify-content:center;align-items:center;gap:4px;margin:3px 0 4px;min-height:12px}
-.color-dot{width:10px;height:10px;border-radius:50%;border:1px solid #bbb;box-sizing:border-box;display:inline-block;flex:0 0 auto}
+.color-dot{width:10px;height:10px;border-radius:50%;border:0;box-sizing:border-box;display:inline-block;flex:0 0 auto}
 .variant-card .color-dots{margin:4px 0 6px}
 .variant-card .color-dot{width:12px;height:12px}
 .cart-footer{padding:15px 15px 25px;border-top:1px solid #eee;background:#fafafa}
@@ -542,7 +542,10 @@ function getColorDotsHtml(items){
     const key=v.colorCode.toLowerCase();
     if(seen.has(key))return;
     seen.add(key);
-    dots.push(`<span class="color-dot" style="background:${v.colorCode}" title="${v.color||v.colorCode}"></span>`);
+
+    const c=key.replace("#","");
+    const white=c==="fff"||c==="ffffff";
+    dots.push(`<span class="color-dot" style="background:${v.colorCode};${white?"border:1px solid #bbb":""}" title="${v.color||v.colorCode}"></span>`);
   });
 
   return dots.length?`<div class="color-dots">${dots.join("")}</div>`:"";
@@ -686,7 +689,9 @@ function openVariantPicker(e,variants){
       b.dataset.value=color;
       const sample=available.find(x=>parseVariant(x.size).color===color);
       const code=sample?parseVariant(sample.size).colorCode:"";
-      b.innerHTML=`${code?`<span class="color-dot" style="background:${code};vertical-align:-1px;margin-right:4px"></span>`:""}${color}`;
+      const c=String(code||"").toLowerCase().replace("#","");
+      const white=c==="fff"||c==="ffffff";
+      b.innerHTML=`${code?`<span class="color-dot" style="background:${code};vertical-align:-1px;margin-right:4px;${white?"border:1px solid #bbb":""}"></span>`:""}${color}`;
       b.onclick=ev=>{
         ev.stopPropagation();
         if(b.disabled)return;
