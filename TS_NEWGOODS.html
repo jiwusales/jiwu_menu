@@ -87,6 +87,10 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .cart-item-info{flex:1}
 .cart-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;color:#fff;margin-bottom:3px;font-weight:bold}
 .cart-variant-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#eee;color:#555;margin:0 0 3px 4px;font-weight:bold}
+.color-dots{display:flex;justify-content:center;align-items:center;gap:4px;margin:3px 0 4px;min-height:12px}
+.color-dot{width:10px;height:10px;border-radius:50%;border:1px solid #bbb;box-sizing:border-box;display:inline-block;flex:0 0 auto}
+.variant-card .color-dots{margin:4px 0 6px}
+.variant-card .color-dot{width:12px;height:12px}
 .cart-footer{padding:15px 15px 25px;border-top:1px solid #eee;background:#fafafa}
 .text-clear{display:block;text-align:left;color:#aaa;font-size:13px;text-decoration:underline;cursor:pointer;margin-bottom:12px;font-weight:normal}
 .text-clear:hover{color:#888}
@@ -455,15 +459,40 @@ function addToCart(e,item,tagText,tagBg,tagColor){
 function parseVariant(value){
   const raw=String(value||"").trim();
   const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
-  if(p.length>=3)return{size:p[0]||"",color:p[1]||"",realSize:p.slice(2).join("/")||""};
+  const isColorCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
+
+  if(p.length>=4){
+    const code=p[2]||"";
+    return{
+      size:p[0]||"",
+      color:p[1]||"",
+      colorCode:code?(code.startsWith("#")?code:"#"+code):"",
+      realSize:p.slice(3).join("/")||""
+    };
+  }
+
+  if(p.length===3){
+    if(isColorCode(p[2])){
+      const code=p[2];
+      return{
+        size:p[0]||"",
+        color:p[1]||"",
+        colorCode:code.startsWith("#")?code:"#"+code,
+        realSize:""
+      };
+    }
+    return{size:p[0]||"",color:p[1]||"",colorCode:"",realSize:p[2]||""};
+  }
+
   if(p.length===2){
     const second=p[1]||"";
     const looksLikeSize=/\d|cm|mm|H|W|D|×|x|約|φ|Φ|直徑|寬|高|長/i.test(second);
     return looksLikeSize
-      ?{size:p[0]||"",color:"",realSize:second}
-      :{size:p[0]||"",color:second,realSize:""};
+      ?{size:p[0]||"",color:"",colorCode:"",realSize:second}
+      :{size:p[0]||"",color:second,colorCode:"",realSize:""};
   }
-  return{size:p[0]||"",color:"",realSize:""};
+
+  return{size:p[0]||"",color:"",colorCode:"",realSize:""};
 }
 
 function getVariantKey(item){
@@ -497,6 +526,22 @@ function getCartVariantTags(item){
   return [size,color].filter(Boolean).map(x=>`<span class="cart-variant-tag">${x}</span>`).join("");
 }
 
+function getColorDotsHtml(items){
+  const seen=new Set();
+  const dots=[];
+
+  items.forEach(item=>{
+    const v=parseVariant(item.size);
+    if(!v.colorCode)return;
+    const key=v.colorCode.toLowerCase();
+    if(seen.has(key))return;
+    seen.add(key);
+    dots.push(`<span class="color-dot" style="background:${v.colorCode}" title="${v.color||v.colorCode}"></span>`);
+  });
+
+  return dots.length?`<div class="color-dots">${dots.join("")}</div>`:"";
+}
+
 function openVariantPicker(e,variants){
   if(e)e.stopPropagation();
 
@@ -520,6 +565,7 @@ function openVariantPicker(e,variants){
       <img id="variant-img" src="${fastImg(first.img)}">
       <div class="variant-name">${formatName(first.name)}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
+      ${getColorDotsHtml(available)}
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section">
@@ -626,7 +672,9 @@ function openVariantPicker(e,variants){
       const b=document.createElement('button');
       b.className='variant-option';
       b.dataset.value=color;
-      b.textContent=color;
+      const sample=available.find(x=>parseVariant(x.size).color===color);
+      const code=sample?parseVariant(sample.size).colorCode:"";
+      b.innerHTML=`${code?`<span class="color-dot" style="background:${code};vertical-align:-1px;margin-right:4px"></span>`:""}${color}`;
       b.onclick=ev=>{
         ev.stopPropagation();
         if(b.disabled)return;
@@ -1047,6 +1095,7 @@ function createCard(variants){
   const tagHtml=displayTagText?`<div class="stock-tag ${finalTagClass}" style="background-color:${info.tagBg};color:${info.tagColor}">${displayTagText}</div>`:"";
   const addBtnHtml=usable.length?`<div class="add-btn-tag">＋</div>`:"";
   const priceHtml=usable.length?`<div class="price">${getVariantGroupPrice(usable)}</div>`:"";
+  const colorDotsHtml=getColorDotsHtml(variants);
 
   const isVariant=variants.length>1;
   const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
@@ -1055,7 +1104,7 @@ function createCard(variants){
   const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
   const fullImg=fastImg(item.img);
 
-  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
+  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${colorDotsHtml}${sizeHtml}`;
 
   const addBtn=card.querySelector('.add-btn-tag');
   if(addBtn){
