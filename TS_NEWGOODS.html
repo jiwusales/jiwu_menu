@@ -96,6 +96,22 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .summary-box{background:#f9f9f9;padding:10px;border-radius:5px;font-size:12px;max-height:250px;overflow-y:auto;text-align:left;margin-bottom:10px;border:1px solid #eee}
 .qr-box{display:none;text-align:center}
 .qr-box img{width:180px;height:180px;margin:10px 0}
+
+.variant-overlay{position:fixed;inset:0;background:#000b;z-index:20000;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
+.variant-card{width:320px;max-width:94vw;max-height:92vh;overflow-y:auto;background:#fff;border:2px solid var(--theme-color);border-radius:16px;padding:18px 16px 16px;position:relative;text-align:center;box-shadow:0 8px 30px #0004}
+.variant-close{position:absolute;top:8px;right:12px;font-size:22px;color:#aaa;cursor:pointer;z-index:2}
+.variant-card img{width:190px;height:190px;object-fit:contain;display:block;margin:0 auto 4px}
+.variant-card .variant-name{font-size:15px;font-weight:bold;line-height:1.35;margin:4px 0}
+.variant-card .variant-price{font-size:14px;font-weight:bold;color:#F5B080;margin:3px 0}
+.variant-real-size{min-height:18px;font-size:11px;color:#888;margin:2px 0 12px}
+.variant-section{margin-top:10px;text-align:left}
+.variant-label{font-size:12px;font-weight:bold;color:#555;margin-bottom:6px}
+.variant-options{display:flex;flex-wrap:wrap;gap:7px}
+.variant-option{min-width:52px;border:1px solid #ddd;background:#fff;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer}
+.variant-option.active{border-color:var(--theme-color);box-shadow:0 0 0 1px var(--theme-color) inset;font-weight:bold}
+.variant-option:disabled{background:#eee;color:#aaa;cursor:not-allowed}
+.variant-add{width:100%;margin-top:14px;border:0;border-radius:9px;padding:11px;background:var(--theme-color);color:#fff;font-weight:bold;font-size:14px;cursor:pointer}
+.variant-add:disabled{background:#ddd;color:#999;cursor:not-allowed}
 </style>
 </head>
 
@@ -408,13 +424,10 @@ function saveCart(){
 }
 
 function addToCart(e,item,tagText,tagBg,tagColor){
-  e.stopPropagation();
+  if(e)e.stopPropagation();
+  if(/^n$/i.test(String(item.price||"").trim())||String(item.price||"").trim()==="0")return;
 
-  if(/^n$/i.test(String(item.price||"").trim()))return;
-
-  const source=(item.group&&String(item.group).trim())
-    ?String(item.group).trim()
-    :selectedGroup;
+  const source=(item.group&&String(item.group).trim())?String(item.group).trim():selectedGroup;
 
   cart.push({
     ...item,
@@ -430,9 +443,162 @@ function addToCart(e,item,tagText,tagBg,tagColor){
   saveCart();
   updateCartUI();
 
-  const btn=e.target;
-  btn.style.background="#fdd365";
-  setTimeout(()=>btn.style.background="#ddd",50);
+  if(e&&e.target){
+    const btn=e.target;
+    btn.style.background="#fdd365";
+    setTimeout(()=>btn.style.background="#ddd",80);
+  }
+}
+
+function parseVariant(value){
+  const raw=String(value||"").trim();
+  const p=raw.split(/[\/／]/).map(x=>x.trim());
+  if(p.length>=3)return{size:p[0]||"",color:p[1]||"",realSize:p.slice(2).join("/")||""};
+  if(p.length===2)return{size:p[0]||"",color:"",realSize:p[1]||""};
+  return{size:p[0]||"",color:"",realSize:""};
+}
+
+function getVariantKey(item){
+  return String(item.name||"").trim();
+}
+
+function getItemOrderInfo(item){
+  const stockVal=String(item.stock||"").trim();
+  if(stockVal==='-'){
+    const s=STOCK_STYLES["SOLD OUT"];
+    return{tagKey:"SOLD OUT",tagText:"S☹LD OUT",tagBg:s.bg,tagColor:s.color,tagClass:s.tagClass};
+  }
+  return getStockInfo(item);
+}
+
+function canAddItem(item){
+  const p=String(item.price||"").trim();
+  return p!=="0"&&!/^n$/i.test(p);
+}
+
+function getVariantDisplay(item){
+  const size=String(item.selectedSize||"").trim();
+  const color=String(item.selectedColor||"").trim();
+  if(!size&&!color)return"";
+  return [size,color].filter(Boolean).join("／");
+}
+
+function openVariantPicker(e,variants){
+  if(e)e.stopPropagation();
+
+  const available=variants.filter(canAddItem);
+  if(!available.length)return;
+
+  let selectedSize="",selectedColor="",selectedItem=null;
+  const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
+  const ov=document.createElement('div');
+  ov.className='variant-overlay';
+  ov.innerHTML=`
+    <div class="variant-card">
+      <div class="variant-close">✕</div>
+      <img src="${fastImg(first.img)}">
+      <div class="variant-name">${first.name}</div>
+      <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
+      <div class="variant-real-size" id="variant-real-size"></div>
+      <div class="variant-section">
+        <div class="variant-label">尺寸</div>
+        <div class="variant-options" id="variant-size-options"></div>
+      </div>
+      <div class="variant-section" id="variant-color-section" style="display:none">
+        <div class="variant-label">顏色</div>
+        <div class="variant-options" id="variant-color-options"></div>
+      </div>
+      <button class="variant-add" id="variant-add" disabled>加入購物車</button>
+    </div>`;
+
+  const sizeBox=ov.querySelector('#variant-size-options');
+  const colorSection=ov.querySelector('#variant-color-section');
+  const colorBox=ov.querySelector('#variant-color-options');
+  const realSizeEl=ov.querySelector('#variant-real-size');
+  const priceEl=ov.querySelector('#variant-price');
+  const addBtn=ov.querySelector('#variant-add');
+
+  const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
+
+  function setRealSize(items){
+    const rs=[...new Set(items.map(x=>parseVariant(x.size).realSize).filter(Boolean))];
+    realSizeEl.textContent=rs.length===1?rs[0]:"";
+  }
+
+  function setChosen(item){
+    selectedItem=item||null;
+    if(selectedItem){
+      const v=parseVariant(selectedItem.size);
+      selectedItem={...selectedItem,selectedSize:v.size,selectedColor:v.color,actualSize:v.realSize};
+      priceEl.textContent=getDisplayPrice(selectedItem.price);
+      realSizeEl.textContent=v.realSize||realSizeEl.textContent;
+      addBtn.disabled=false;
+    }else addBtn.disabled=true;
+  }
+
+  function renderColors(){
+    selectedColor="";
+    selectedItem=null;
+    addBtn.disabled=true;
+    colorBox.innerHTML="";
+
+    const matches=available.filter(x=>parseVariant(x.size).size===selectedSize);
+    setRealSize(matches);
+    const colors=[...new Set(matches.map(x=>parseVariant(x.size).color).filter(Boolean))];
+
+    if(!colors.length){
+      colorSection.style.display='none';
+      setChosen(matches[0]);
+      return;
+    }
+
+    colorSection.style.display='block';
+    colors.forEach(color=>{
+      const b=document.createElement('button');
+      b.className='variant-option';
+      b.textContent=color;
+      b.onclick=ev=>{
+        ev.stopPropagation();
+        selectedColor=color;
+        colorBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        setChosen(matches.find(x=>parseVariant(x.size).color===color));
+      };
+      colorBox.appendChild(b);
+    });
+  }
+
+  sizes.forEach(size=>{
+    const b=document.createElement('button');
+    b.className='variant-option';
+    b.textContent=size;
+    b.onclick=ev=>{
+      ev.stopPropagation();
+      selectedSize=size;
+      sizeBox.querySelectorAll('.variant-option').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      renderColors();
+    };
+    sizeBox.appendChild(b);
+  });
+
+  addBtn.onclick=ev=>{
+    ev.stopPropagation();
+    if(!selectedItem)return;
+    const info=getItemOrderInfo(selectedItem);
+    addToCart(ev,selectedItem,info.tagText||"預訂",info.tagBg,info.tagColor);
+    ov.remove();
+  };
+
+  ov.querySelector('.variant-close').onclick=()=>ov.remove();
+  ov.onclick=ev=>{if(ev.target===ov)ov.remove()};
+  document.body.appendChild(ov);
+}
+
+function getVariantGroupPrice(items){
+  const prices=[...new Set(items.map(x=>String(x.price||"").trim()).filter(x=>/^\d+$/.test(x)))].map(Number).sort((a,b)=>a-b);
+  if(!prices.length)return getDisplayPrice(items[0]?.price||"");
+  return prices.length===1?`$${prices[0]}`:`$${prices[0]} 起`;
 }
 
 function clearCart(){
@@ -496,6 +662,7 @@ function updateCartUI(){
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold;margin-bottom:2px">${item.name}</div>
+        ${getVariantDisplay(item)?`<div style="font-size:11px;color:#777">${getVariantDisplay(item)}</div>`:""}
         <div style="color:#e44d26;font-weight:bold;margin-top:2px">${getDisplayPrice(item.price)}</div>
       </div>
       <span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${index})">✕</span>
@@ -580,7 +747,9 @@ function generateLineMessage(){
         ?` ${item.role}`
         :"";
 
-      msg+=`${index}. ${statusText}${statusText?" ":""}${item.name}${roleText} ${priceText}\n`;
+      const variantText=getVariantDisplay(item);
+      const optionText=variantText?`【${variantText}】`:"";
+      msg+=`${index}. ${statusText}${statusText?" ":""}${item.name}${roleText}${optionText} ${priceText}\n`;
 
       index++;
     });
@@ -650,6 +819,7 @@ function renderCheckoutSummary(){
       <div class="cart-item-info">
         ${tagHtml}
         <div style="font-weight:bold;margin-bottom:2px">${item.name}</div>
+        ${getVariantDisplay(item)?`<div style="font-size:11px;color:#777">${getVariantDisplay(item)}</div>`:""}
         <div style="color:#e44d26;font-weight:bold;margin-top:2px">${getDisplayPrice(item.price)}</div>
       </div>
     `;
@@ -783,119 +953,66 @@ function getStockInfo(item){
 
 function renderItems(){
   const container=document.getElementById('items-wrapper');
-
   container.innerHTML="";
 
   const groupItems=allItems.filter(i=>i.group===selectedGroup);
-
   if(groupItems.length===0){
     container.innerHTML="<div style='padding:40px;color:#999'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
     return;
   }
 
-  const grid=document.createElement('div');
-
-  grid.className='group-grid';
-
+  const grouped=new Map();
   groupItems.forEach(item=>{
-    grid.appendChild(createCard(item));
+    const key=getVariantKey(item);
+    if(!grouped.has(key))grouped.set(key,[]);
+    grouped.get(key).push(item);
   });
 
+  const grid=document.createElement('div');
+  grid.className='group-grid';
+  grouped.forEach(variants=>grid.appendChild(createCard(variants)));
   container.appendChild(grid);
 }
 
-function createCard(item){
+function createCard(variants){
+  const usable=variants.filter(canAddItem);
+  const item=usable.find(x=>String(x.stock||"").trim()!=="-")||usable[0]||variants[0];
   const card=document.createElement('div');
-
   card.className='card';
 
-  const stockVal=String(item.stock||"").trim();
-  const isSoldOutByStock=stockVal==='-';
-  const noSale=String(item.price||"").trim()==="0";
+  const allSoldOut=variants.every(x=>String(x.stock||"").trim()==='-');
+  const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
+  if(allSoldOut)card.classList.add('is-sold-out');
 
-  let tagKey,tagText,tagBg,tagColor,tagClass;
+  const shouldShowTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+  const displayTagText=shouldShowTag?info.tagText:"";
+  const finalTagClass=info.tagClass||(displayTagText.length>=2?"vertical":"");
+  const tagHtml=displayTagText?`<div class="stock-tag ${finalTagClass}" style="background-color:${info.tagBg};color:${info.tagColor}">${displayTagText}</div>`:"";
+  const addBtnHtml=usable.length?`<div class="add-btn-tag">＋</div>`:"";
+  const priceHtml=usable.length?`<div class="price">${getVariantGroupPrice(usable)}</div>`:"";
 
-  if(isSoldOutByStock){
-    const s=STOCK_STYLES["SOLD OUT"];
-
-    tagKey="SOLD OUT";
-    tagText="S☹LD OUT";
-    tagBg=s.bg;
-    tagColor=s.color;
-    tagClass=s.tagClass;
-
-  }else{
-    ({
-      tagKey,
-      tagText,
-      tagBg,
-      tagColor,
-      tagClass
-    }=getStockInfo(item));
-  }
-
-  if(tagKey==="SOLD OUT"){
-    card.classList.add('is-sold-out');
-  }
-
-  const shouldShowTag=
-    tagKey&&
-    CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
-
-  const displayTagText=
-    shouldShowTag
-      ?tagText
-      :"";
-
-  const finalTagClass=
-    tagClass||
-    (displayTagText.length>=2?"vertical":"");
-
-  const tagHtml=
-    displayTagText
-      ?`<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg};color:${tagColor}">${displayTagText}</div>`
-      :"";
-
-  const orderStatus=tagText||"預訂";
-
-  const addBtnHtml=noSale
-    ?""
-    :`<div class="add-btn-tag" onclick="addToCart(event,${JSON.stringify(item).replace(/"/g,'&quot;')},'${orderStatus}','${tagBg}','${tagColor}')">＋</div>`;
-
-  const priceHtml=noSale
-    ?""
-    :`<div class="price">${getDisplayPrice(item.price)}</div>`;
-
-  const sizeHtml=
-    `<div class="size">${item.size||""}</div>`;
-
-  const hiddenRoles=[
-    "三小隻",
-    "其他角色",
-    "綜合角色",
-    "水族",
-    "動物",
-    "食物"
-  ];
-
+  const isVariant=variants.length>1;
+  const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
+  const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
-
-  const displayName=
-    item.name+
-    (role&&!hiddenRoles.includes(role)
-      ?` ${role}`
-      :"");
-
+  const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
   const fullImg=fastImg(item.img);
 
-  card.innerHTML=
-    `${tagHtml}${addBtnHtml}`+
-    `<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async">`+
-    `<div class="name">${formatName(displayName)}</div>`+
-    `${priceHtml}${sizeHtml}`;
+  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${sizeHtml}`;
+
+  const addBtn=card.querySelector('.add-btn-tag');
+  if(addBtn){
+    addBtn.onclick=e=>{
+      e.stopPropagation();
+      if(isVariant)openVariantPicker(e,variants);
+      else{
+        const i=getItemOrderInfo(item);
+        addToCart(e,item,i.tagText||"預訂",i.tagBg,i.tagColor);
+      }
+    };
+  }
 
   card.onclick=()=>zoomCard(card);
-
   return card;
 }
 
