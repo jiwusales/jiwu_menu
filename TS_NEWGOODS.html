@@ -612,7 +612,10 @@ function openVariantPicker(e,variants){
 
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
   const fv=parseVariant(first.size);
-  let selectedSize=fv.sizes[0]||"",selectedColor=fv.color||"",selectedItem=null;
+
+  let selectedColor=fv.color||"";
+  let selectedSize=(fv.sizes&&fv.sizes[0])||"";
+  let selectedItem=null;
 
   const ov=document.createElement('div');
   ov.className='variant-overlay';
@@ -652,52 +655,83 @@ function openVariantPicker(e,variants){
   const stockEl=ov.querySelector('#variant-stock');
   const addBtn=ov.querySelector('#variant-add');
 
-  const sizes=[...new Set(
-    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
-  )];
-
   const colors=[...new Set(
     available.map(x=>parseVariant(x.size).color).filter(Boolean)
   )];
 
-  const hasSizes=sizes.length>0;
+  const allSizes=[...new Set(
+    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
+  )];
 
-  function rowHasSize(item,size){
-    const v=parseVariant(item.size);
-    return !hasSizes||(v.sizes||[]).includes(size);
+  const hasAnySizes=allSizes.length>0;
+
+  function rowsForSelectedColor(){
+    if(!colors.length||!selectedColor)return available;
+    return available.filter(x=>parseVariant(x.size).color===selectedColor);
+  }
+
+  function validSizesForSelectedColor(){
+    return [...new Set(
+      rowsForSelectedColor()
+        .flatMap(x=>parseVariant(x.size).sizes||[])
+        .filter(Boolean)
+    )];
   }
 
   function findItem(){
-    const matches=hasSizes
-      ?available.filter(x=>rowHasSize(x,selectedSize))
-      :available;
+    let matches=rowsForSelectedColor();
 
-    if(colors.length){
-      let item=matches.find(x=>parseVariant(x.size).color===selectedColor);
+    if(selectedSize){
+      const sizeMatches=matches.filter(x=>{
+        const v=parseVariant(x.size);
+        return (v.sizes||[]).includes(selectedSize);
+      });
 
-      if(!item){
-        const firstMatch=matches[0];
-        selectedColor=firstMatch?parseVariant(firstMatch.size).color:"";
-        item=firstMatch||null;
-      }
-
-      return item;
+      if(sizeMatches.length)matches=sizeMatches;
     }
 
     return matches[0]||null;
   }
 
-  function updateColorButtons(){
-    const valid=new Set(
-      available
-        .filter(x=>!hasSizes||rowHasSize(x,selectedSize))
-        .map(x=>parseVariant(x.size).color)
-        .filter(Boolean)
-    );
+  function renderSizeButtons(){
+    const validSizes=validSizesForSelectedColor();
 
+    if(!hasAnySizes||!validSizes.length){
+      selectedSize="";
+      sizeSection.style.display='none';
+      sizeBox.innerHTML="";
+      return;
+    }
+
+    sizeSection.style.display='block';
+
+    if(!validSizes.includes(selectedSize)){
+      selectedSize=validSizes[0];
+    }
+
+    sizeBox.innerHTML="";
+
+    validSizes.forEach(size=>{
+      const b=document.createElement('button');
+      b.className='variant-option';
+      b.dataset.value=size;
+      b.textContent=size;
+      b.classList.toggle('active',size===selectedSize);
+
+      b.onclick=ev=>{
+        ev.stopPropagation();
+        selectedSize=size;
+        setChosen();
+      };
+
+      sizeBox.appendChild(b);
+    });
+  }
+
+  function updateColorButtons(){
     colorBox.querySelectorAll('.variant-option').forEach(b=>{
-      b.disabled=!valid.has(b.dataset.value);
-      b.classList.toggle('active',b.dataset.value===selectedColor&&!b.disabled);
+      b.disabled=false;
+      b.classList.toggle('active',b.dataset.value===selectedColor);
     });
   }
 
@@ -720,7 +754,7 @@ function openVariantPicker(e,variants){
     selectedItem={
       ...selectedItem,
       selectedSize:selectedSize,
-      selectedColor:v.color||"",
+      selectedColor:selectedColor||v.color||"",
       actualSize:v.realSize
     };
 
@@ -743,34 +777,20 @@ function openVariantPicker(e,variants){
     addBtn.disabled=false;
   }
 
-  if(!hasSizes)sizeSection.style.display='none';
-
-  sizes.forEach(size=>{
-    const b=document.createElement('button');
-    b.className='variant-option';
-    b.dataset.value=size;
-    b.textContent=size;
-
-    b.onclick=ev=>{
-      ev.stopPropagation();
-      selectedSize=size;
-      setChosen();
-    };
-
-    sizeBox.appendChild(b);
-  });
-
   if(colors.length){
     colors.forEach(color=>{
       const b=document.createElement('button');
       b.className='variant-option';
       b.dataset.value=color;
       b.textContent=color;
+      b.classList.toggle('active',color===selectedColor);
 
       b.onclick=ev=>{
         ev.stopPropagation();
-        if(b.disabled)return;
         selectedColor=color;
+
+        // 換顏色時，尺寸只留下該顏色真正有的尺寸
+        renderSizeButtons();
         setChosen();
       };
 
@@ -780,6 +800,7 @@ function openVariantPicker(e,variants){
     colorSection.style.display='none';
   }
 
+  renderSizeButtons();
   setChosen();
 
   addBtn.onclick=ev=>{
