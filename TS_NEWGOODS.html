@@ -87,7 +87,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .cart-item-info{flex:1}
 .cart-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;color:#fff;margin-bottom:3px;font-weight:bold}
 .cart-variant-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#eee;color:#555;margin:0 0 3px 4px;font-weight:bold}
-.color-dots{display:flex;justify-content:center;align-items:center;gap:4px;margin:3px 0 4px;min-height:12px}
+.color-dots{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;width:66px;margin:3px auto 4px;min-height:12px}
 .color-dot{width:10px;height:10px;border-radius:50%;border:0;box-sizing:border-box;display:inline-block;flex:0 0 auto}
 .variant-card .color-dots{margin:4px 0 6px}
 .variant-card .color-dot{width:12px;height:12px}
@@ -116,6 +116,8 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .variant-option{min-width:44px;border:1px solid #ddd;background:#fff;border-radius:7px;padding:6px 9px;font-size:11px;cursor:pointer}
 .variant-option.active{border-color:var(--theme-color);box-shadow:0 0 0 1px var(--theme-color) inset;font-weight:bold}
 .variant-option:disabled{background:#eee;color:#aaa;cursor:not-allowed}
+#variant-color-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%}
+#variant-color-options .variant-option{min-width:0;width:100%;padding:6px 2px;white-space:nowrap}
 .variant-add{width:100%;margin-top:10px;border:0;border-radius:8px;padding:9px;background:var(--theme-color);color:#fff;font-weight:bold;font-size:12px;cursor:pointer}
 .variant-add:disabled{background:#ddd;color:#999;cursor:not-allowed}
 </style>
