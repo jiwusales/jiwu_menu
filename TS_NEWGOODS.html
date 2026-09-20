@@ -473,43 +473,72 @@ function parseVariant(value){
   }).filter(Boolean).join("+");
 
   const isSize=s=>/^(XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|FREE|F)$/i.test(String(s||"").trim());
+  const looksLikeRealSize=s=>/\d|cm|mm|×|約|φ|Φ|直徑|胸寬|衣長|袖長|肩寬|高|寬|長/i.test(String(s||""));
 
-  if(p.length>=4){
-    return{size:p[0]||"",color:p[1]||"",colorCode:isCode(p[2])?code(p[2]):"",realSize:p.slice(3).join("/")||""};
+  const sizes=[];
+  let i=0;
+
+  // 開頭連續出現的 S/M/L/XL... 全部視為可選尺寸
+  while(i<p.length&&isSize(p[i])){
+    sizes.push(p[i].toUpperCase());
+    i++;
   }
 
-  if(p.length===3){
-    if(isCode(p[2])){
-      return isSize(p[0])
-        ?{size:p[0],color:p[1],colorCode:code(p[2]),realSize:""}
-        :{size:"",color:p[0],colorCode:code(p[2]),realSize:p[1]||""};
+  const rest=p.slice(i);
+  let color="",colorCode="",realSize="";
+
+  if(sizes.length){
+    if(rest.length===1){
+      if(isCode(rest[0])){
+        colorCode=code(rest[0]);
+      }else if(looksLikeRealSize(rest[0])){
+        realSize=rest[0];
+      }else{
+        color=rest[0];
+      }
+    }else if(rest.length>=2){
+      // 尺寸.../顏色/色碼/實際尺寸
+      if(isCode(rest[1])){
+        color=rest[0]||"";
+        colorCode=code(rest[1]);
+        realSize=rest.slice(2).join("/")||"";
+      }else if(looksLikeRealSize(rest[0])){
+        realSize=rest.join("/");
+      }else{
+        // 相容舊格式：S/粉色/胸寬40cm
+        color=rest[0]||"";
+        realSize=rest.slice(1).join("/")||"";
+      }
     }
-    return{size:p[0]||"",color:p[1]||"",colorCode:"",realSize:p[2]||""};
+
+    return{
+      size:sizes[0]||"",
+      sizes,
+      color,
+      colorCode,
+      realSize
+    };
   }
 
-  if(p.length===2){
-    if(isCode(p[1])){
-      return isSize(p[0])
-        ?{size:p[0],color:"",colorCode:code(p[1]),realSize:""}
-        :{size:"",color:p[0],colorCode:code(p[1]),realSize:""};
+  // 沒有尺寸：顏色/色碼/實際尺寸
+  if(rest.length){
+    color=rest[0]||"";
+
+    if(rest.length>=2&&isCode(rest[1])){
+      colorCode=code(rest[1]);
+      realSize=rest.slice(2).join("/")||"";
+    }else if(rest.length>=2){
+      realSize=rest.slice(1).join("/")||"";
     }
-
-    const second=p[1]||"";
-    const looksLikeRealSize=/\d|cm|mm|×|約|φ|Φ|直徑|胸寬|衣長|袖長|肩寬|高|寬|長/i.test(second);
-    return isSize(p[0])
-      ?(looksLikeRealSize
-        ?{size:p[0],color:"",colorCode:"",realSize:second}
-        :{size:p[0],color:second,colorCode:"",realSize:""})
-      :{size:"",color:p[0],colorCode:"",realSize:second};
   }
 
-  if(p.length===1){
-    return isSize(p[0])
-      ?{size:p[0],color:"",colorCode:"",realSize:""}
-      :{size:"",color:p[0],colorCode:"",realSize:""};
-  }
-
-  return{size:"",color:"",colorCode:"",realSize:""};
+  return{
+    size:"",
+    sizes:[],
+    color,
+    colorCode,
+    realSize
+  };
 }
 
 function getVariantKey(item){
@@ -583,7 +612,7 @@ function openVariantPicker(e,variants){
 
   const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
   const fv=parseVariant(first.size);
-  let selectedSize=fv.size||"",selectedColor=fv.color||"",selectedItem=null;
+  let selectedSize=fv.sizes[0]||"",selectedColor=fv.color||"",selectedItem=null;
 
   const ov=document.createElement('div');
   ov.className='variant-overlay';
@@ -623,33 +652,49 @@ function openVariantPicker(e,variants){
   const stockEl=ov.querySelector('#variant-stock');
   const addBtn=ov.querySelector('#variant-add');
 
-  const sizes=[...new Set(available.map(x=>parseVariant(x.size).size).filter(Boolean))];
-  const colors=[...new Set(available.map(x=>parseVariant(x.size).color).filter(Boolean))];
+  const sizes=[...new Set(
+    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
+  )];
+
+  const colors=[...new Set(
+    available.map(x=>parseVariant(x.size).color).filter(Boolean)
+  )];
+
   const hasSizes=sizes.length>0;
+
+  function rowHasSize(item,size){
+    const v=parseVariant(item.size);
+    return !hasSizes||(v.sizes||[]).includes(size);
+  }
 
   function findItem(){
     const matches=hasSizes
-      ?available.filter(x=>parseVariant(x.size).size===selectedSize)
+      ?available.filter(x=>rowHasSize(x,selectedSize))
       :available;
+
     if(colors.length){
       let item=matches.find(x=>parseVariant(x.size).color===selectedColor);
+
       if(!item){
         const firstMatch=matches[0];
         selectedColor=firstMatch?parseVariant(firstMatch.size).color:"";
         item=firstMatch||null;
       }
+
       return item;
     }
+
     return matches[0]||null;
   }
 
   function updateColorButtons(){
     const valid=new Set(
       available
-        .filter(x=>!hasSizes||parseVariant(x.size).size===selectedSize)
+        .filter(x=>!hasSizes||rowHasSize(x,selectedSize))
         .map(x=>parseVariant(x.size).color)
         .filter(Boolean)
     );
+
     colorBox.querySelectorAll('.variant-option').forEach(b=>{
       b.disabled=!valid.has(b.dataset.value);
       b.classList.toggle('active',b.dataset.value===selectedColor&&!b.disabled);
@@ -662,6 +707,7 @@ function openVariantPicker(e,variants){
     sizeBox.querySelectorAll('.variant-option').forEach(b=>{
       b.classList.toggle('active',b.dataset.value===selectedSize);
     });
+
     updateColorButtons();
 
     if(!selectedItem){
@@ -670,7 +716,13 @@ function openVariantPicker(e,variants){
     }
 
     const v=parseVariant(selectedItem.size);
-    selectedItem={...selectedItem,selectedSize:v.size,selectedColor:v.color,actualSize:v.realSize};
+
+    selectedItem={
+      ...selectedItem,
+      selectedSize:selectedSize,
+      selectedColor:v.color||"",
+      actualSize:v.realSize
+    };
 
     imgEl.src=fastImg(selectedItem.img||first.img);
     priceEl.textContent=getDisplayPrice(selectedItem.price);
@@ -680,6 +732,7 @@ function openVariantPicker(e,variants){
     const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
 
     stockEl.style.display=showTag?"flex":"none";
+
     if(showTag){
       stockEl.textContent=info.tagText;
       stockEl.style.background=info.tagBg;
@@ -697,11 +750,13 @@ function openVariantPicker(e,variants){
     b.className='variant-option';
     b.dataset.value=size;
     b.textContent=size;
+
     b.onclick=ev=>{
       ev.stopPropagation();
       selectedSize=size;
       setChosen();
     };
+
     sizeBox.appendChild(b);
   });
 
@@ -711,12 +766,14 @@ function openVariantPicker(e,variants){
       b.className='variant-option';
       b.dataset.value=color;
       b.textContent=color;
+
       b.onclick=ev=>{
         ev.stopPropagation();
         if(b.disabled)return;
         selectedColor=color;
         setChosen();
       };
+
       colorBox.appendChild(b);
     });
   }else{
@@ -728,6 +785,7 @@ function openVariantPicker(e,variants){
   addBtn.onclick=ev=>{
     ev.stopPropagation();
     if(!selectedItem)return;
+
     const info=getItemOrderInfo(selectedItem);
     addToCart(ev,selectedItem,info.tagText||"預訂",info.tagBg,info.tagColor);
     ov.remove();
@@ -1133,7 +1191,11 @@ function createCard(variants){
   const priceHtml=usable.length?`<div class="price">${getVariantGroupPrice(usable)}</div>`:"";
   const colorDotsHtml=getColorDotsHtml(variants);
 
-  const isVariant=variants.length>1;
+  const parsedItem=parseVariant(item.size);
+  const isVariant=
+    variants.length>1||
+    parsedItem.sizes.length>0||
+    !!parsedItem.colorCode;
   const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
