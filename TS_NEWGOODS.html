@@ -253,27 +253,11 @@ function getUrlGroup(){
 }
 
 function loadData(){
-  const callback="jiwuSheetData_"+Date.now();
-  const script=document.createElement("script");
-  let timer;
+  const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
 
-  const cleanup=()=>{
-    clearTimeout(timer);
-    delete window[callback];
-    script.remove();
-  };
-
-  window[callback]=res=>{
-    cleanup();
-
+  fetch(url).then(r=>r.text()).then(t=>{
     try{
-      if(!res||res.ok===false)throw new Error(res&&res.error?res.error:"讀取失敗");
-
-      const values=Array.isArray(res.values)?res.values:[];
-      if(!values.length)throw new Error("試算表沒有資料");
-
-      const colLabels=(values[0]||[]).map(x=>String(x||"").trim());
-      const rows=values.slice(1);
+      const data=JSON.parse(t.substr(47).slice(0,-2));
 
       const HEADER_NAMES={
         group:"團名",
@@ -292,20 +276,24 @@ function loadData(){
         color:"主色系"
       };
 
+      const colLabels=(data.table.cols||[]).map(c=>String(c.label||"").trim());
       const COL={};
+
       Object.keys(HEADER_NAMES).forEach(key=>{
         COL[key]=colLabels.indexOf(HEADER_NAMES[key]);
       });
 
       const getV=(r,idx)=>{
-        if(idx===-1||!r||idx>=r.length)return"";
-        return String(r[idx]??"").trim();
+        if(idx===-1||!r.c||!r.c[idx])return"";
+        const cell=r.c[idx];
+        const val=cell.v!==null&&cell.v!==undefined?cell.v:(cell.f||"");
+        return String(val).trim();
       };
 
       let lastGroup="",lastBanner="",lastColor="",lastNote="";
       groupSettings={};
 
-      const rawItems=rows.map(r=>{
+      const rawItems=data.table.rows.map(r=>{
         const rawGroup=getV(r,COL.group);
 
         if(rawGroup!==""){
@@ -338,7 +326,7 @@ function loadData(){
       allItems=rawItems.filter(item=>{
         if(!item.group||!String(item.name).trim())return false;
         const stockVal=String(item.stock).trim().toLowerCase();
-        return stockVal!=="x"&&stockVal!=="ｘ";
+        return stockVal!=='x'&&stockVal!=='ｘ';
       });
 
       allGroups=[...new Set(allItems.map(i=>i.group))];
@@ -348,8 +336,8 @@ function loadData(){
 
       if(!urlGroup&&selectedGroup){
         const url=new URL(location.href);
-        url.searchParams.set("group",selectedGroup);
-        history.replaceState({},"",url.pathname+"?"+url.searchParams.toString());
+        url.searchParams.set('group',selectedGroup);
+        history.replaceState({},'',url.pathname+'?'+url.searchParams.toString());
       }
 
       renderSideMenu();
@@ -359,29 +347,10 @@ function loadData(){
       updateCartUI();
 
     }catch(e){
-      document.getElementById("items-wrapper").innerHTML="載入失敗。";
+      document.getElementById('items-wrapper').innerHTML="載入失敗。";
       console.error(e);
     }
-  };
-
-  script.onerror=()=>{
-    cleanup();
-    document.getElementById("items-wrapper").innerHTML="載入失敗。";
-  };
-
-  timer=setTimeout(()=>{
-    cleanup();
-    document.getElementById("items-wrapper").innerHTML="載入逾時。";
-  },15000);
-
-  const sep=CONFIG.DEPLOY_URL.includes("?")?"&":"?";
-  script.src=CONFIG.DEPLOY_URL+sep+
-    "action=sheetData"+
-    "&sheet="+encodeURIComponent(CONFIG.SHEET_NAME)+
-    "&callback="+encodeURIComponent(callback)+
-    "&_="+Date.now();
-
-  document.body.appendChild(script);
+  });
 }
 
 window.addEventListener('popstate',()=>{
