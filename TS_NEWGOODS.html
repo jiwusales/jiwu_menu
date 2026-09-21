@@ -542,7 +542,7 @@ function parseVariant(value){
 }
 
 function getVariantKey(item){
-  return String(item.name||"").trim();
+  return `${String(item.name||"").trim()}|||${String(item.role||"").trim()}`;
 }
 
 function getItemOrderInfo(item){
