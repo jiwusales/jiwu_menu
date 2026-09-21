@@ -1247,13 +1247,22 @@ function createCard(variants){
 function formatName(n){
   if(!n)return n;
 
-  if(n.indexOf(' ')!==-1){
-    return n.split(' ').join('<br>');
+  const text=n.trim();
+  const charCount=[...text.replace(/\s/g,"")].length;
+
+  // 名稱＋角色合計 7 字以內：保留空白，不換行
+  if(charCount<=7){
+    return text.replace(/ /g,"&nbsp;");
   }
 
-  return n.length>9
-    ?n.slice(0,9)+"<br>"+n.slice(9)
-    :n;
+  // 超過 7 字：原本有空白就以空白處換行
+  if(text.includes(" ")){
+    return text.split(" ").join("<br>");
+  }
+
+  return [...text].length>9
+    ?[...text].slice(0,9).join("")+"<br>"+[...text].slice(9).join("")
+    :text;
 }
 
 function zoomCard(c){
