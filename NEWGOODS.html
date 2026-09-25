@@ -57,6 +57,9 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .nav-arrow{width:24px;font-size:16px;cursor:pointer;flex-shrink:0;user-select:none;color:#bbb;display:flex;justify-content:center;align-items:center}
 #card-container{padding:78px 10px 10px;display:flex;flex-direction:column;gap:8px}
 #banner-wrapper{width:720px;max-width:100%;margin:0 auto}
+.series-banner{width:720px;max-width:100%;margin:0 auto 8px}
+.series-banner img{width:100%;height:auto;display:block}
+.series-section{margin-bottom:16px}
 #banner-wrapper img{width:100%;height:auto;display:block;margin:0 auto 4px}
 .type-divider{display:flex;align-items:center;justify-content:center;margin:15px 0 8px;font-weight:bold;scroll-margin-top:95px;color:var(--text-color);font-size:16px}
 .type-divider::before,.type-divider::after{content:"";flex:1;border-top:1px solid #ddd;margin:0 10px}
@@ -290,26 +293,35 @@ function loadData(){
         return String(val).trim();
       };
 
-      let lastGroup="",lastBanner="",lastColor="",lastNote="";
+      let lastGroup="",lastColor="",lastNote="";
+      let sectionIndex=0,sectionBanner="";
       groupSettings={};
 
       const rawItems=data.table.rows.map(r=>{
         const rawGroup=getV(r,COL.group);
+        const rawBanner=getV(r,COL.banner);
 
-        if(rawGroup!==""){
+        if(rawGroup!==""&&rawGroup!==lastGroup){
           lastGroup=rawGroup;
-          lastBanner=getV(r,COL.banner)||lastBanner;
-          lastColor=getV(r,COL.color)||lastColor;
-          lastNote=getV(r,COL.note)||lastNote;
-          groupSettings[lastGroup]={
-            banner:lastBanner,
-            color:lastColor,
-            note:lastNote
-          };
+          sectionIndex++;
+          sectionBanner="";
+          lastColor="";
+          lastNote="";
+        }
+        if(rawBanner){
+          sectionIndex++;
+          sectionBanner=rawBanner;
+        }
+        lastColor=getV(r,COL.color)||lastColor;
+        lastNote=getV(r,COL.note)||lastNote;
+        if(lastGroup){
+          groupSettings[lastGroup]={color:lastColor,note:lastNote};
         }
 
         return{
           group:lastGroup,
+          sectionId:sectionIndex,
+          sectionBanner,
           role:getV(r,COL.role)||" ",
           name:getV(r,COL.name),
           originalPrice:getV(r,COL.originalPrice),
@@ -395,7 +407,7 @@ function applyGroupSettings(groupName){
       :CONFIG.TOP_BAR_TEXT;
   }
 
-  renderBanner(settings.banner||"");
+  renderBanner("");
 }
 
 function renderSideMenu(){
@@ -1181,17 +1193,40 @@ function renderItems(){
     return;
   }
 
-  const grouped=new Map();
+  // 依試算表首圖出現順序分段；規格商品只在同一段內合併。
+  const sections=new Map();
   groupItems.forEach(item=>{
-    const key=getVariantKey(item);
-    if(!grouped.has(key))grouped.set(key,[]);
-    grouped.get(key).push(item);
+    if(!sections.has(item.sectionId)){
+      sections.set(item.sectionId,{banner:item.sectionBanner,items:[]});
+    }
+    sections.get(item.sectionId).items.push(item);
   });
 
-  const grid=document.createElement('div');
-  grid.className='group-grid';
-  grouped.forEach(variants=>grid.appendChild(createCard(variants)));
-  container.appendChild(grid);
+  sections.forEach((section)=>{
+    const block=document.createElement('section');
+    block.className='series-section';
+    if(section.banner){
+      const banner=document.createElement('div');
+      banner.className='series-banner';
+      const img=document.createElement('img');
+      img.src=fastImg(section.banner);
+      img.alt='系列首圖';
+      img.decoding='async';
+      banner.appendChild(img);
+      block.appendChild(banner);
+    }
+    const grouped=new Map();
+    section.items.forEach(item=>{
+      const key=getVariantKey(item);
+      if(!grouped.has(key))grouped.set(key,[]);
+      grouped.get(key).push(item);
+    });
+    const grid=document.createElement('div');
+    grid.className='group-grid';
+    grouped.forEach(variants=>grid.appendChild(createCard(variants)));
+    block.appendChild(grid);
+    container.appendChild(block);
+  });
 }
 
 function createCard(variants){
