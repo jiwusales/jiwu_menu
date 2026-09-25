@@ -216,7 +216,15 @@
     .summary-box { background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px; max-height: 250px; overflow-y: auto; text-align: left; margin-bottom: 10px; border: 1px solid #eee; }
     .qr-box { display: none; text-align: center; }
     .qr-box img { width: 180px; height: 180px; margin: 10px 0; }
-  </style>
+  
+.product-gallery{position:relative;touch-action:pan-y;pointer-events:auto}
+.product-gallery .photo-arrow{position:absolute;top:36%;border:0;border-radius:50%;width:22px;height:22px;padding:0;background:#ffffffd9;color:#555;font-size:20px;line-height:20px;cursor:pointer;z-index:2}
+.photo-arrow.prev{left:1px}.photo-arrow.next{right:1px}
+.photo-dots{display:flex;justify-content:center;gap:4px;padding:4px 0;flex-wrap:wrap}
+.photo-dots button{width:6px;height:6px;border:0;border-radius:50%;background:#ccc;padding:0;cursor:pointer}
+.photo-dots button.active{background:#555}
+.photo-arrow:focus-visible,.photo-dots button:focus-visible{outline:2px solid #f5b080;outline-offset:2px}
+</style>
 </head>
 <body>
  <div class="top-bar">
@@ -302,6 +310,68 @@ document.getElementById('top-msg').textContent = CONFIG.TOP_BAR_TEXT;
 let allItems = [], allCategories = [], allTypes = [], selectedTypes = [], selectedRole = null;
 let selectedStockFilters = [];
 
+// 圖片欄：同一格內以換行分隔網址；也容許網址之間的空白。
+function productPhotos(value){
+  return [...new Set(String(value||'').trim().split(/\s+/).filter(Boolean))];
+}
+function mountProductGallery(img, photos, startIndex=0){
+  if(!img)return;
+  photos=(Array.isArray(photos)?photos:productPhotos(photos)).map(fastImg);
+  if(!photos.length)return;
+  const old=img.closest('.product-gallery');
+  if(old){old.replaceWith(img);}
+  const box=document.createElement('div');
+  box.className='product-gallery';
+  img.replaceWith(box);box.appendChild(img);
+  img.draggable=false;
+  let index=Math.max(0,Math.min(startIndex,photos.length-1));
+  const dots=document.createElement('div');dots.className='photo-dots';
+  function show(next){
+    index=(next+photos.length)%photos.length;
+    img.src=photos[index];img.dataset.full=photos[index];
+    box.dataset.photos=JSON.stringify(photos);box.dataset.index=String(index);
+    [...dots.children].forEach((dot,i)=>{
+      dot.classList.toggle('active',i===index);
+      dot.setAttribute('aria-pressed',String(i===index));
+    });
+  }
+  if(photos.length>1){
+    for(const [label,step,symbol] of [['上一張照片',-1,'‹'],['下一張照片',1,'›']]){
+      const button=document.createElement('button');button.type='button';
+      button.className='photo-arrow '+(step<0?'prev':'next');
+      button.textContent=symbol;button.setAttribute('aria-label',label);
+      button.onclick=e=>{e.stopPropagation();show(index+step)};box.appendChild(button);
+    }
+    photos.forEach((_,i)=>{
+      const dot=document.createElement('button');dot.type='button';
+      dot.setAttribute('aria-label',`第 ${i+1} 張照片`);
+      dot.onclick=e=>{e.stopPropagation();show(i)};dots.appendChild(dot);
+    });box.appendChild(dots);
+    let touch=null,suppressUntil=0;
+    box.addEventListener('touchstart',e=>{
+      touch=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;
+    },{passive:true});
+    box.addEventListener('touchend',e=>{
+      if(!touch)return;
+      const dx=e.changedTouches[0].clientX-touch.x,dy=e.changedTouches[0].clientY-touch.y;
+      touch=null;
+      if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy)){
+        show(index+(dx<0?1:-1));suppressUntil=Date.now()+500;
+        e.stopPropagation();
+      }
+    },{passive:true});
+    box.addEventListener('touchcancel',()=>{touch=null},{passive:true});
+    box.addEventListener('click',e=>{
+      if(Date.now()<suppressUntil){e.preventDefault();e.stopPropagation();}
+    },true);
+  }
+  show(index);
+}
+function restoreProductGallery(card){
+  const box=card.querySelector('.product-gallery');
+  if(box)mountProductGallery(box.querySelector('img'),JSON.parse(box.dataset.photos),Number(box.dataset.index));
+}
+
 function fastImg(url) {
   return String(url || "").trim().replace(
     /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
@@ -373,7 +443,8 @@ function loadData() {
         colNonStock: getV(r, COL.colNonStock),
         status: getV(r, COL.status),
         sn: getV(r, COL.sn),
-        img: getV(r, COL.img) || "https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png",
+        images:productPhotos(getV(r,COL.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png"),
+        img:productPhotos(getV(r,COL.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png")[0],
         url: getV(r, COL.url),
         size: getV(r, COL.size),
         note: getV(r, COL.note)
@@ -795,6 +866,7 @@ function createCard(item) {
   const fullImg = fastImg(item.img);
   card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
   card.onclick = () => zoomCard(card);
+  mountProductGallery(card.querySelector('img'),item.images||productPhotos(item.img));
   return card;
 }
 
@@ -808,6 +880,7 @@ function formatName(n) {
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true);
+  restoreProductGallery(clone);
   const img = clone.querySelector('img');
   if (img) { img.src = img.dataset.full || img.src; img.removeAttribute('loading'); img.decoding = 'async'; }
   ov.appendChild(clone);
