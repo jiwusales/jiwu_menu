@@ -363,35 +363,49 @@ function loadData(){
         return String(val).trim();
       };
 
-      let lastGroup="",lastColor="",lastNote="";
-      let sectionIndex=0,sectionBanner="";
+      let lastGroup="",lastNote="";
+      let sectionIndex=0,sectionBanner="",sectionColor="";
+      let groupPrimaryColor="",bannerCount=0;
       groupSettings={};
 
       const rawItems=data.table.rows.map(r=>{
         const rawGroup=getV(r,COL.group);
         const rawBanner=getV(r,COL.banner);
+        const rawColor=getV(r,COL.color);
 
         if(rawGroup!==""&&rawGroup!==lastGroup){
           lastGroup=rawGroup;
           sectionIndex++;
           sectionBanner="";
-          lastColor="";
+          sectionColor="";
+          groupPrimaryColor="";
+          bannerCount=0;
           lastNote="";
         }
+
         if(rawBanner){
           sectionIndex++;
           sectionBanner=rawBanner;
+          sectionColor=rawColor||"";
+          bannerCount++;
         }
-        lastColor=getV(r,COL.color)||lastColor;
+
+        // 整團最上方 bar 固定使用第一首圖區段的主色系。
+        // 第二首圖之後的主色系只作為該首圖區域商品卡的邊框色，不覆蓋整團主色。
+        if(rawColor&&bannerCount<=1&&!groupPrimaryColor){
+          groupPrimaryColor=rawColor;
+        }
+
         lastNote=getV(r,COL.note)||lastNote;
         if(lastGroup){
-          groupSettings[lastGroup]={color:lastColor,note:lastNote};
+          groupSettings[lastGroup]={color:groupPrimaryColor,note:lastNote};
         }
 
         return{
           group:lastGroup,
           sectionId:sectionIndex,
           sectionBanner,
+          sectionColor,
           role:getV(r,COL.role)||" ",
           name:getV(r,COL.name),
           originalPrice:getV(r,COL.originalPrice),
@@ -1268,7 +1282,11 @@ function renderItems(){
   const sections=new Map();
   groupItems.forEach(item=>{
     if(!sections.has(item.sectionId)){
-      sections.set(item.sectionId,{banner:item.sectionBanner,items:[]});
+      sections.set(item.sectionId,{
+        banner:item.sectionBanner,
+        color:item.sectionColor||"",
+        items:[]
+      });
     }
     sections.get(item.sectionId).items.push(item);
   });
@@ -1294,17 +1312,22 @@ function renderItems(){
     });
     const grid=document.createElement('div');
     grid.className='group-grid';
-    grouped.forEach(variants=>grid.appendChild(createCard(variants)));
+    grouped.forEach(variants=>grid.appendChild(createCard(variants,section.color)));
     block.appendChild(grid);
     container.appendChild(block);
   });
 }
 
-function createCard(variants){
+function createCard(variants,sectionColor=""){
   const usable=variants.filter(canAddItem);
   const item=usable.find(x=>String(x.stock||"").trim()!=="-")||usable[0]||variants[0];
   const card=document.createElement('div');
   card.className='card';
+
+  const borderColor=String(sectionColor||"").trim();
+  if(borderColor){
+    card.style.borderColor=borderColor.startsWith("#")?borderColor:"#"+borderColor;
+  }
 
   const allSoldOut=variants.every(x=>String(x.stock||"").trim()==='-');
   const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
