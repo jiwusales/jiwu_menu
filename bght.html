@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JIWU團務進度表</title>
+<link rel="icon" href="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png">
+<style>
+:root{color-scheme:light;--ink:#344b3c;--muted:#777;--paper:#fafafb;--line:#e1e5ed;--soft:#ededee;--active:#9e8268}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",Arial,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}.shell{max-width:none;margin:auto;padding:0 32px 48px}.siteHeader{height:72px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);background:#fff;padding:0 32px;margin:0 calc(32px * -1) 22px}.siteTitle{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:800;color:#444}.siteTitle img{width:34px;height:34px;object-fit:contain}.save{border:0;border-radius:9px;background:var(--active);color:#fff;font-weight:800;padding:9px 15px;letter-spacing:.05em}.save[disabled]{opacity:.5}.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.filter,.status{border:0;border-radius:9px;background:var(--soft);color:#64666a;font-weight:700;padding:9px 14px;min-width:70px}.filter[aria-selected="true"],.status.selected{background:var(--active);color:#fff}.hint{font-size:13px;color:#73786a;margin:0 0 20px}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}.tile{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);padding:0;text-align:center;touch-action:manipulation}.tile.dragging{opacity:.5;outline:2px dashed var(--active);outline-offset:3px}.tile img,.blank{display:block;width:100%;aspect-ratio:1080/400;object-fit:cover;background:#eef1f7}.tile strong{display:block;min-height:44px;padding:9px 7px 3px;font-size:12px;line-height:1.35;overflow:hidden}.tile small{display:block;min-height:29px;padding:0 7px 9px;color:#7d746d;font-size:12px}.complete{margin:36px 0 18px;padding-top:22px;border-top:1px solid var(--line);color:var(--active);font-size:18px}.empty,.loading{padding:42px 0;text-align:center;color:var(--muted)}.login{position:fixed;inset:0;display:grid;place-items:center;background:#f4f1ec;z-index:10}.loginCard{width:min(360px,calc(100% - 32px));padding:30px;border-radius:18px;background:#fff;box-shadow:0 10px 30px #372e2520}.loginCard img{display:block;width:130px;margin:0 auto 16px}.loginCard input,.edit input,.edit textarea{width:100%;margin:10px 0;border:1px solid #ccd1d8;border-radius:9px;padding:10px;background:#fff}.loginCard label{font-size:13px;color:#666}.loginCard .save{width:100%;margin-top:14px}.error{min-height:20px;color:#c34b4b;font-size:13px}.dialog{width:min(620px,calc(100% - 28px));border:0;border-radius:18px;padding:24px;box-shadow:0 16px 50px #0004}.dialog::backdrop{background:#0006}.dialogHead{display:flex;align-items:center;justify-content:space-between;gap:12px}.dialogHead h2{margin:0;font-size:20px;color:#111}.light{border:0;border-radius:8px;background:#ededee;color:#666;padding:8px 12px;font-weight:700}.statuses{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:18px 0}.status{min-width:0;padding:8px 3px;font-size:13px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}.edit label{display:block;font-weight:700;font-size:14px}.edit textarea{resize:vertical;min-height:96px}.notice{position:fixed;right:20px;bottom:20px;border-radius:10px;background:#344b3c;color:#fff;padding:10px 14px;box-shadow:0 6px 18px #0002;opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s}.notice.show{opacity:1;transform:none}@media(max-width:650px){.shell{padding:0 14px 36px}.siteHeader{height:60px;padding:0 14px;margin:0 -14px 16px}.siteTitle{font-size:18px}.siteTitle img{width:28px;height:28px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.filters{gap:6px}.filter{min-width:0;padding:8px 11px;font-size:13px}.statuses{grid-template-columns:repeat(4,minmax(0,1fr));}.pair{grid-template-columns:1fr}.dialog{padding:18px}.hint{line-height:1.5}}
+</style>
+<style>
+.tile strong{display:flex;align-items:flex-end;justify-content:center;text-align:center}
+</style>
+</head>
+<body>
+<main class="shell" id="app">
+  <header class="siteHeader"><div class="siteTitle"><img src="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" alt="">JIWU團務進度表</div></header>
+  <nav class="filters" id="filters" aria-label="IP 分類"></nav>
+  <section class="grid" id="activeGrid"><p class="loading">載入中請稍等…</p></section><section id="completeSection" hidden><h2 class="complete">開團考古區</h2><div class="grid" id="completeGrid"></div></section>
+</main>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbydO3PzBMzM-kkYqhq-sJOsp6eJOKhpR2PJYV9_NvyfzIBMn6n4il8Mz4_iQj2EWgg5/exec';
+const FALLBACK='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
+let data={entries:[],categories:[]},filter='全部';
+const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function safeURL(value){try{const url=new URL(value);return /^https?:$/.test(url.protocol)?url.href:''}catch(_){return ''}}
+async function request(action,params={}){const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...params})});const result=await response.json();if(!result.ok)throw new Error(result.error||'讀取失敗');return result}
+async function load(){try{data=await request('publicGroupWork');render()}catch(error){document.getElementById('filters').innerHTML='';document.getElementById('activeGrid').innerHTML=`<p class="empty">載入失敗：${esc(error.message)}</p>`}}
+function compare(a,b){const ao=Number(a.workOrder),bo=Number(b.workOrder),ha=Number.isFinite(ao)&&ao>0,hb=Number.isFinite(bo)&&bo>0;if(ha||hb){if(ha&&hb)return ao-bo;return ha?-1:1}const date=x=>{const m=String(x.name||'').match(/^(\d{2})(\d{2})/);return m?Number(m[1])*32+Number(m[2]):-1};return date(b)-date(a)}
+function shown(){return data.entries.filter(entry=>filter==='全部'||entry.category===filter).sort(compare)}
+function render(){const categories=['全部',...(data.categories||[]).filter(Boolean)];if(!categories.includes(filter))filter='全部';document.getElementById('filters').innerHTML=categories.map(x=>`<button class="filter" aria-selected="${x===filter}" onclick="setFilter('${esc(x)}')">${esc(x)}</button>`).join('');const entries=shown(),active=entries.filter(x=>x.status!=='下班ㄌ'),complete=entries.filter(x=>x.status==='下班ㄌ');document.getElementById('activeGrid').innerHTML=cards(active)||'<p class="empty">目前沒有符合的團務資料。</p>';document.getElementById('completeGrid').innerHTML=cards(complete);document.getElementById('completeSection').hidden=!complete.length}
+function cards(entries){return entries.map(entry=>{const image=safeURL(entry.image)||FALLBACK;return `<article class="tile"><img src="${esc(image)}" alt="" loading="lazy"><strong>${esc(entry.name)}</strong><small>${esc(entry.status)}${entry.arrival?'｜'+esc(entry.arrival):''}</small></article>`}).join('')}
+function setFilter(value){filter=value;render()}
+load();
+</script>
+</body>
+</html>
