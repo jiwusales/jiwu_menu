@@ -13,6 +13,7 @@
 .siteTitle{font-family:"Hiragino Maru Gothic ProN","Arial Rounded MT Bold","Hiragino Sans",sans-serif;font-weight:400}
 .tile strong{display:flex;align-items:flex-end;justify-content:center;text-align:center}
 .loading{grid-column:1/-1;width:100%;text-align:center}
+.filters .filter{flex:1 1 120px;min-width:0}
 </style>
 </head>
 <body>
@@ -24,6 +25,7 @@
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbydO3PzBMzM-kkYqhq-sJOsp6eJOKhpR2PJYV9_NvyfzIBMn6n4il8Mz4_iQj2EWgg5/exec';
 const FALLBACK='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
+const CATEGORY_ORDER=['吉伊卡哇&白熊','寶可夢','三麗鷗','海綿寶寶','綜合IP','鬼滅之刃','呪術廻戦','鏈鋸人','坂本日常','銀魂','薰香','冰之城牆&相反','綜合動漫'];
 let data={entries:[],categories:[]},filter='全部';
 const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function safeURL(value){try{const url=new URL(value);return /^https?:$/.test(url.protocol)?url.href:''}catch(_){return ''}}
@@ -31,7 +33,7 @@ async function request(action,params={}){const response=await fetch(API_URL,{met
 async function load(){try{data=await request('publicGroupWork');render()}catch(error){document.getElementById('filters').innerHTML='';document.getElementById('activeGrid').innerHTML=`<p class="empty">載入失敗：${esc(error.message)}</p>`}}
 function compare(a,b){const ao=Number(a.workOrder),bo=Number(b.workOrder),ha=Number.isFinite(ao)&&ao>0,hb=Number.isFinite(bo)&&bo>0;if(ha||hb){if(ha&&hb)return ao-bo;return ha?-1:1}const date=x=>{const m=String(x.name||'').match(/^(\d{2})(\d{2})/);return m?Number(m[1])*32+Number(m[2]):-1};return date(b)-date(a)}
 function shown(){return data.entries.filter(entry=>filter==='全部'||entry.category===filter).sort(compare)}
-function render(){const categories=['全部',...(data.categories||[]).filter(Boolean)];if(!categories.includes(filter))filter='全部';document.getElementById('filters').innerHTML=categories.map(x=>`<button class="filter" aria-selected="${x===filter}" onclick="setFilter('${esc(x)}')">${esc(x)}</button>`).join('');const entries=shown(),active=entries.filter(x=>x.status!=='下班ㄌ'),complete=entries.filter(x=>x.status==='下班ㄌ');document.getElementById('activeGrid').innerHTML=cards(active)||'<p class="empty">目前沒有符合的團務資料。</p>';document.getElementById('completeGrid').innerHTML=cards(complete);document.getElementById('completeSection').hidden=!complete.length}
+function render(){const available=new Set((data.categories||[]).filter(Boolean)),categories=['全部',...CATEGORY_ORDER.filter(category=>available.has(category))];if(!categories.includes(filter))filter='全部';document.getElementById('filters').innerHTML=categories.map(x=>`<button class="filter" aria-selected="${x===filter}" onclick="setFilter('${esc(x)}')">${esc(x)}</button>`).join('');const entries=shown(),active=entries.filter(x=>x.status!=='下班ㄌ'),complete=entries.filter(x=>x.status==='下班ㄌ');document.getElementById('activeGrid').innerHTML=cards(active)||'<p class="empty">目前沒有符合的團務資料。</p>';document.getElementById('completeGrid').innerHTML=cards(complete);document.getElementById('completeSection').hidden=!complete.length}
 function cards(entries){return entries.map(entry=>{const image=safeURL(entry.image)||FALLBACK;return `<article class="tile"><img src="${esc(image)}" alt="" loading="lazy"><strong>${esc(entry.name)}</strong><small>${esc(entry.status)}${entry.arrival?'｜'+esc(entry.arrival):''}</small></article>`}).join('')}
 function setFilter(value){filter=value;render()}
 load();
