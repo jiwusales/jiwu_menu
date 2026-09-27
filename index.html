@@ -22,16 +22,27 @@
     .logo-container{text-align:center;margin:20px 0}
     .logo-container img{width:160px;height:auto}
     .section-title{text-align:center;margin:15px auto 20px;font-weight:bold;font-size:1.2em;color:#5d4a3a;letter-spacing:2px}
-    .carousel-wrapper{width:100%;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none}
+    .carousel-shell{position:relative;width:100%;max-width:1200px;margin:auto}
+    .carousel-wrapper{width:100%;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none;overscroll-behavior-x:contain}
     .carousel-wrapper::-webkit-scrollbar{display:none}
     .carousel-wrapper:active{cursor:grabbing}
-    .carousel{display:flex;padding:0 10px;gap:12px;width:max-content}
-    .carousel a{display:block;width:31vw;max-width:180px;flex-shrink:0;scroll-snap-align:start;text-align:center}
-    .carousel img{width:100%;height:auto;display:block;border-radius:10px;pointer-events:none;margin-bottom:8px}
-    .item-caption{font-size:11px;color:#666;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:28px}
-    .carousel-dots{display:flex;justify-content:center;align-items:center;gap:8px;margin:15px 0 35px}
-    .dot{width:7px;height:7px;background-color:#eee;border-radius:50%;cursor:pointer;transition:all .3s ease}
-    .dot.active{background-color:#dac7b7;transform:scale(1.3)}
+    .carousel{display:flex;width:100%}
+    .carousel-page{flex:0 0 100%;box-sizing:border-box;padding:0 50px;display:grid;grid-template-columns:repeat(var(--columns,1),minmax(0,1fr));grid-template-rows:repeat(3,auto);align-content:start;gap:12px;scroll-snap-align:start;scroll-snap-stop:always}
+    .carousel a{display:block;min-width:0;text-align:center;overflow:hidden;background:#fff}
+    .carousel img{width:100%;aspect-ratio:1080/400;object-fit:cover;display:block;pointer-events:none;border-radius:10px}
+    .item-caption{font-size:12px;font-weight:700;color:#333;line-height:1.35;height:1.35em;margin:5px 6px 0;overflow:hidden}
+    .carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;border:0;background:transparent;color:#dac7b7;font-size:40px;line-height:1;padding:4px 8px;cursor:pointer}.carousel-arrow[disabled]{display:none}.carousel-prev{left:4px}.carousel-next{right:4px}
+    .carousel-dots{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;margin:15px 0 35px}
+    .dot{width:10px;height:10px;padding:0;border:0;background-color:#eee;border-radius:50%;cursor:pointer}
+    .dot.active{background-color:#dac7b7}
+    @media(max-width:600px){
+      .logo-container{margin:12px 0 8px}.logo-container img{width:135px}
+      .section-title{margin:8px auto 6px}
+      .carousel-page{padding:0 50px;gap:8px}.carousel-arrow{font-size:34px}.item-caption{font-size:12px;margin-top:3px}
+      .carousel-dots{margin:8px 0 14px}
+      .section-divider{padding:9px 0;margin-bottom:14px}
+      .role-buttons{margin:12px auto 18px}.role-buttons .row{gap:12px}.role-buttons .item{width:78px}.role-buttons .item span{margin-top:5px;font-size:.78em}
+    }
     .section-divider{width:100%;padding:12px 0;font-weight:bold;font-size:1.1em;text-align:center;background-color:#dac7b7;color:#fff;margin-bottom:25px}
     .social-divider{background-color:#F9F6F0;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:20px;padding:15px 0;margin-top:40px}
     .social-divider a img{width:40px}
@@ -51,8 +62,12 @@
 
 <div class="section-title">最新開團</div>
 
-<div class="carousel-wrapper" id="scroll-wrapper">
-  <div class="carousel" id="carousel-inner"></div>
+<div class="carousel-shell">
+  <button class="carousel-arrow carousel-prev" id="carousel-prev" type="button" aria-label="上一頁">‹</button>
+  <div class="carousel-wrapper" id="scroll-wrapper">
+    <div class="carousel" id="carousel-inner"></div>
+  </div>
+  <button class="carousel-arrow carousel-next" id="carousel-next" type="button" aria-label="下一頁">›</button>
 </div>
 
 <div class="carousel-dots" id="carousel-dots"></div>
@@ -116,140 +131,92 @@
   const wrapper=document.getElementById('scroll-wrapper');
   const inner=document.getElementById('carousel-inner');
   const dotsContainer=document.getElementById('carousel-dots');
+  const previousButton=document.getElementById('carousel-prev');
+  const nextButton=document.getElementById('carousel-next');
 
-  const SHEET_ID='12_TmFFXMcAAUYaUSFDTSoLIDSZ6L20XPEUIwvIIUPTM';
-  const SHEET_NAME='輪播';
-  const API_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const SHEET_ID='10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ';
+  const SHEET_NAME='最新開團';
+  const API_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-  let originalCount=0;
+  let allRows=[],columns=0,dragged=false;
+  const fallback='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
 
   async function fetchSheetData(){
-    const res=await fetch(API_URL);
-    const text=await res.text();
-    const json=JSON.parse(text.match(/(?<=google\.visualization\.Query\.setResponse\().*(?=\);)/s)[0]);
-    return json.table.rows;
+    const json=await new Promise((resolve,reject)=>{
+      const callback='jiwuHomeSheet_'+Date.now(),script=document.createElement('script');
+      const cleanup=()=>{clearTimeout(timer);script.remove();delete window[callback];};
+      const timer=setTimeout(()=>{cleanup();reject(new Error('最新開團資料載入逾時'));},20000);
+      window[callback]=data=>{cleanup();resolve(data);};
+      script.onerror=()=>{cleanup();reject(new Error('無法讀取最新開團資料'));};
+      const url=new URL(API_URL);url.searchParams.set('tqx','out:json;responseHandler:'+callback);
+      script.src=url.href;document.head.appendChild(script);
+    });
+    if(!json.table)throw new Error('無法讀取最新開團分頁');
+    const headers=json.table.cols.map(col=>String(col.label||'').trim());
+    const nameIndex=headers.indexOf('團名'),imageIndex=headers.indexOf('首圖'),shelfIndex=headers.indexOf('上架'),configIndex=headers.indexOf('開團設定');
+    if(nameIndex<0||imageIndex<0)throw new Error('最新開團缺少團名或首圖欄位');
+    return json.table.rows.filter(row=>String(row.c[nameIndex]?.v||'').trim()).flatMap(row=>{
+      const group=String(row.c[nameIndex]?.v||'').trim(),image=String(row.c[imageIndex]?.v||'').trim(),shelf=shelfIndex>=0?String(row.c[shelfIndex]?.v||'').trim():'';
+      let config={};try{config=JSON.parse(String(row.c[configIndex]?.v||'{}'));}catch(_){}
+      const ads=Array.isArray(config.ads)&&config.ads.length?config.ads:[{name:group,image}];
+      return ads.map(ad=>({name:String(ad?.name||group).trim()||group,image:String(ad?.image||image).trim(),group,shelf}));
+    });
   }
 
   function createItem(row,index){
-    const imgUrl=fastImg(row.c[1]?.v||'');
-    const captionText=row.c[2]?.v||'';
-    const customLink=row.c[3]?.v||'https://lin.ee/X6FUFI9';
     const a=document.createElement('a');
-    a.href=customLink;
-    a.target='_blank';
-
+    const link='https://jiwusales.github.io/jiwu_menu/NEWGOODS.html?group='+encodeURIComponent(row.group||row.name);
+    a.href=link;
+    a.target='_blank';a.rel='noopener noreferrer';a.draggable=false;
     const img=document.createElement('img');
-    img.src=imgUrl;
-    img.alt='';
-    img.decoding='async';
-    if(index<6){
-      img.loading='eager';
-      img.fetchPriority='high';
-    }else{
-      img.loading='lazy';
-    }
-
-    const caption=document.createElement('div');
-    caption.className='item-caption';
-    caption.textContent=captionText;
-
-    a.appendChild(img);
-    a.appendChild(caption);
-    return a;
+    img.src=fastImg(row.image||fallback);img.alt=row.name;img.decoding='async';img.draggable=false;
+    img.loading=index<columns*3?'eager':'lazy';
+    const caption=document.createElement('div');caption.className='item-caption';caption.textContent=row.name;
+    a.append(img,caption);return a;
   }
 
-  function renderCarousel(rows){
-    inner.innerHTML='';
-    dotsContainer.innerHTML='';
-
-    const filteredRows=rows.filter(row=>{
-      const onShelf=row.c[0]?.v?.toString().trim();
-      return onShelf?.toLowerCase()!=='x'&&row.c[1]?.v;
-    });
-
-    originalCount=filteredRows.length;
-    if(originalCount===0)return;
-
-    const tripleRows=[...filteredRows,...filteredRows,...filteredRows];
-
-    tripleRows.forEach((row,index)=>{
-      inner.appendChild(createItem(row,index));
-      if(index>=originalCount&&index<originalCount*2){
-        const dot=document.createElement('div');
-        dot.classList.add('dot');
-        if(index===originalCount)dot.classList.add('active');
-        dot.onclick=()=>{
-          const item=inner.children[index];
-          wrapper.scrollTo({left:item.offsetLeft-wrapper.offsetLeft,behavior:'smooth'});
-        };
-        dotsContainer.appendChild(dot);
-      }
-    });
-
-    requestAnimationFrame(()=>{
-      const startItem=inner.children[originalCount];
-      if(startItem)wrapper.scrollLeft=startItem.offsetLeft-wrapper.offsetLeft;
-    });
-  }
-
-  wrapper.addEventListener('scroll',()=>{
-    const scrollLeft=wrapper.scrollLeft;
-    const singleSetWidth=inner.scrollWidth/3;
-
-    if(scrollLeft<=10){
-      wrapper.scrollLeft=singleSetWidth+10;
-    }else if(scrollLeft>=singleSetWidth*2){
-      wrapper.scrollLeft=singleSetWidth;
+  function renderCarousel(rows=allRows){
+    allRows=rows;columns=window.innerWidth<=600?1:Math.max(2,Math.min(5,Math.floor(wrapper.clientWidth/260)));
+    inner.style.setProperty('--columns',columns);
+    const filtered=rows.filter(row=>row.shelf.toLowerCase()!=='x');
+    inner.replaceChildren();dotsContainer.replaceChildren();
+    const capacity=columns*3;
+    for(let start=0;start<filtered.length;start+=capacity){
+      const page=document.createElement('div');page.className='carousel-page';
+      filtered.slice(start,start+capacity).forEach((row,i)=>page.appendChild(createItem(row,start+i)));inner.appendChild(page);
+      const dot=document.createElement('button');dot.className='dot';dot.type='button';
+      const pageIndex=start/capacity;dot.setAttribute('aria-label','第 '+(pageIndex+1)+' 頁');
+      dot.onclick=()=>wrapper.scrollTo({left:pageIndex*wrapper.clientWidth,behavior:'smooth'});dotsContainer.appendChild(dot);
     }
-    updateDots();
-  });
-
+    if(!filtered.length){inner.textContent='目前沒有開團資訊。';}
+    wrapper.scrollLeft=0;updateDots();
+  }
   function updateDots(){
-    const dots=dotsContainer.querySelectorAll('.dot');
-    if(!dots.length)return;
-    const items=Array.from(inner.children);
-    let activeIndex=0,minDiff=Infinity;
-
-    items.forEach((item,i)=>{
-      const diff=Math.abs(item.offsetLeft-wrapper.scrollLeft);
-      if(diff<minDiff){
-        minDiff=diff;
-        activeIndex=i;
-      }
-    });
-
-    const dotIndex=activeIndex%originalCount;
-    dots.forEach((dot,i)=>dot.classList.toggle('active',i===dotIndex));
+    const active=Math.round(wrapper.scrollLeft/wrapper.clientWidth);
+    dotsContainer.querySelectorAll('.dot').forEach((dot,i)=>{dot.classList.toggle('active',i===active);dot.setAttribute('aria-current',i===active?'true':'false');});
+    const pageCount=inner.querySelectorAll('.carousel-page').length;
+    previousButton.disabled=pageCount<2;nextButton.disabled=pageCount<2;
   }
-
-  let isDown=false,startX,scrollLeft;
-  wrapper.addEventListener('mousedown',e=>{
-    isDown=true;
-    startX=e.pageX-wrapper.offsetLeft;
-    scrollLeft=wrapper.scrollLeft;
-    wrapper.style.scrollSnapType='none';
-  });
-  wrapper.addEventListener('mouseleave',()=>{
-    isDown=false;
-    wrapper.style.scrollSnapType='x mandatory';
-  });
-  wrapper.addEventListener('mouseup',()=>{
-    isDown=false;
-    wrapper.style.scrollSnapType='x mandatory';
-  });
-  wrapper.addEventListener('mousemove',e=>{
-    if(!isDown)return;
-    e.preventDefault();
-    const x=e.pageX-wrapper.offsetLeft;
-    wrapper.scrollLeft=scrollLeft-(x-startX)*1.5;
-  });
+  function movePage(direction){const pages=inner.querySelectorAll('.carousel-page').length;if(pages<2)return;const next=(Math.round(wrapper.scrollLeft/wrapper.clientWidth)+direction+pages)%pages;wrapper.scrollTo({left:next*wrapper.clientWidth,behavior:'smooth'});}
+  previousButton.onclick=()=>movePage(-1);nextButton.onclick=()=>movePage(1);
+  wrapper.addEventListener('scroll',updateDots,{passive:true});
+  let down=false,startX=0,startScroll=0;
+  wrapper.addEventListener('mousedown',e=>{if(e.button!==0)return;down=true;dragged=false;startX=e.clientX;startScroll=wrapper.scrollLeft;});
+  window.addEventListener('mousemove',e=>{if(!down)return;if(Math.abs(e.clientX-startX)>5){dragged=true;wrapper.style.scrollSnapType='none';e.preventDefault();wrapper.scrollLeft=startScroll-(e.clientX-startX);}});
+  window.addEventListener('mouseup',()=>{if(!down)return;down=false;wrapper.style.scrollSnapType='';if(dragged)wrapper.scrollTo({left:Math.round(wrapper.scrollLeft/wrapper.clientWidth)*wrapper.clientWidth,behavior:'smooth'});});
+  wrapper.addEventListener('click',e=>{if(dragged){e.preventDefault();dragged=false;}},true);
+  let touchStartX=0,touchStartScroll=0;
+  wrapper.addEventListener('touchstart',event=>{dragged=false;touchStartX=event.touches[0]?.clientX||0;touchStartScroll=wrapper.scrollLeft;},{passive:true});
+  wrapper.addEventListener('touchend',event=>{const pages=inner.querySelectorAll('.carousel-page').length,delta=(event.changedTouches[0]?.clientX||0)-touchStartX,max=wrapper.scrollWidth-wrapper.clientWidth;if(pages<2||Math.abs(delta)<35)return;if(delta<0&&touchStartScroll>=max-2)wrapper.scrollTo({left:0,behavior:'smooth'});if(delta>0&&touchStartScroll<=2)wrapper.scrollTo({left:max,behavior:'smooth'});},{passive:true});
+  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderCarousel(),150);});
 
   async function init(){
     try{
       const rows=await fetchSheetData();
-      renderCarousel(rows.slice(1));
+      renderCarousel(rows);
     }catch(e){
       console.error('載入失敗',e);
+      inner.textContent='開團資料暫時無法載入，請稍後重新整理。';
     }
   }
 
