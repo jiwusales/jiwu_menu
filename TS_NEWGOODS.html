@@ -624,6 +624,17 @@ function parseVariant(value){
   };
 }
 
+function getVariantRealSize(variant, selectedSize){
+  const measurements=String(variant.realSize||'').split(/[／/]/).map(x=>x.trim());
+  const sizes=variant.sizes||[];
+  // Multiple measurements follow the same order as the size buttons.
+  if(sizes.length>1 && measurements.length===sizes.length){
+    const index=sizes.indexOf(String(selectedSize||'').toUpperCase());
+    return index>=0?measurements[index]:'';
+  }
+  return variant.realSize||'';
+}
+
 function getVariantKey(item){
   return `${String(item.name||"").trim()}|||${String(item.role||"").trim()}`;
 }
@@ -838,12 +849,12 @@ function openVariantPicker(e,variants){
       ...selectedItem,
       selectedSize:selectedSize,
       selectedColor:selectedColor||v.color||"",
-      actualSize:v.realSize
+      actualSize:getVariantRealSize(v,selectedSize)
     };
 
     mountProductGallery(imgEl,selectedItem.images||productPhotos(selectedItem.img||first.img));
     priceEl.textContent=getDisplayPrice(selectedItem.price);
-    realSizeEl.textContent=v.realSize||"";
+    realSizeEl.textContent=selectedItem.actualSize;
 
     const info=getItemOrderInfo(selectedItem);
     const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
