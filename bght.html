@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>JIWU團務進度表</title>
 <link rel="icon" href="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="preconnect" href="https://images.weserv.nl" crossorigin>
 <link rel="dns-prefetch" href="//images.weserv.nl">
 <style>
@@ -16,13 +18,15 @@
 .tile strong{display:flex;align-items:flex-end;justify-content:center;text-align:center}
 .loading{grid-column:1/-1;width:100%;text-align:center}
 .filters .filter{flex:1 1 120px;min-width:0}
+.syncInfo{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-height:24px;margin:-5px 0 12px;color:#888;font-size:12px}.syncInfo button{border:0;background:transparent;color:#9e8268;padding:4px;cursor:pointer}.skeleton{height:180px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(#eef1f7 0 60%,#fff 60%);}.skeleton:after{content:"";display:block;margin:125px auto 0;width:65%;height:12px;border-radius:6px;background:#eee}
 </style>
 </head>
 <body>
 <main class="shell" id="app">
   <header class="siteHeader"><div class="siteTitle"><img src="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" alt="">JIWU團務進度表</div></header>
   <nav class="filters" id="filters" aria-label="IP 分類"></nav>
-  <section class="grid" id="activeGrid"><p class="loading">載入團務資料中…</p></section><section id="completeSection" hidden><h2 class="complete">開團考古區</h2><div class="grid" id="completeGrid"></div></section>
+  <div class="syncInfo" role="status"><span id="syncText">首次同步資料中…</span><button type="button" id="syncRetry" onclick="load()" hidden>重試</button></div>
+  <section class="grid" id="activeGrid" aria-label="團務資料"><div class="skeleton" aria-hidden="true"></div><div class="skeleton" aria-hidden="true"></div><div class="skeleton" aria-hidden="true"></div><div class="skeleton" aria-hidden="true"></div><div class="skeleton" aria-hidden="true"></div><div class="skeleton" aria-hidden="true"></div></section><section id="completeSection" hidden><h2 class="complete">開團考古區</h2><div class="grid" id="completeGrid"></div></section>
 </main>
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbydO3PzBMzM-kkYqhq-sJOsp6eJOKhpR2PJYV9_NvyfzIBMn6n4il8Mz4_iQj2EWgg5/exec';
@@ -32,14 +36,33 @@ let data={entries:[],categories:[]},filter='全部';
 const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function safeURL(value){try{const url=new URL(value);return /^https?:$/.test(url.protocol)?url.href:''}catch(_){return ''}}
 function thumbnail(value){return 'https://images.weserv.nl/?url='+encodeURIComponent(value)+'&w=640&q=75&output=webp'}
-async function request(action,params={}){const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...params})});const result=await response.json();if(!result.ok)throw new Error(result.error||'讀取失敗');return result}
-async function load(){try{data=await request('publicGroupWork');render()}catch(error){document.getElementById('filters').innerHTML='';document.getElementById('activeGrid').innerHTML=`<p class="empty">載入失敗：${esc(error.message)}</p>`}}
+const CACHE_KEY='jiwu_public_group_work_v1:'+API_URL;
+let loading=false,hasData=false,lastSuccess=0;
+function validData(value){return !!value&&Array.isArray(value.entries)&&Array.isArray(value.categories)&&value.entries.every(entry=>entry&&typeof entry==='object'&&typeof entry.name==='string');}
+function syncInfo(message,retry=false){document.getElementById('syncText').textContent=message;document.getElementById('syncRetry').hidden=!retry;}
+function restoreCache(){
+ try{const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!validData(cached?.data))return false;data=cached.data;hasData=true;render();syncInfo('顯示上次資料，背景更新中…');return true;}catch(_){return false;}
+}
+async function request(action,params={}){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),25000);
+ try{const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...params}),signal:controller.signal});if(!response.ok)throw new Error('連線失敗（'+response.status+'）');const result=await response.json();if(!result.ok)throw new Error(result.error||'讀取失敗');return result;}
+ catch(error){if(error.name==='AbortError')throw new Error('連線逾時，請稍後重試');throw error;}finally{clearTimeout(timer);}
+}
+async function load(){
+ if(loading)return;loading=true;syncInfo(hasData?'顯示上次資料，背景更新中…':'首次同步資料中…');
+ try{const next=await request('publicGroupWork');if(!validData(next))throw new Error('團務資料格式不正確');const changed=!hasData||JSON.stringify(next.entries)!==JSON.stringify(data.entries)||JSON.stringify(next.categories)!==JSON.stringify(data.categories);data=next;hasData=true;lastSuccess=Date.now();if(changed)render();try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:lastSuccess,data}));}catch(_){}syncInfo('已同步 '+new Date(lastSuccess).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));}
+ catch(error){if(hasData)syncInfo('更新失敗，保留上次資料：'+error.message,true);else{document.getElementById('activeGrid').innerHTML='<p class="empty">暫時無法取得團務資料，請點「重試」。</p>';syncInfo(error.message,true);}}
+ finally{loading=false;}
+}
 function compare(a,b){const ao=Number(a.workOrder),bo=Number(b.workOrder),ha=Number.isFinite(ao)&&ao>0,hb=Number.isFinite(bo)&&bo>0;if(ha||hb){if(ha&&hb)return ao-bo;return ha?-1:1}const date=x=>{const m=String(x.name||'').match(/^(\d{2})(\d{2})/);return m?Number(m[1])*32+Number(m[2]):-1};return date(b)-date(a)}
 function shown(){return data.entries.filter(entry=>filter==='全部'||entry.category===filter).sort(compare)}
 function render(){const available=new Set((data.categories||[]).filter(Boolean)),categories=['全部',...CATEGORY_ORDER.filter(category=>available.has(category))];if(!categories.includes(filter))filter='全部';document.getElementById('filters').innerHTML=categories.map(x=>`<button class="filter" aria-selected="${x===filter}" onclick="setFilter('${esc(x)}')">${esc(x)}</button>`).join('');const entries=shown(),active=entries.filter(x=>x.status!=='下班！'),complete=entries.filter(x=>x.status==='下班！');document.getElementById('activeGrid').innerHTML=cards(active)||'<p class="empty">目前沒有符合的團務資料。</p>';document.getElementById('completeGrid').innerHTML=cards(complete);document.getElementById('completeSection').hidden=!complete.length}
 function cards(entries){return entries.map(entry=>{const image=safeURL(entry.image)||FALLBACK;return `<article class="tile"><img src="${esc(thumbnail(image))}" data-fallback="${esc(image)}" onerror="if(this.src!==this.dataset.fallback)this.src=this.dataset.fallback" alt="" loading="lazy" decoding="async"><strong>${esc(entry.name)}</strong><small>${esc(entry.status)}${entry.arrival?'｜'+esc(entry.arrival):''}</small></article>`}).join('')}
 function setFilter(value){filter=value;render()}
+restoreCache();
 load();
+setInterval(()=>{if(!document.hidden)load();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastSuccess>15000)load();});
 </script>
 </body>
 </html>
