@@ -225,6 +225,31 @@
 .photo-dots button{width:6px;height:6px;border:0;border-radius:50%;background:#ccc;padding:0;cursor:pointer}
 .photo-dots button.active{background:#555}
 .photo-arrow:focus-visible,.photo-dots button:focus-visible{outline:2px solid #f5b080;outline-offset:2px}
+.cart-variant-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:#eee;color:#555;margin:0 0 3px 4px;font-weight:bold}
+.color-dots{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;width:66px;margin:3px auto 4px;min-height:12px}
+.color-dot{width:10px;height:10px;border-radius:50%;border:0;box-sizing:border-box;display:inline-block;flex:0 0 auto}
+.variant-card .color-dots{margin:4px 0 6px}
+.variant-card .color-dot{width:12px;height:12px}
+.variant-overlay{position:fixed;inset:0;background:#000b;z-index:20000;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
+.variant-card{width:310px;max-width:88vw;max-height:88vh;overflow-y:auto;background:#fff;border:2px solid var(--theme-color);border-radius:10px;padding:18px 14px 14px;position:relative;text-align:center;box-shadow:0 8px 30px #0004}
+.variant-close{position:absolute;top:7px;right:10px;font-size:20px;color:#bbb;cursor:pointer;z-index:20}
+.variant-stock{position:absolute;top:0;left:0;width:55px;height:16px;padding:0 4px;border-radius:0 0 8px 0;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;z-index:10;box-sizing:border-box}
+.variant-card img{height:220px;width:auto;max-width:90%;object-fit:contain;display:block;margin:4px auto 0}
+.variant-card .variant-name{font-size:15px;font-weight:bold;line-height:1.25;margin:4px 0 2px}
+.variant-card .variant-price{font-size:14px;font-weight:bold;color:#F5B080;margin:2px 0}
+.variant-real-size{min-height:16px;font-size:12px;color:#888;margin:1px 0 8px}
+.variant-section{margin-top:8px;text-align:center}
+.variant-label{font-size:11px;font-weight:bold;color:#666;margin-bottom:5px}
+.variant-options{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.variant-option{min-width:44px;border:1px solid #ddd;background:#fff;border-radius:7px;padding:6px 9px;font-size:11px;cursor:pointer;color:#444}
+.variant-option.active{border-color:var(--theme-color);box-shadow:0 0 0 1px var(--theme-color) inset;font-weight:bold}
+.variant-option:disabled{background:#eee;color:#aaa;cursor:not-allowed}
+#variant-color-options{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;width:100%}
+#variant-color-options .variant-option{flex:0 0 calc((100% - 24px)/5);min-width:0;width:auto;padding:6px 2px;white-space:nowrap}
+.variant-add{width:100%;margin-top:10px;border:0;border-radius:8px;padding:9px;background:var(--theme-color);color:#fff;font-weight:bold;font-size:12px;cursor:pointer}
+.variant-add:disabled{background:#ddd;color:#999;cursor:not-allowed}
+
+
 </style>
 </head>
 <body>
@@ -502,7 +527,8 @@ function renderSideMenu() {
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
 function addToCart(e,item,tagText,tagBg,tagColor){
-  e.stopPropagation();
+  if(e)e.stopPropagation();
+  if(!canAddItem(item))return;
   const source=(item.ip&&String(item.ip).trim())?String(item.ip).trim():(CONFIG.IP_NAME||"");
   cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});
   saveCart();
@@ -510,6 +536,384 @@ function addToCart(e,item,tagText,tagBg,tagColor){
   const btn=e.target;
   btn.style.background="#fdd365";
   setTimeout(()=>btn.style.background="#ddd",50);
+}
+
+function parseVariant(value){
+  const raw=String(value||"").trim();
+  const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
+
+  const isSingleCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
+  const isCode=s=>{
+    const parts=String(s||"").split("+").map(x=>x.trim()).filter(Boolean);
+    return parts.length>0&&parts.every(isSingleCode);
+  };
+  const code=s=>String(s||"").split("+").map(x=>{
+    x=x.trim();
+    return x?(x.startsWith("#")?x:"#"+x):"";
+  }).filter(Boolean).join("+");
+
+  const isSize=s=>/^(XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|FREE|F)$/i.test(String(s||"").trim());
+  const looksLikeRealSize=s=>/\d|cm|mm|×|約|φ|Φ|直徑|胸寬|衣長|袖長|肩寬|高|寬|長/i.test(String(s||""));
+
+  const sizes=[];
+  let i=0;
+
+  // 開頭連續出現的 S/M/L/XL... 全部視為可選尺寸
+  while(i<p.length&&isSize(p[i])){
+    sizes.push(p[i].toUpperCase());
+    i++;
+  }
+
+  const rest=p.slice(i);
+  let color="",colorCode="",realSize="";
+
+  if(sizes.length){
+    if(rest.length===1){
+      if(isCode(rest[0])){
+        colorCode=code(rest[0]);
+      }else if(looksLikeRealSize(rest[0])){
+        realSize=rest[0];
+      }else{
+        color=rest[0];
+      }
+    }else if(rest.length>=2){
+      // 尺寸.../顏色/色碼/實際尺寸
+      if(isCode(rest[1])){
+        color=rest[0]||"";
+        colorCode=code(rest[1]);
+        realSize=rest.slice(2).join("/")||"";
+      }else if(looksLikeRealSize(rest[0])){
+        realSize=rest.join("/");
+      }else{
+        // 相容舊格式：S/粉色/胸寬40cm
+        color=rest[0]||"";
+        realSize=rest.slice(1).join("/")||"";
+      }
+    }
+
+    return{
+      size:sizes[0]||"",
+      sizes,
+      color,
+      colorCode,
+      realSize
+    };
+  }
+
+  // 沒有尺寸：顏色/色碼/實際尺寸
+  if(rest.length){
+    color=rest[0]||"";
+
+    if(rest.length>=2&&isCode(rest[1])){
+      colorCode=code(rest[1]);
+      realSize=rest.slice(2).join("/")||"";
+    }else if(rest.length>=2){
+      realSize=rest.slice(1).join("/")||"";
+    }
+  }
+
+  return{
+    size:"",
+    sizes:[],
+    color,
+    colorCode,
+    realSize
+  };
+}
+
+function getVariantRealSize(variant, selectedSize){
+  const measurements=String(variant.realSize||'').split(/[／/]/).map(x=>x.trim());
+  const sizes=variant.sizes||[];
+  // Multiple measurements follow the same order as the size buttons.
+  if(sizes.length>1 && measurements.length===sizes.length){
+    const index=sizes.indexOf(String(selectedSize||'').toUpperCase());
+    return index>=0?measurements[index]:'';
+  }
+  return variant.realSize||'';
+}
+
+function getVariantKey(item){
+  const v=parseVariant(item.size);
+  const base=[item.ip,item.type,item.name,item.role].map(x=>String(x||'').trim()).join('|||');
+  return v.sizes.length||v.colorCode ? base : base+'|||'+String(item.sn||'')+'|||'+String(item.size||'');
+}
+
+function getItemOrderInfo(item){ return getStockInfo(item); }
+
+function canAddItem(item){
+  const p=String(item.price||"").trim();
+  return p!=="0"&&!/^n$/i.test(p);
+}
+
+function getVariantDisplay(item){
+  const size=String(item.selectedSize||"").trim();
+  const color=String(item.selectedColor||"").trim();
+  if(!size&&!color)return"";
+  return [size,color].filter(Boolean).join("/");
+}
+
+function getCartVariantTags(item){
+  const size=String(item.selectedSize||"").trim();
+  const color=String(item.selectedColor||"").trim();
+  return [size,color].filter(Boolean).map(x=>`<span class="cart-variant-tag">${x}</span>`).join("");
+}
+
+function getColorDotsHtml(items){
+  const seen=new Set();
+  const dots=[];
+
+  items.forEach(item=>{
+    const v=parseVariant(item.size);
+    if(!v.colorCode)return;
+
+    const key=v.colorCode.toLowerCase();
+    if(seen.has(key))return;
+    seen.add(key);
+
+    const colors=v.colorCode.split("+").map(x=>x.trim()).filter(Boolean);
+    const hasWhite=colors.some(x=>{
+      const c=x.toLowerCase().replace("#","");
+      return c==="fff"||c==="ffffff";
+    });
+
+    let bg=colors[0]||"transparent";
+    if(colors.length===2){
+      bg=`linear-gradient(135deg,${colors[0]} 0%,${colors[0]} 50%,${colors[1]} 50%,${colors[1]} 100%)`;
+    }else if(colors.length>2){
+      const step=100/colors.length;
+      bg=`linear-gradient(135deg,${colors.map((c,i)=>`${c} ${i*step}%,${c} ${(i+1)*step}%`).join(",")})`;
+    }
+
+    dots.push(`<span class="color-dot" style="background:${bg};${hasWhite?"border:1px solid #bbb":""}" title="${v.color||v.colorCode}"></span>`);
+  });
+
+  return dots.length?`<div class="color-dots">${dots.join("")}</div>`:"";
+}
+
+function openVariantPicker(e,variants){
+  if(e)e.stopPropagation();
+
+  const available=variants.filter(canAddItem);
+  if(!available.length)return;
+
+  const first=available.find(x=>String(x.colStock||"").trim()!=="-")||available[0];
+  const fv=parseVariant(first.size);
+
+  let selectedColor=fv.color||"";
+  let selectedSize=(fv.sizes&&fv.sizes[0])||"";
+  let selectedItem=null;
+
+  const ov=document.createElement('div');
+  ov.className='variant-overlay';
+
+  const firstInfo=getItemOrderInfo(first);
+  const showFirstTag=firstInfo.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(firstInfo.tagKey);
+
+  ov.innerHTML=`
+    <div class="variant-card">
+      ${showFirstTag?`<div class="variant-stock" id="variant-stock" style="background:${firstInfo.tagBg};color:${firstInfo.tagColor}">${firstInfo.tagText}</div>`:`<div class="variant-stock" id="variant-stock" style="display:none"></div>`}
+      <div class="variant-close">✕</div>
+      <img id="variant-img" src="${fastImg(first.img)}">
+      <div class="variant-name">${formatName(first.name)}</div>
+      <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
+      <div class="variant-real-size" id="variant-real-size"></div>
+
+      <div class="variant-section" id="variant-size-section">
+        <div class="variant-label">尺寸</div>
+        <div class="variant-options" id="variant-size-options"></div>
+      </div>
+
+      <div class="variant-section" id="variant-color-section">
+        <div class="variant-label">顏色</div>
+        <div class="variant-options" id="variant-color-options"></div>
+      </div>
+
+      <button class="variant-add" id="variant-add">加入購物車</button>
+    </div>`;
+
+  const imgEl=ov.querySelector('#variant-img');
+  const sizeSection=ov.querySelector('#variant-size-section');
+  const sizeBox=ov.querySelector('#variant-size-options');
+  const colorSection=ov.querySelector('#variant-color-section');
+  const colorBox=ov.querySelector('#variant-color-options');
+  const realSizeEl=ov.querySelector('#variant-real-size');
+  const priceEl=ov.querySelector('#variant-price');
+  const stockEl=ov.querySelector('#variant-stock');
+  const addBtn=ov.querySelector('#variant-add');
+
+  const colors=[...new Set(
+    available.map(x=>parseVariant(x.size).color).filter(Boolean)
+  )];
+
+  const allSizes=[...new Set(
+    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
+  )];
+
+  const hasAnySizes=allSizes.length>0;
+
+  function rowsForSelectedColor(){
+    if(!colors.length||!selectedColor)return available;
+    return available.filter(x=>parseVariant(x.size).color===selectedColor);
+  }
+
+  function validSizesForSelectedColor(){
+    return [...new Set(
+      rowsForSelectedColor()
+        .flatMap(x=>parseVariant(x.size).sizes||[])
+        .filter(Boolean)
+    )];
+  }
+
+  function findItem(){
+    let matches=rowsForSelectedColor();
+
+    if(selectedSize){
+      const sizeMatches=matches.filter(x=>{
+        const v=parseVariant(x.size);
+        return (v.sizes||[]).includes(selectedSize);
+      });
+
+      if(sizeMatches.length)matches=sizeMatches;
+    }
+
+    return matches[0]||null;
+  }
+
+  function renderSizeButtons(){
+    const validSizes=validSizesForSelectedColor();
+
+    if(!hasAnySizes||!validSizes.length){
+      selectedSize="";
+      sizeSection.style.display='none';
+      sizeBox.innerHTML="";
+      return;
+    }
+
+    sizeSection.style.display='block';
+
+    if(!validSizes.includes(selectedSize)){
+      selectedSize=validSizes[0];
+    }
+
+    sizeBox.innerHTML="";
+
+    validSizes.forEach(size=>{
+      const b=document.createElement('button');
+      b.className='variant-option';
+      b.dataset.value=size;
+      b.textContent=size;
+      b.classList.toggle('active',size===selectedSize);
+
+      b.onclick=ev=>{
+        ev.stopPropagation();
+        selectedSize=size;
+        setChosen();
+      };
+
+      sizeBox.appendChild(b);
+    });
+  }
+
+  function updateColorButtons(){
+    colorBox.querySelectorAll('.variant-option').forEach(b=>{
+      b.disabled=false;
+      b.classList.toggle('active',b.dataset.value===selectedColor);
+    });
+  }
+
+  function setChosen(){
+    selectedItem=findItem();
+
+    sizeBox.querySelectorAll('.variant-option').forEach(b=>{
+      b.classList.toggle('active',b.dataset.value===selectedSize);
+    });
+
+    updateColorButtons();
+
+    if(!selectedItem){
+      addBtn.disabled=true;
+      return;
+    }
+
+    const v=parseVariant(selectedItem.size);
+
+    selectedItem={
+      ...selectedItem,
+      selectedSize:selectedSize,
+      selectedColor:selectedColor||v.color||"",
+      actualSize:getVariantRealSize(v,selectedSize)
+    };
+
+    mountProductGallery(imgEl,selectedItem.images||productPhotos(selectedItem.img||first.img));
+    priceEl.textContent=getDisplayPrice(selectedItem.price);
+    realSizeEl.textContent=selectedItem.actualSize;
+
+    const info=getItemOrderInfo(selectedItem);
+    const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+
+    stockEl.style.display=showTag?"flex":"none";
+
+    if(showTag){
+      stockEl.textContent=info.tagText;
+      stockEl.style.background=info.tagBg;
+      stockEl.style.color=info.tagColor;
+    }
+
+    addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
+    addBtn.disabled=false;
+  }
+
+  if(colors.length){
+    colors.forEach(color=>{
+      const b=document.createElement('button');
+      b.className='variant-option';
+      b.dataset.value=color;
+      b.textContent=color;
+      b.classList.toggle('active',color===selectedColor);
+
+      b.onclick=ev=>{
+        ev.stopPropagation();
+        selectedColor=color;
+
+        // 換顏色時，尺寸只留下該顏色真正有的尺寸
+        renderSizeButtons();
+        setChosen();
+      };
+
+      colorBox.appendChild(b);
+    });
+  }else{
+    colorSection.style.display='none';
+  }
+
+  renderSizeButtons();
+  setChosen();
+
+  addBtn.onclick=ev=>{
+    ev.stopPropagation();
+    if(!selectedItem)return;
+
+    const info=getItemOrderInfo(selectedItem);
+    addToCart(ev,selectedItem,info.tagText||"預訂",info.tagBg,info.tagColor);
+    ov.remove();
+  };
+
+  ov.querySelector('.variant-close').onclick=()=>ov.remove();
+  ov.onclick=ev=>{if(ev.target===ov)ov.remove()};
+  document.body.appendChild(ov);
+}
+
+function getVariantGroupPrice(items){
+  const prices=[...new Set(items.map(x=>String(x.price||"").trim()).filter(x=>/^\d+$/.test(x)))].map(Number).sort((a,b)=>a-b);
+  if(!prices.length)return getDisplayPrice(items[0]?.price||"");
+  return prices.length===1?`$${prices[0]}`:`$${prices[0]}~$${prices[prices.length-1]}`;
+}
+
+
+function appendVariantCards(grid, items){
+  const groups=new Map();
+  items.forEach(item=>{const key=getVariantKey(item);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item);});
+  groups.forEach(variants=>grid.appendChild(createCard(variants)));
 }
 
 function clearCart() {
@@ -552,7 +956,7 @@ function updateCartUI() {
     div.innerHTML = `
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
-        ${tagHtml}
+        ${tagHtml}${getCartVariantTags(item)}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
@@ -621,7 +1025,8 @@ if (item.currentStatus === "S☹LD OUT") {
 
 const hiddenRoles = ["三小隻", "其他角色", "綜合角色", "全角色"];
 const roleText = item.role && !hiddenRoles.includes(item.role) ? ` ${item.role}` : "";
-msg += `${index}.${statusText}${item.name}${roleText} ${priceText}\n`;
+const variantText=getVariantDisplay(item);
+msg += `${index}.${statusText}${item.name}${roleText}${variantText ? " " + variantText : ""} ${priceText}\n`;
       index++;
     });
   });
@@ -672,7 +1077,7 @@ function renderCheckoutSummary() {
     div.innerHTML = `
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
-        ${tagHtml}
+        ${tagHtml}${getCartVariantTags(item)}
         <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
@@ -795,14 +1200,14 @@ function renderItems() {
       container.appendChild(div);
       const grid = document.createElement('div');
       grid.className = 'group-grid';
-      catItems.forEach(item => grid.appendChild(createCard(item)));
+      appendVariantCards(grid, catItems);
       container.appendChild(grid);
     });
   } else {
     const grid = document.createElement('div');
     grid.className = 'group-grid';
     grid.style.paddingTop = "10px";
-    filteredItems.forEach(item => grid.appendChild(createCard(item)));
+    appendVariantCards(grid, filteredItems);
     container.appendChild(grid);
   }
 }
@@ -854,27 +1259,58 @@ function getStockInfo(item) {
   return { tagKey, tagText, tagBg, tagColor, tagClass };
 }
 
-function createCard(item) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  
-  const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
-  card.style.borderColor = borderCol;
+function createCard(variants,sectionColor=""){
+  const usable=variants.filter(canAddItem);
+  const item=usable.find(x=>String(x.colStock||"").trim()!=="-")||usable[0]||variants[0];
+  const card=document.createElement('div');
+  card.className='card';
 
-  const { tagKey, tagText, tagBg, tagColor, tagClass } = getStockInfo(item);
-  if (tagKey === "SOLD OUT") card.classList.add('is-sold-out'); // 灰階效果不受標籤顯示設定影響，只要是售完狀態就套用
+  const borderColor=CONFIG.ROLE_BORDER_COLORS[item.role]||CONFIG.THEME_COLOR;
+  if(borderColor){
+    card.style.borderColor=borderColor.startsWith("#")?borderColor:"#"+borderColor;
+  }
 
-  // 依照 CONFIG.VISIBLE_STOCK_TAGS 決定這個標籤是否要顯示
-  const shouldShowTag = tagKey && CONFIG.VISIBLE_STOCK_TAGS.includes(tagKey);
-  const displayTagText = shouldShowTag ? tagText : "";
+  const allSoldOut=variants.every(x=>String(x.colStock||"").trim()==='-');
+  const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
+  if(allSoldOut)card.classList.add('is-sold-out');
 
-  let finalTagClass = tagClass ? tagClass : (displayTagText.length >= 2 ? "vertical" : "");
-  let tagHtml = displayTagText ? `<div class="stock-tag ${finalTagClass}" style="background-color:${tagBg}; color:${tagColor};">${displayTagText}</div>` : "";
-  let addBtnHtml = `<div class="add-btn-tag" onclick="addToCart(event, ${JSON.stringify(item).replace(/"/g, '&quot;')}, '${displayTagText}', '${tagBg}', '${tagColor}')">＋</div>`;
-  let sizeHtml = item.size ? `<div class="size">${item.size}</div>` : `<div class="size"></div>`;
-  
-  card.innerHTML = `${tagHtml}${addBtnHtml}<img src="${fastImg(item.img)}" loading="lazy" decoding="async"><div class="name">${formatName(item.name)}</div><div class="price">${getDisplayPrice(item.price)}</div>${sizeHtml}`;
-  card.onclick = () => zoomCard(card);
+  const shouldShowTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+  const displayTagText=shouldShowTag?info.tagText:"";
+  const finalTagClass=info.tagClass||(displayTagText.length>=2?"vertical":"");
+  const tagHtml=displayTagText?`<div class="stock-tag ${finalTagClass}" style="background-color:${info.tagBg};color:${info.tagColor}">${displayTagText}</div>`:"";
+  const addBtnHtml=usable.length?`<div class="add-btn-tag">＋</div>`:"";
+  const priceHtml=usable.length?`<div class="price">${getVariantGroupPrice(usable)}</div>`:"";
+  const colorDotsHtml=getColorDotsHtml(variants);
+
+  const parsedItem=parseVariant(item.size);
+  const isVariant=
+    variants.length>1||
+    parsedItem.sizes.length>0||
+    !!parsedItem.colorCode;
+  const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
+  const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
+  const role=String(item.role||"").trim();
+  const displayName=item.name;
+  const fullImg=fastImg(item.img);
+
+  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${colorDotsHtml}${sizeHtml}`;
+
+  const addBtn=card.querySelector('.add-btn-tag');
+  if(addBtn){
+    addBtn.onclick=e=>{
+      e.stopPropagation();
+      if(isVariant)openVariantPicker(e,variants);
+      else{
+        const i=getItemOrderInfo(item);
+        addToCart(e,item,i.tagText||"預訂",i.tagBg,i.tagColor);
+      }
+    };
+  }
+
+  card.onclick=e=>{
+    if(isVariant)openVariantPicker(e,variants);
+    else zoomCard(card);
+  };
   mountProductGallery(card.querySelector('img'),item.images||productPhotos(item.img));
   return card;
 }
