@@ -543,6 +543,16 @@ function parseVariant(value){
   const raw=String(value||"").trim();
   const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
 
+  // 每個購買方式分列，保留各列貨號、價格與庫存。
+  if(/^(單抽|抱盒.*)$/.test(p[0]||'')&&p[1]!=='抱盒'){
+    return {size:p[0],sizes:[p[0]],color:'',colorCode:'',realSize:p.slice(1).join('/'),sharedRealSize:true,purchaseOption:true};
+  }
+
+  // 單抽與抱盒共用同一段實際尺寸。
+  if(p[0]==='單抽'&&p[1]==='抱盒'){
+    return {size:'單抽',sizes:['單抽','抱盒'],color:'',colorCode:'',realSize:p.slice(2).join('/'),sharedRealSize:true};
+  }
+
   const isSingleCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
   const isCode=s=>{
     const parts=String(s||"").split("+").map(x=>x.trim()).filter(Boolean);
@@ -623,6 +633,7 @@ function parseVariant(value){
 }
 
 function getVariantRealSize(variant, selectedSize){
+  if(variant.sharedRealSize)return variant.realSize||'';
   const measurements=String(variant.realSize||'').split(/[／/]/).map(x=>x.trim());
   const sizes=variant.sizes||[];
   // Multiple measurements follow the same order as the size buttons.
@@ -720,7 +731,7 @@ function openVariantPicker(e,variants){
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section" id="variant-size-section">
-        <div class="variant-label">尺寸</div>
+        <div class="variant-label">${fv.sharedRealSize?"購買方式":"尺寸"}</div>
         <div class="variant-options" id="variant-size-options"></div>
       </div>
 
@@ -1280,7 +1291,7 @@ function createCard(variants,sectionColor=""){
     variants.length>1||
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
-  const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
+  const sizeHtml=`<div class="size">${parsedItem.sharedRealSize?parsedItem.realSize:(isVariant?"":(item.size||""))}</div>`;
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
   const displayName=item.name;
