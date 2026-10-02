@@ -1319,11 +1319,16 @@ function createCard(variants,sectionColor=""){
   return card;
 }
 
-function formatName(n) {
-  if (!n) return n;
-  // 如果名稱中有空白鍵，直接在空白處換行
-  if (n.indexOf(' ') !== -1) return n.split(' ').join('<br>');
-  return n.length > 9 ? n.slice(0, 9) + "<br>" + n.slice(9) : n;
+function formatName(n){
+  if(!n)return n;
+  const text=n.trim();
+  const charCount=[...text.replace(/\s/g,"")].length;
+  // 7 個字元以內保留空白，不主動換行。
+  if(charCount<=7)return text.replace(/ /g,"&nbsp;");
+  if(text.includes(" "))return text.split(" ").join("<br>");
+  return [...text].length>9
+    ?[...text].slice(0,9).join("")+"<br>"+[...text].slice(9).join("")
+    :text;
 }
 
 function zoomCard(c) {
