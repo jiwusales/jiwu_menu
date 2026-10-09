@@ -1368,7 +1368,10 @@ function createCard(variants,sectionColor=""){
     variants.length>1||
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
-  const sizeHtml=`<div class="size">${parsedItem.sharedRealSize?parsedItem.realSize:(isVariant?"":(item.size||""))}</div>`;
+  const cardSizes=[...new Set(variants.flatMap(variant=>parseVariant(variant.size).sizes||[])
+    .filter(size=>/^(XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|FREE|F)$/i.test(size)))];
+  const cardSizeText=parsedItem.sharedRealSize?parsedItem.realSize:(cardSizes.length?cardSizes.join('/'):(isVariant?"":(item.size||"")));
+  const sizeHtml=`<div class="size">${cardSizeText}</div>`;
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
   const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
