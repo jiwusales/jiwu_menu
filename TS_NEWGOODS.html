@@ -363,49 +363,35 @@ function loadData(){
         return String(val).trim();
       };
 
-      let lastGroup="",lastNote="";
-      let sectionIndex=0,sectionBanner="",sectionColor="";
-      let groupPrimaryColor="",bannerCount=0;
+      let lastGroup="",lastColor="",lastNote="";
+      let sectionIndex=0,sectionBanner="";
       groupSettings={};
 
       const rawItems=data.table.rows.map(r=>{
         const rawGroup=getV(r,COL.group);
         const rawBanner=getV(r,COL.banner);
-        const rawColor=getV(r,COL.color);
 
         if(rawGroup!==""&&rawGroup!==lastGroup){
           lastGroup=rawGroup;
           sectionIndex++;
           sectionBanner="";
-          sectionColor="";
-          groupPrimaryColor="";
-          bannerCount=0;
+          lastColor="";
           lastNote="";
         }
-
         if(rawBanner){
           sectionIndex++;
           sectionBanner=rawBanner;
-          sectionColor=rawColor||"";
-          bannerCount++;
         }
-
-        // 整團最上方 bar 固定使用第一首圖區段的主色系。
-        // 第二首圖之後的主色系只作為該首圖區域商品卡的邊框色，不覆蓋整團主色。
-        if(rawColor&&bannerCount<=1&&!groupPrimaryColor){
-          groupPrimaryColor=rawColor;
-        }
-
+        lastColor=getV(r,COL.color)||lastColor;
         lastNote=getV(r,COL.note)||lastNote;
         if(lastGroup){
-          groupSettings[lastGroup]={color:groupPrimaryColor,note:lastNote};
+          groupSettings[lastGroup]={color:lastColor,note:lastNote};
         }
 
         return{
           group:lastGroup,
           sectionId:sectionIndex,
           sectionBanner,
-          sectionColor,
           role:getV(r,COL.role)||" ",
           name:getV(r,COL.name),
           originalPrice:getV(r,COL.originalPrice),
@@ -559,16 +545,6 @@ function parseVariant(value){
   const raw=String(value||"").trim();
   const p=raw.split(/[\/／]/).map(x=>x.trim()).filter(Boolean);
 
-  // 每個購買方式分列，保留各列貨號、價格與庫存。
-  if(/^(單抽|抱盒.*)$/.test(p[0]||'')&&p[1]!=='抱盒'){
-    return {size:p[0],sizes:[p[0]],color:'',colorCode:'',realSize:p.slice(1).join('/'),sharedRealSize:true,purchaseOption:true};
-  }
-
-  // 單抽與抱盒共用同一段實際尺寸。
-  if(p[0]==='單抽'&&p[1]==='抱盒'){
-    return {size:'單抽',sizes:['單抽','抱盒'],color:'',colorCode:'',realSize:p.slice(2).join('/'),sharedRealSize:true};
-  }
-
   const isSingleCode=s=>/^#?[0-9a-f]{3,8}$/i.test(String(s||"").trim());
   const isCode=s=>{
     const parts=String(s||"").split("+").map(x=>x.trim()).filter(Boolean);
@@ -649,7 +625,6 @@ function parseVariant(value){
 }
 
 function getVariantRealSize(variant, selectedSize){
-  if(variant.sharedRealSize)return variant.realSize||'';
   const measurements=String(variant.realSize||'').split(/[／/]/).map(x=>x.trim());
   const sizes=variant.sizes||[];
   // Multiple measurements follow the same order as the size buttons.
@@ -752,7 +727,7 @@ function openVariantPicker(e,variants){
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section" id="variant-size-section">
-        <div class="variant-label">${fv.sharedRealSize?"購買方式":"尺寸"}</div>
+        <div class="variant-label">尺寸</div>
         <div class="variant-options" id="variant-size-options"></div>
       </div>
 
@@ -963,6 +938,10 @@ function toggleCart(isOpen){
   }
 }
 
+function isCartRestockItem(item){
+  return ['S☹LD OUT','SOLD OUT','補貨登記','補登'].includes(String(item.currentStatus||'').trim().toUpperCase());
+}
+
 function getDisplayPrice(price){
   const p=String(price||"").trim();
 
@@ -987,9 +966,9 @@ function updateCartUI(){
     const isNumeric=/^[0-9]+$/.test(String(item.price||"").trim());
     const priceVal=isNumeric?parseInt(item.price):0;
 
-    if(!isNumeric)hasInquiry=true;
+    if(!isNumeric&&!isCartRestockItem(item))hasInquiry=true;
 
-    total+=priceVal;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div=document.createElement('div');
     div.className='cart-item';
@@ -1061,16 +1040,16 @@ function generateLineMessage(){
         priceText=`$${priceRaw}`;
       }else if(priceRaw.indexOf('-')!==-1){
         priceText="參考圖示";
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }else if(priceRaw===""){
         priceText="詢問花花";
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }else{
         priceText=priceRaw;
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }
 
-      total+=priceVal;
+      if(!isCartRestockItem(item))total+=priceVal;
 
       let statusText="";
 
@@ -1143,9 +1122,9 @@ function renderCheckoutSummary(){
     const isNumeric=/^[0-9]+$/.test(String(item.price||"").trim());
     const priceVal=isNumeric?parseInt(item.price):0;
 
-    if(!isNumeric)hasInquiry=true;
+    if(!isNumeric&&!isCartRestockItem(item))hasInquiry=true;
 
-    total+=priceVal;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div=document.createElement('div');
     div.className='cart-item';
@@ -1304,11 +1283,7 @@ function renderItems(){
   const sections=new Map();
   groupItems.forEach(item=>{
     if(!sections.has(item.sectionId)){
-      sections.set(item.sectionId,{
-        banner:item.sectionBanner,
-        color:item.sectionColor||"",
-        items:[]
-      });
+      sections.set(item.sectionId,{banner:item.sectionBanner,items:[]});
     }
     sections.get(item.sectionId).items.push(item);
   });
@@ -1334,22 +1309,17 @@ function renderItems(){
     });
     const grid=document.createElement('div');
     grid.className='group-grid';
-    grouped.forEach(variants=>grid.appendChild(createCard(variants,section.color)));
+    grouped.forEach(variants=>grid.appendChild(createCard(variants)));
     block.appendChild(grid);
     container.appendChild(block);
   });
 }
 
-function createCard(variants,sectionColor=""){
+function createCard(variants){
   const usable=variants.filter(canAddItem);
   const item=usable.find(x=>String(x.stock||"").trim()!=="-")||usable[0]||variants[0];
   const card=document.createElement('div');
   card.className='card';
-
-  const borderColor=String(sectionColor||"").trim();
-  if(borderColor){
-    card.style.borderColor=borderColor.startsWith("#")?borderColor:"#"+borderColor;
-  }
 
   const allSoldOut=variants.every(x=>String(x.stock||"").trim()==='-');
   const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
@@ -1368,7 +1338,7 @@ function createCard(variants,sectionColor=""){
     variants.length>1||
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
-  const sizeHtml=`<div class="size">${parsedItem.sharedRealSize?parsedItem.realSize:(isVariant?"":(item.size||""))}</div>`;
+  const sizeHtml=`<div class="size">${isVariant?"":(item.size||"")}</div>`;
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
   const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");

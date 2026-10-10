@@ -970,6 +970,10 @@ function toggleCart(isOpen){
   }
 }
 
+function isCartRestockItem(item){
+  return ['S☹LD OUT','SOLD OUT','補貨登記','補登'].includes(String(item.currentStatus||'').trim().toUpperCase());
+}
+
 function getDisplayPrice(price){
   const p=String(price||"").trim();
 
@@ -994,9 +998,9 @@ function updateCartUI(){
     const isNumeric=/^[0-9]+$/.test(String(item.price||"").trim());
     const priceVal=isNumeric?parseInt(item.price):0;
 
-    if(!isNumeric)hasInquiry=true;
+    if(!isNumeric&&!isCartRestockItem(item))hasInquiry=true;
 
-    total+=priceVal;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div=document.createElement('div');
     div.className='cart-item';
@@ -1068,16 +1072,16 @@ function generateLineMessage(){
         priceText=`$${priceRaw}`;
       }else if(priceRaw.indexOf('-')!==-1){
         priceText="參考圖示";
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }else if(priceRaw===""){
         priceText="詢問花花";
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }else{
         priceText=priceRaw;
-        hasInquiry=true;
+        hasInquiry=hasInquiry||!isCartRestockItem(item);
       }
 
-      total+=priceVal;
+      if(!isCartRestockItem(item))total+=priceVal;
 
       let statusText="";
 
@@ -1150,9 +1154,9 @@ function renderCheckoutSummary(){
     const isNumeric=/^[0-9]+$/.test(String(item.price||"").trim());
     const priceVal=isNumeric?parseInt(item.price):0;
 
-    if(!isNumeric)hasInquiry=true;
+    if(!isNumeric&&!isCartRestockItem(item))hasInquiry=true;
 
-    total+=priceVal;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div=document.createElement('div');
     div.className='cart-item';

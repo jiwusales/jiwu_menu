@@ -938,6 +938,10 @@ function toggleCart(isOpen) {
   else { panel.classList.remove('open'); bg.style.display = 'none'; }
 }
 
+function isCartRestockItem(item){
+  return ['S☹LD OUT','SOLD OUT','補貨登記','補登'].includes(String(item.currentStatus||'').trim().toUpperCase());
+}
+
 function getDisplayPrice(price) {
   const p = String(price || "").trim();
   if (p.indexOf('-') !== -1) return "組合出售";
@@ -957,8 +961,8 @@ function updateCartUI() {
   cart.forEach((item, index) => {
     const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
+    if (!isNumeric&&!isCartRestockItem(item)) hasInquiry = true;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div = document.createElement('div');
     div.className = 'cart-item';
@@ -1014,15 +1018,15 @@ function generateLineMessage() {
         priceText = `$${priceRaw}`;
       } else if (priceRaw.indexOf('-') !== -1) {
         priceText = "組合出售";
-        hasInquiry = true;
+        hasInquiry = hasInquiry||!isCartRestockItem(item);
       } else if (priceRaw === "") {
         priceText = "詢問花花";
-        hasInquiry = true;
+        hasInquiry = hasInquiry||!isCartRestockItem(item);
       } else {
         priceText = priceRaw;
-        hasInquiry = true;
+        hasInquiry = hasInquiry||!isCartRestockItem(item);
       }
-      total += priceVal;
+      if(!isCartRestockItem(item))total+=priceVal;
 
       let statusText = "";
 
@@ -1079,8 +1083,8 @@ function renderCheckoutSummary() {
   cart.forEach((item) => {
     const isNumeric = /^[0-9]+$/.test(String(item.price || "").trim());
     const priceVal = isNumeric ? parseInt(item.price) : 0;
-    if (!isNumeric) hasInquiry = true;
-    total += priceVal;
+    if (!isNumeric&&!isCartRestockItem(item)) hasInquiry = true;
+    if(!isCartRestockItem(item))total+=priceVal;
 
     const div = document.createElement('div');
     div.className = 'cart-item';
