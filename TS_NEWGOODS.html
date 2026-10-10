@@ -1037,6 +1037,10 @@ function removeFromCart(index){
   }
 }
 
+function onlineSalesGroupName(value){
+  return String(value||'').trim().replace(/^\d*\s*⛔\uFE0F?\s*/, '').trim();
+}
+
 function generateLineMessage(){
   let msg="你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n";
   let total=0;
@@ -1046,7 +1050,7 @@ function generateLineMessage(){
   const groupOrder=[];
 
   cart.forEach(item=>{
-    const gName=getCartSourceName(item);
+    const gName=onlineSalesGroupName(getCartSourceName(item));
 
     if(!groupedCart[gName]){
       groupedCart[gName]=[];
