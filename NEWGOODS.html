@@ -218,26 +218,12 @@ document.getElementById('top-msg').textContent=CONFIG.TOP_BAR_TEXT;
 
 let allItems=[],allGroups=[],selectedGroup=null;
 let groupSettings={};
-let catalogRenderVersion=0;
 function setCatalogImage(img,url,immediate=false){
   img.decoding='async';
   img.loading='eager';
   img.setAttribute('fetchpriority',immediate?'high':'auto');
   if(img.getAttribute('src')!==url)img.src=url;
 }
-function waitCatalogImage(img){
-  return new Promise(resolve=>{
-    const finish=()=>{
-      img.removeEventListener('load',finish);
-      img.removeEventListener('error',finish);
-      resolve();
-    };
-    if(img.complete){finish();return;}
-    img.addEventListener('load',finish,{once:true});
-    img.addEventListener('error',finish,{once:true});
-  }).then(()=>img.decode?img.decode().catch(()=>{}):undefined);
-}
-
 // 圖片欄：同一格內以換行分隔網址；也容許網址之間的空白。
 function productPhotos(value){
   return [...new Set(String(value||'').trim().split(/\s+/).filter(Boolean))];
@@ -1313,9 +1299,8 @@ function getStockInfo(item){
 
 function renderItems(){
   const container=document.getElementById('items-wrapper');
-  const renderVersion=++catalogRenderVersion;
-  container.style.visibility='hidden';
-  container.setAttribute('aria-busy','true');
+  container.style.visibility='visible';
+  container.removeAttribute('aria-busy');
   container.innerHTML="";
 
   const groupItems=allItems.filter(i=>i.group===selectedGroup);
@@ -1366,12 +1351,7 @@ function renderItems(){
     container.appendChild(block);
     sectionIndex++;
   });
-  // 目前團別的首圖與商品圖同時下載，完成後整批顯示。
-  Promise.all([...container.querySelectorAll('img')].map(waitCatalogImage)).then(()=>{
-    if(renderVersion!==catalogRenderVersion)return;
-    container.style.visibility='visible';
-    container.removeAttribute('aria-busy');
-  });
+
 }
 
 function createCard(variants,sectionColor=""){
