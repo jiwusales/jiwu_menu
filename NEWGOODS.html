@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JIWU吉物最新開團</title>
 
@@ -216,6 +218,25 @@ document.getElementById('top-msg').textContent=CONFIG.TOP_BAR_TEXT;
 
 let allItems=[],allGroups=[],selectedGroup=null;
 let groupSettings={};
+let catalogRenderVersion=0;
+function setCatalogImage(img,url,immediate=false){
+  img.decoding='async';
+  img.loading='eager';
+  img.setAttribute('fetchpriority',immediate?'high':'auto');
+  if(img.getAttribute('src')!==url)img.src=url;
+}
+function waitCatalogImage(img){
+  return new Promise(resolve=>{
+    const finish=()=>{
+      img.removeEventListener('load',finish);
+      img.removeEventListener('error',finish);
+      resolve();
+    };
+    if(img.complete){finish();return;}
+    img.addEventListener('load',finish,{once:true});
+    img.addEventListener('error',finish,{once:true});
+  }).then(()=>img.decode?img.decode().catch(()=>{}):undefined);
+}
 
 // 圖片欄：同一格內以換行分隔網址；也容許網址之間的空白。
 function productPhotos(value){
@@ -235,7 +256,7 @@ function mountProductGallery(img, photos, startIndex=0){
   const dots=document.createElement('div');dots.className='photo-dots';
   function show(next){
     index=(next+photos.length)%photos.length;
-    img.src=photos[index];img.dataset.full=photos[index];
+    setCatalogImage(img,photos[index],img.dataset.immediate==='true'||box.isConnected);img.dataset.full=photos[index];
     box.dataset.photos=JSON.stringify(photos);box.dataset.index=String(index);
     [...dots.children].forEach((dot,i)=>{
       dot.classList.toggle('active',i===index);
@@ -1292,10 +1313,15 @@ function getStockInfo(item){
 
 function renderItems(){
   const container=document.getElementById('items-wrapper');
+  const renderVersion=++catalogRenderVersion;
+  container.style.visibility='hidden';
+  container.setAttribute('aria-busy','true');
   container.innerHTML="";
 
   const groupItems=allItems.filter(i=>i.group===selectedGroup);
   if(groupItems.length===0){
+    container.style.visibility='visible';
+    container.removeAttribute('aria-busy');
     container.innerHTML="<div style='padding:40px;color:#999'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
     return;
   }
@@ -1313,6 +1339,7 @@ function renderItems(){
     sections.get(item.sectionId).items.push(item);
   });
 
+  let sectionIndex=0;
   sections.forEach((section)=>{
     const block=document.createElement('section');
     block.className='series-section';
@@ -1320,7 +1347,7 @@ function renderItems(){
       const banner=document.createElement('div');
       banner.className='series-banner';
       const img=document.createElement('img');
-      img.src=fastImg(section.banner);
+      setCatalogImage(img,fastImg(section.banner),sectionIndex===0);
       img.alt='系列首圖';
       img.decoding='async';
       banner.appendChild(img);
@@ -1337,6 +1364,13 @@ function renderItems(){
     grouped.forEach(variants=>grid.appendChild(createCard(variants,section.color)));
     block.appendChild(grid);
     container.appendChild(block);
+    sectionIndex++;
+  });
+  // 目前團別的首圖與商品圖同時下載，完成後整批顯示。
+  Promise.all([...container.querySelectorAll('img')].map(waitCatalogImage)).then(()=>{
+    if(renderVersion!==catalogRenderVersion)return;
+    container.style.visibility='visible';
+    container.removeAttribute('aria-busy');
   });
 }
 
@@ -1377,7 +1411,8 @@ function createCard(variants,sectionColor=""){
   const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
   const fullImg=fastImg(item.img);
 
-  card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${colorDotsHtml}${sizeHtml}`;
+  const immediate=false;
+  card.innerHTML=`${tagHtml}${addBtnHtml}<img data-immediate="${immediate}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${colorDotsHtml}${sizeHtml}`;
 
   const addBtn=card.querySelector('.add-btn-tag');
   if(addBtn){
@@ -1430,7 +1465,7 @@ function zoomCard(c){
   const img=clone.querySelector('img');
 
   if(img){
-    img.src=img.dataset.full||img.src;
+    setCatalogImage(img,img.dataset.full||img.src,true);
     img.removeAttribute('loading');
     img.decoding='async';
   }
@@ -1545,7 +1580,12 @@ function zoomCard(c){
   el.addEventListener('touchstart',dragStart,{passive:false});
 })();
 
-window.onload=loadData;
+// 不等待選單、購物車圖示或 QR 圖片下載完成。
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',loadData,{once:true});
+}else{
+  loadData();
+}
 </script>
 
 <div style="text-align:center;font-size:11px;color:#999;padding:10px;margin-top:10px;border-top:1px solid #eee">
