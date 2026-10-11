@@ -766,7 +766,7 @@ function getStockInfo(item) {
     tagText = "路上";
     tagBg = "#6C95B0";
   }
-  else if (item.colStock === "0" && item.colShop === "") {
+  else if (stockNum === 0 && (String(item.colShop ?? "").trim() === "" || Number(item.colShop) === 0)) {
     tagKey = "預訂";
     tagText = "預訂";
     tagBg = "#C197D2";
