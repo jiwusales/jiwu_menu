@@ -300,7 +300,7 @@
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
       <span class="text-clear" onclick="clearCart()">清空購物車</span>
-      <div id="delivery-cart" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">寄送</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
+      <div id="delivery-cart" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">賣貨便</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
 <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
         <span>總計金額</span>
         <span id="cart-total" style="color: #e44d26;">$0</span>
@@ -316,7 +316,7 @@
       <div style="padding: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px; text-align: right; font-weight: bold; font-size: 14px;">
         總計：<span id="modal-total-price" style="color:#e44d26;">$0</span>
       </div>
-      <div id="delivery-modal" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">寄送</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
+      <div id="delivery-modal" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">賣貨便</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
 <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
       <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
       <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
@@ -1071,7 +1071,7 @@ function selectDelivery(input){
 }
 function requireDelivery(){
   if (['shipping','pickup','undecided'].includes(deliveryMethod)) return true;
-  alert('請選擇寄送、自取或還沒想好');
+  alert('取貨方式記得選一個(´•᎑•`)♡');
   return false;
 }
 function getDeliveryNote(){
@@ -1079,7 +1079,7 @@ function getDeliveryNote(){
 }
 function appendDeliveryMessage(message){
   if (deliveryMethod === 'pickup') return message + '（自取）';
-  if (deliveryMethod === 'undecided') return message + '\n貨到再問我取貨方式( • ̀ω•́ )感ㄣ！';
+  if (deliveryMethod === 'undecided') return message + '\n到貨再決定怎麼取！感ㄣ(੭•̀ᵕ•̀)੭';
   return message;
 }
 document.getElementById(isDeliveryMobile() ? 'delivery-cart' : 'delivery-modal').hidden = false;
