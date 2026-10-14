@@ -252,6 +252,7 @@
 
 
 
+.delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -301,7 +302,8 @@
     <div class="cart-list" id="cart-list"></div>
     <div class="cart-footer">
       <span class="text-clear" onclick="clearCart()">清空購物車</span>
-      <div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
+      <div id="delivery-cart" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">寄送</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
+<div style="margin-bottom:12px; font-weight:bold; display:flex; justify-content:space-between; font-size:15px;">
         <span>總計金額</span>
         <span id="cart-total" style="color: #e44d26;">$0</span>
       </div>
@@ -316,7 +318,8 @@
       <div style="padding: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px; text-align: right; font-weight: bold; font-size: 14px;">
         總計：<span id="modal-total-price" style="color:#e44d26;">$0</span>
       </div>
-      <input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
+      <div id="delivery-modal" class="delivery-options" role="group" aria-label="取貨方式（必選一項）" hidden><label><input type="checkbox" value="shipping" onchange="selectDelivery(this)">寄送</label><label><input type="checkbox" value="pickup" onchange="selectDelivery(this)">自取</label><label><input type="checkbox" value="undecided" onchange="selectDelivery(this)">還沒想好</label></div>
+<input type="text" id="user-line" class="input-box" placeholder="LINE名稱 (必填)">
       <input type="text" id="user-ig" class="input-box" placeholder="其他聯繫方式（IG或Threads帳號）">
       <button class="btn-checkout" id="send-btn" onclick="handleFinalCheckout()">確認訂購</button>
       <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; color:#ccc">✕</span>
@@ -1045,13 +1048,40 @@ else if(item.currentStatus) statusText=`(${item.currentStatus})`;
   });
 
   msg+=`\n總金額：$${total}${hasInquiry?" + 詢問報價":""}`;
-  return msg;
+  return appendDeliveryMessage(msg);
 }
+
+
+function isDeliveryMobile(){
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+let deliveryMethod = '';
+function selectDelivery(input){
+  deliveryMethod = input.checked ? input.value : '';
+  document.querySelectorAll('.delivery-options input').forEach(el => {
+    el.checked = el.value === deliveryMethod;
+  });
+}
+function requireDelivery(){
+  if (['shipping','pickup','undecided'].includes(deliveryMethod)) return true;
+  alert('請選擇寄送、自取或還沒想好');
+  return false;
+}
+function getDeliveryNote(){
+  return deliveryMethod === 'pickup' ? '面交' : deliveryMethod === 'undecided' ? '貨到詢問' : '';
+}
+function appendDeliveryMessage(message){
+  if (deliveryMethod === 'pickup') return message + '（自取）';
+  if (deliveryMethod === 'undecided') return message + '\n貨到再問我取貨方式( • ̀ω•́ )感ㄣ！';
+  return message;
+}
+document.getElementById(isDeliveryMobile() ? 'delivery-cart' : 'delivery-modal').hidden = false;
 
 function handleCheckoutEntry() {
   if (cart.length === 0) return alert("購物車是空的唷！");
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   if (isMobileDevice) {
+    if (!requireDelivery()) return;
     const msg = generateLineMessage();
     window.location.href = CONFIG.LINE_MSG_URL + encodeURIComponent(msg);
     setTimeout(() => { 
@@ -1102,6 +1132,7 @@ function renderCheckoutSummary() {
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
 function handleFinalCheckout() {
+  if (!requireDelivery()) return;
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
 
@@ -1123,7 +1154,7 @@ function handleFinalCheckout() {
     source: "電腦",
     lineName,
     igAccount: igAcc,
-    cartItems: cartData
+    cartItems: cartData, deliveryMethod, note: getDeliveryNote()
   };
 
   fetch(CONFIG.DEPLOY_URL, {
