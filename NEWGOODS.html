@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://rilompdypgjzhynqjlwv.supabase.co">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JIWU吉物最新開團</title>
@@ -26,12 +26,13 @@ const CONFIG={
   LINE_ID:"@jiwusales",
   LINE_LINK:"https://line.me/R/ti/p/@tei8245t",
   LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",
-  DEPLOY_URL:"https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
+  DEPLOY_URL:"https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]
 };
 </script>
 
-<script src="common.js?v=20260823-1544"></script>
+<script src="jiwu-data.js?v=20261015"></script>
+<script src="common.js?v=20261015"></script>
 
 <style>
 :root{--theme-color:#fff;--active-color:#f5b080;--nav-bg:#f9f9f9;--text-color:#333}
@@ -336,7 +337,7 @@ function getUrlGroup(){
 }
 
 function loadData(){
-  const url=`https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
+  const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
   fetch(url).then(r=>r.text()).then(t=>{
     try{
@@ -1218,7 +1219,7 @@ function closeModal(){
   document.getElementById('checkout-modal').style.display="none";
 }
 
-function handleFinalCheckout(){
+async function handleFinalCheckout(){
   if (!requireDelivery()) return;
   const lineName=document.getElementById('user-line').value.trim();
   const igAcc=document.getElementById('user-ig').value.trim();
@@ -1251,11 +1252,7 @@ function handleFinalCheckout(){
     cartItems:cartData, deliveryMethod, note: getDeliveryNote()
   };
 
-  fetch(CONFIG.DEPLOY_URL,{
-    method:'POST',
-    mode:'no-cors',
-    body:JSON.stringify(postData)
-  }).catch(e=>console.error("GAS 傳送失敗",e));
+  try{await jiwuSubmitOrder(postData);}catch(e){alert(e.message||'訂單儲存失敗，購物車已保留，請重試');btn.disabled=false;btn.textContent='確認訂購';return;}
 
   cart=[];
   saveCart();
@@ -1613,3 +1610,4 @@ if(document.readyState==='loading'){
 
 </body>
 </html>
+

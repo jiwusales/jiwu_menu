@@ -39,7 +39,7 @@ function initCommonMenu() {
   document.body.insertAdjacentHTML('afterbegin', menuHtml);
 }
 
-// 處理官網下單傳送給 GAS
+// 處理官網下單儲存至資料庫
 async function handleFinalCheckout() {
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -74,15 +74,9 @@ async function handleFinalCheckout() {
       cartItems: cartData 
     };
 
-    await fetch(CONFIG.DEPLOY_URL, { 
-      method: 'POST', 
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(postData) 
-    });
+    await jiwuSubmitOrder(postData);
   } catch (e) {
-    console.error("GAS 傳送失敗", e);
+    alert(e.message||'訂單儲存失敗，購物車已保留，請重試');btn.disabled=false;btn.textContent='確認訂購';return;
   }
 
   const msg = generateLineMessage(lineName, igAcc);
@@ -98,3 +92,4 @@ async function handleFinalCheckout() {
 
 // 頁面載入完成後執行
 document.addEventListener('DOMContentLoaded', initCommonMenu);
+

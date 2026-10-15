@@ -29,7 +29,7 @@
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://script.google.com/macros/s/AKfycbwZVa8oOgSAOTv_bnAwvhYDA9Qb3QOsofRt46E4IElXcMY2d9zA9Konx46xg3Uh1tzcyw/exec",
+      DEPLOY_URL: "https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
 
       // 這個頁面要顯示哪些貨況標籤？把不想顯示的名稱刪掉即可（順序不影響顯示邏輯）
       // 可用選項："現貨"、"SOLD OUT"、"受注"、"路上"、"預訂"
@@ -50,7 +50,8 @@
     };
   </script>
   
-  <script src="common.js?v=20260823-1544"></script>
+  <script src="jiwu-data.js?v=20261015"></script>
+<script src="common.js?v=20261015"></script>
   
   <style>
     :root { 
@@ -441,7 +442,7 @@ function toggleMenu(isOpen) {
 
 // 載入試算表資料（安全轉換字串型態）
 function loadData() {
-  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&headers=1`;
+  const url = `https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
@@ -1129,7 +1130,7 @@ function renderCheckoutSummary() {
 
 function closeModal() { document.getElementById('checkout-modal').style.display = "none"; }
 
-function handleFinalCheckout() {
+async function handleFinalCheckout() {
   if (!requireDelivery()) return;
   const lineName = document.getElementById('user-line').value.trim();
   const igAcc = document.getElementById('user-ig').value.trim();
@@ -1155,11 +1156,7 @@ function handleFinalCheckout() {
     cartItems: cartData, deliveryMethod, note: getDeliveryNote()
   };
 
-  fetch(CONFIG.DEPLOY_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(postData)
-  }).catch(e => console.error("GAS 傳送失敗", e));
+  try{await jiwuSubmitOrder(postData);}catch(e){alert(e.message||'訂單儲存失敗，購物車已保留，請重試');btn.disabled=false;btn.textContent='確認訂購';return;}
 
   cart = [];
   saveCart();
@@ -1425,3 +1422,4 @@ window.onload = loadData;
 </script>
 </body>
 </html>
+
