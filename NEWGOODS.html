@@ -31,8 +31,7 @@ const CONFIG={
 };
 </script>
 
-<script src="jiwu-data.js?v=20261015"></script>
-<script src="common.js?v=20261015"></script>
+<script src="jiwu-data.js?v=20261015" defer></script>
 
 <style>
 :root{--theme-color:#fff;--active-color:#f5b080;--nav-bg:#f9f9f9;--text-color:#333}
@@ -167,7 +166,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 
 <div id="card-container">
   <div id="banner-wrapper"></div>
-  <div id="items-wrapper"></div>
+  <div id="items-wrapper"><p role="status">商品載入中…</p></div>
 </div>
 
 <div id="cart-trigger">
@@ -306,7 +305,13 @@ const STOCK_STYLES={
   "預訂":{bg:"#C197D2",color:"#fff",tagClass:""}
 };
 
-let cart=JSON.parse(localStorage.getItem('jiwu_cart'))||[];
+function readCart(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('jiwu_cart')||'[]');
+    return Array.isArray(saved)?saved.filter(item=>item&&typeof item==='object'&&!Array.isArray(item)):[];
+  }catch(_){return [];}
+}
+let cart=readCart();
 
 function getCartSourceName(item){
   return String(
@@ -336,12 +341,26 @@ function getUrlGroup(){
   return new URLSearchParams(location.search).get('group')||'';
 }
 
+async function requestGroupResource(url,type,timeout=20000){
+  const controller=typeof AbortController==='function'?new AbortController():null;
+  let timer;
+  const expired=new Promise((resolve,reject)=>{
+    timer=setTimeout(()=>{
+      const error=new Error('商品頁連線逾時，請重試。');error.name='TimeoutError';
+      reject(error);if(controller)controller.abort();
+    },timeout);
+  });
+  const pending=Promise.resolve().then(()=>fetch(url,controller?{signal:controller.signal}:{})).then(response=>
+    response[type]().then(data=>({response,data}))
+  );
+  // 期限涵蓋下載回應內容；舊 WebView 沒有 AbortController 時也會結束等待。
+  try{return await Promise.race([pending,expired]);}finally{clearTimeout(timer);}
+}
 async function resolveShortGroup(){
   const page=new URL(location.href),code=page.searchParams.get('short');
   if(!code)return;
   if(!/^[a-f0-9]{6,8}$/.test(code))throw Error('短網址格式不正確');
-  const response=await fetch('https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),{signal:AbortSignal.timeout(15000)});
-  const data=await response.json();
+  const {response,data}=await requestGroupResource('https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),'json',15000);
   if(!response.ok||!data.ok)throw Error(data.error||'無法開啟此團');
   const target=new URL(data.url),group=target.searchParams.get('group');
   if(target.origin!==location.origin||target.pathname!=='/jiwu_menu/NEWGOODS.html'||!group)throw Error('開團連結無效');
@@ -350,16 +369,17 @@ async function resolveShortGroup(){
 }
 function showGroupLoadError(error){
   const box=document.getElementById('items-wrapper');
-  box.replaceChildren();
+  box.textContent='';
   const message=document.createElement('p');message.setAttribute('role','alert');
-  message.textContent=error.name==='TimeoutError'?'商品頁連線逾時，請重試。':error.message||'商品載入失敗，請重試。';
-  const retry=document.createElement('button');retry.type='button';retry.textContent='重新載入';retry.onclick=()=>location.reload();
-  box.append(message,retry);console.error(error);
+  message.textContent=error.name==='TimeoutError'?'商品頁連線逾時，請重試。':error.name==='TypeError'?'商品暫時無法載入，請確認連線後重試。':error.message||'商品載入失敗，請重試。';
+  const retry=document.createElement('button');retry.type='button';retry.textContent='重新載入';retry.onclick=loadData;
+  box.appendChild(message);box.appendChild(retry);console.error(error);
 }
 function loadData(){
+  const box=document.getElementById('items-wrapper');box.innerHTML='<p role="status">商品載入中…</p>';
   const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
-  Promise.all([fetch(url).then(r=>{if(!r.ok)throw Error('商品暫時無法載入，請重試');return r.text();}),resolveShortGroup()]).then(([t])=>{
+  return Promise.all([requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('商品暫時無法載入，請重試');return data;}),resolveShortGroup()]).then(([t])=>{
     try{
       const data=JSON.parse(t.substr(47).slice(0,-2));
 
@@ -556,7 +576,7 @@ function renderSideMenu(){
 }
 
 function saveCart(){
-  localStorage.setItem('jiwu_cart',JSON.stringify(cart));
+  try{localStorage.setItem('jiwu_cart',JSON.stringify(cart));}catch(_){}
 }
 
 function addToCart(e,item,tagText,tagBg,tagColor){
@@ -810,7 +830,7 @@ function openVariantPicker(e,variants){
   )];
 
   const allSizes=[...new Set(
-    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
+    available.reduce((sizes,x)=>sizes.concat(parseVariant(x.size).sizes||[]),[]).filter(Boolean)
   )];
 
   const hasAnySizes=allSizes.length>0;
@@ -823,7 +843,7 @@ function openVariantPicker(e,variants){
   function validSizesForSelectedColor(){
     return [...new Set(
       rowsForSelectedColor()
-        .flatMap(x=>parseVariant(x.size).sizes||[])
+        .reduce((sizes,x)=>sizes.concat(parseVariant(x.size).sizes||[]),[])
         .filter(Boolean)
     )];
   }
@@ -969,7 +989,7 @@ function openVariantPicker(e,variants){
 
 function getVariantGroupPrice(items){
   const prices=[...new Set(items.map(x=>String(x.price||"").trim()).filter(x=>/^\d+$/.test(x)))].map(Number).sort((a,b)=>a-b);
-  if(!prices.length)return getDisplayPrice(items[0]?.price||"");
+  if(!prices.length)return getDisplayPrice((items[0]&&items[0].price)||"");
   return prices.length===1?`$${prices[0]}`:`$${prices[0]}~$${prices[prices.length-1]}`;
 }
 
@@ -1126,7 +1146,7 @@ function generateLineMessage(){
         ?` ${item.role}`
         :"";
 
-      const variantText=getVariantDisplay(item).replaceAll("／","/");
+      const variantText=getVariantDisplay(item).replace(/／/g,"/");
 const optionText=variantText?` ${variantText}`:"";
 msg+=`${index}. ${statusText}${statusText?" ":""}${item.name}${roleText}${optionText} ${priceText}\n`;
 
@@ -1272,7 +1292,10 @@ async function handleFinalCheckout(){
     cartItems:cartData, deliveryMethod, note: getDeliveryNote()
   };
 
-  try{await jiwuSubmitOrder(postData);}catch(e){alert(e.message||'訂單儲存失敗，購物車已保留，請重試');btn.disabled=false;btn.textContent='確認訂購';return;}
+  try{
+    if(typeof jiwuSubmitOrder!=='function')throw Error('下單功能暫時無法使用，請稍後重試或重新整理；購物車已保留。');
+    await jiwuSubmitOrder(postData);
+  }catch(e){alert(e.message||'訂單儲存失敗，購物車已保留，請重試');btn.disabled=false;btn.textContent='確認訂購';return;}
 
   cart=[];
   saveCart();
@@ -1438,7 +1461,7 @@ function createCard(variants,sectionColor=""){
     variants.length>1||
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
-  const cardSizes=[...new Set(variants.flatMap(variant=>parseVariant(variant.size).sizes||[])
+  const cardSizes=[...new Set(variants.reduce((sizes,variant)=>sizes.concat(parseVariant(variant.size).sizes||[]),[])
     .filter(size=>/^(XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|FREE|F)$/i.test(size)))];
   const cardSizeText=parsedItem.sharedRealSize?parsedItem.realSize:(cardSizes.length?cardSizes.join('/'):(isVariant?"":(item.size||"")));
   const sizeHtml=`<div class="size">${cardSizeText}</div>`;
@@ -1616,12 +1639,8 @@ function zoomCard(c){
   el.addEventListener('touchstart',dragStart,{passive:false});
 })();
 
-// 不等待選單、購物車圖示或 QR 圖片下載完成。
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',loadData,{once:true});
-}else{
-  loadData();
-}
+// 商品區已存在，立即載入；不等待下單程式、圖示或 QR 圖片。
+loadData();
 </script>
 
 <div style="text-align:center;font-size:11px;color:#999;padding:10px;margin-top:10px;border-top:1px solid #eee">
