@@ -336,10 +336,30 @@ function getUrlGroup(){
   return new URLSearchParams(location.search).get('group')||'';
 }
 
+async function resolveShortGroup(){
+  const page=new URL(location.href),code=page.searchParams.get('short');
+  if(!code)return;
+  if(!/^[a-f0-9]{6,8}$/.test(code))throw Error('短網址格式不正確');
+  const response=await fetch('https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),{signal:AbortSignal.timeout(15000)});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'無法開啟此團');
+  const target=new URL(data.url),group=target.searchParams.get('group');
+  if(target.origin!==location.origin||target.pathname!=='/jiwu_menu/NEWGOODS.html'||!group)throw Error('開團連結無效');
+  page.searchParams.delete('short');page.searchParams.set('group',group);
+  history.replaceState({},'',page.pathname+'?'+page.searchParams.toString());
+}
+function showGroupLoadError(error){
+  const box=document.getElementById('items-wrapper');
+  box.replaceChildren();
+  const message=document.createElement('p');message.setAttribute('role','alert');
+  message.textContent=error.name==='TimeoutError'?'商品頁連線逾時，請重試。':error.message||'商品載入失敗，請重試。';
+  const retry=document.createElement('button');retry.type='button';retry.textContent='重新載入';retry.onclick=()=>location.reload();
+  box.append(message,retry);console.error(error);
+}
 function loadData(){
   const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
-  fetch(url).then(r=>r.text()).then(t=>{
+  Promise.all([fetch(url).then(r=>{if(!r.ok)throw Error('商品暫時無法載入，請重試');return r.text();}),resolveShortGroup()]).then(([t])=>{
     try{
       const data=JSON.parse(t.substr(47).slice(0,-2));
 
@@ -440,6 +460,7 @@ function loadData(){
       allGroups=[...new Set(allItems.map(i=>i.group))];
 
       const urlGroup=getUrlGroup();
+      if(urlGroup&&!allGroups.includes(urlGroup))throw Error('此團目前沒有可訂購的商品，請稍後再試或聯絡官方 LINE。');
       selectedGroup=allGroups.includes(urlGroup)?urlGroup:allGroups[0];
 
       if(!urlGroup&&selectedGroup){
@@ -455,10 +476,9 @@ function loadData(){
       updateCartUI();
 
     }catch(e){
-      document.getElementById('items-wrapper').innerHTML="載入失敗。";
-      console.error(e);
+      showGroupLoadError(e);
     }
-  });
+  }).catch(showGroupLoadError);
 }
 
 window.addEventListener('popstate',()=>{
