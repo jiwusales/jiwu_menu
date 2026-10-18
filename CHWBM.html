@@ -1321,7 +1321,7 @@ function createCard(variants,sectionColor=""){
   const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
   if(allSoldOut)card.classList.add('is-sold-out');
 
-  const shouldShowTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
+  const shouldShowTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey)&&!(info.tagKey==="預訂"&&String(item.colStock??"").trim()==="");
   const displayTagText=shouldShowTag?info.tagText:"";
   const finalTagClass=info.tagClass||(displayTagText.length>=2?"vertical":"");
   const tagHtml=displayTagText?`<div class="stock-tag ${finalTagClass}" style="background-color:${info.tagBg};color:${info.tagColor}">${displayTagText}</div>`:"";
