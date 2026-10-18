@@ -27,7 +27,7 @@ const CONFIG={
   LINE_LINK:"https://line.me/R/ti/p/@tei8245t",
   LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",
   DEPLOY_URL:"https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
-  VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]
+  VISIBLE_STOCK_TAGS:["現貨","SOLD OUT","暫停收單"]
 };
 </script>
 
@@ -390,6 +390,8 @@ function loadData(){
         originalPrice:"原價",
         price:"售價",
         stock:"庫存",
+        paused:"暫停收單",
+        launchItemId:"商品ID",
         status:"狀態",
         sn:"貨號",
         img:"圖片",
@@ -462,6 +464,8 @@ function loadData(){
           originalPrice:getV(r,COL.originalPrice),
           price:getV(r,COL.price),
           stock:getV(r,COL.stock),
+          paused:/^(true|1|是)$/i.test(String(getV(r,COL.paused)||'').trim()),
+          launchItemId:getV(r,COL.launchItemId),
           status:getV(r,COL.status),
           sn:getV(r,COL.sn),
           images:productPhotos(getV(r,COL.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png"),
@@ -581,6 +585,7 @@ function saveCart(){
 
 function addToCart(e,item,tagText,tagBg,tagColor){
   if(e)e.stopPropagation();
+  if(item.paused)return;
   if(/^n$/i.test(String(item.price||"").trim())||String(item.price||"").trim()==="0")return;
 
   const source=(item.group&&String(item.group).trim())?String(item.group).trim():selectedGroup;
@@ -716,6 +721,7 @@ function getVariantKey(item){
 }
 
 function getItemOrderInfo(item){
+  if(item.paused)return{tagKey:"暫停收單",tagText:"暫停收單",tagBg:"#A68C73",tagColor:"#fff",tagClass:""};
   const stockVal=String(item.stock||"").trim();
   if(stockVal==='-'){
     const s=STOCK_STYLES["SOLD OUT"];
@@ -725,6 +731,7 @@ function getItemOrderInfo(item){
 }
 
 function canAddItem(item){
+  if(item.paused)return false;
   const p=String(item.price||"").trim();
   return p!=="0"&&!/^n$/i.test(p);
 }
@@ -943,8 +950,8 @@ function openVariantPicker(e,variants){
       stockEl.style.color=info.tagColor;
     }
 
-    addBtn.textContent=info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
-    addBtn.disabled=false;
+    addBtn.textContent=selectedItem.paused?"暫停收單":info.tagKey==="SOLD OUT"?"補貨登記":"加入購物車";
+    addBtn.disabled=!!selectedItem.paused;
   }
 
   if(colors.length){
@@ -1445,7 +1452,7 @@ function createCard(variants,sectionColor=""){
   }
 
   const allSoldOut=variants.every(x=>String(x.stock||"").trim()==='-');
-  const info=allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
+  const info=item.paused?getItemOrderInfo(item):allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
   if(allSoldOut)card.classList.add('is-sold-out');
 
   const shouldShowTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
