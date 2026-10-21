@@ -16,6 +16,7 @@
 <style>
 .siteTitle{font-family:"Hiragino Maru Gothic ProN","Arial Rounded MT Bold","Hiragino Sans",sans-serif;font-weight:400}
 .tile strong{display:flex;align-items:flex-end;justify-content:center;text-align:center}
+.tileNote{margin:0;padding:0 10px 12px;color:#7d746d;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .loading{grid-column:1/-1;width:100%;text-align:center}
 .filters .filter{flex:1 1 120px;min-width:0}
 .tileImage{display:block;width:100%;aspect-ratio:1080/400;overflow:hidden;background:#eef1f7}
@@ -60,7 +61,7 @@ function compare(a,b){const ao=Number(a.workOrder),bo=Number(b.workOrder),ha=Num
 function shown(){return data.entries.filter(entry=>filter==='全部'||entry.category===filter).sort(compare)}
 function render(){const available=new Set((data.categories||[]).filter(Boolean)),categories=['全部',...CATEGORY_ORDER.filter(category=>available.has(category))];if(!categories.includes(filter))filter='全部';document.getElementById('filters').innerHTML=categories.map(x=>`<button class="filter" aria-selected="${x===filter}" onclick="setFilter('${esc(x)}')">${esc(x)}</button>`).join('');const entries=shown(),active=entries.filter(x=>x.status!=='下班！'),complete=entries.filter(x=>x.status==='下班！');document.getElementById('activeGrid').innerHTML=cards(active)||'<p class="empty">目前沒有符合的團務資料。</p>';document.getElementById('completeGrid').innerHTML=cards(complete);document.getElementById('completeSection').hidden=!complete.length}
 function imageStyle(entry){const zoom=Math.max(1,Math.min(3,Number(entry.imageScale)||1)),x=Math.max(0,Math.min(100,Number.isFinite(Number(entry.imageX))?Number(entry.imageX):50)),y=Math.max(0,Math.min(100,Number.isFinite(Number(entry.imageY))?Number(entry.imageY):50));return `object-position:${x}% ${y}%;transform-origin:${x}% ${y}%;transform:scale(${zoom})`}
-function cards(entries){return entries.map(entry=>{const image=safeURL(entry.image)||FALLBACK;return `<article class="tile"><span class="tileImage"><img src="${esc(thumbnail(image))}" data-fallback="${esc(image)}" onerror="if(this.src!==this.dataset.fallback)this.src=this.dataset.fallback" style="${imageStyle(entry)}" alt="" loading="lazy" decoding="async"></span><strong>${esc(entry.name)}</strong><small>${esc(entry.status)}${entry.arrival?'｜抵台約'+esc(entry.arrival):''}</small></article>`}).join('')}
+function cards(entries){return entries.map(entry=>{const image=safeURL(entry.image)||FALLBACK;return `<article class="tile"><span class="tileImage"><img src="${esc(thumbnail(image))}" data-fallback="${esc(image)}" onerror="if(this.src!==this.dataset.fallback)this.src=this.dataset.fallback" style="${imageStyle(entry)}" alt="" loading="lazy" decoding="async"></span><strong>${esc(entry.name)}</strong><small>${esc(entry.status)}${entry.arrival?'｜抵台約'+esc(entry.arrival):''}</small>${String(entry.note??'').trim()?`<p class="tileNote">備註：${esc(String(entry.note).trim())}</p>`:''}</article>`}).join('')}
 function setFilter(value){filter=value;render()}
 restoreCache();
 load();
