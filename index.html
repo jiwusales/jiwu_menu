@@ -152,8 +152,9 @@
     return json.table.rows.filter(row=>String(row.c[nameIndex]?.v||'').trim()).flatMap(row=>{
       const group=String(row.c[nameIndex]?.v||'').trim(),image=String(row.c[imageIndex]?.v||'').trim(),shelf=shelfIndex>=0?String(row.c[shelfIndex]?.v||'').trim():'';
       let config={};try{config=JSON.parse(String(row.c[configIndex]?.v||'{}'));}catch(_){}
+      const adName=String(config.adName||'').trim();
       const ads=Array.isArray(config.ads)&&config.ads.length?config.ads:[{name:group,image}];
-      return ads.map(ad=>({name:String(ad?.name||group).trim()||group,image:String(ad?.image||image).trim(),group,shelf}));
+      return ads.map(ad=>({name:adName||String(ad?.name||group).trim()||group,image:String(ad?.image||image).trim(),group,shelf}));
     });
   }
 
