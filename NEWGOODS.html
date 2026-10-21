@@ -39,6 +39,10 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .top-bar{background:var(--theme-color);color:#fff;padding:10px 0;position:fixed;top:0;left:0;width:100%;z-index:999;font-size:15px;display:flex;justify-content:center;align-items:center}
 .top-bar .menu-btn{position:absolute;left:15px;color:#fff;font-size:20px;cursor:pointer}
 .top-bar .pulse-text{display:inline-block}
+@media(max-width:600px){
+  .top-bar{height:40px;padding:6px 46px;box-sizing:border-box}
+  .top-bar .pulse-text{display:block;width:100%;min-width:0;max-height:100%;line-height:1.2;overflow-wrap:anywhere;white-space:normal;overflow:hidden}
+}
 .header-fixed{position:fixed;top:40px;width:100%;background:var(--nav-bg);z-index:998;border-bottom:1px solid #eee}
 .nav-bar-wrapper{display:flex;align-items:center;padding:0 5px;box-sizing:border-box;height:38px}
 #side-menu{position:fixed;top:0;left:-250px;width:220px;height:100%;background:#fff;z-index:10001;transition:.3s ease;box-shadow:2px 0 10px #0001;text-align:left}
@@ -218,6 +222,25 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 document.documentElement.style.setProperty('--theme-color',CONFIG.THEME_COLOR);
 document.documentElement.style.setProperty('--active-color',CONFIG.ACTIVE_COLOR);
 document.getElementById('top-msg').textContent=CONFIG.TOP_BAR_TEXT;
+
+function fitTopMessage(){
+  const message=document.getElementById('top-msg'),bar=message?.closest('.top-bar');
+  if(!bar)return;
+  message.style.fontSize='';
+  if(!matchMedia('(max-width:600px)').matches||!message.clientWidth)return;
+  const style=getComputedStyle(bar),height=bar.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
+  message.style.fontSize='15px';
+  if(message.scrollHeight<=height&&message.scrollWidth<=message.clientWidth)return;
+  let low=1,high=15;
+  for(let step=0;step<8;step++){
+    const size=(low+high)/2;message.style.fontSize=size+'px';
+    if(message.scrollHeight<=height&&message.scrollWidth<=message.clientWidth)low=size;else high=size;
+  }
+  message.style.fontSize=(Math.floor(low*10)/10)+'px';
+}
+let topMessageFrame;
+window.addEventListener('resize',()=>{cancelAnimationFrame(topMessageFrame);topMessageFrame=requestAnimationFrame(fitTopMessage);});
+requestAnimationFrame(fitTopMessage);
 
 let allItems=[],allGroups=[],selectedGroup=null;
 let groupSettings={};
@@ -545,6 +568,7 @@ function applyGroupSettings(groupName){
     topMsg.textContent=(settings.note&&settings.note.trim())
       ?settings.note.trim()
       :CONFIG.TOP_BAR_TEXT;
+    fitTopMessage();
   }
 
   renderBanner("");
