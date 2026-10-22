@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="preconnect" href="https://rilompdypgjzhynqjlwv.supabase.co">
+<link rel="preconnect" href="https://jiwu-mac-relay.jiwusales.workers.dev">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>開團預覽</title>
@@ -26,12 +26,12 @@ const CONFIG={
   LINE_ID:"@jiwusales",
   LINE_LINK:"https://line.me/R/ti/p/@tei8245t",
   LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",
-  DEPLOY_URL:"https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
+  DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]
 };
 </script>
 
-<script src="jiwu-data.js?v=20261015"></script>
+<script src="jiwu-data.js?v=20261023-mac1"></script>
 <script src="common.js?v=20261015"></script>
 
 <style>
@@ -334,7 +334,7 @@ function getUrlGroup(){
 }
 
 function loadData(){
-  const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
   fetch(url).then(r=>r.text()).then(t=>{
     try{

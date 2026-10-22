@@ -14,7 +14,7 @@
 <link rel="icon" href="https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/icon_9a717cff.png">
 
 <script>
-const CONFIG={THEME_COLOR:"#ffffff",ACTIVE_COLOR:"#f5b080",SHEET_ID:"10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",SHEET_NAME:"景品開團",TOP_BAR_TEXT:" ",LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",DEPLOY_URL:"https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]};
+const CONFIG={THEME_COLOR:"#ffffff",ACTIVE_COLOR:"#f5b080",SHEET_ID:"10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",SHEET_NAME:"景品開團",TOP_BAR_TEXT:" ",LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]};
 </script>
 
 <style>
@@ -46,7 +46,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;color:var(--text-c
 #checkout-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;display:none;align-items:center;justify-content:center}.modal-content{background:#fff;width:85%;max-width:380px;border-radius:15px;padding:20px;position:relative}.input-box{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:5px;font-size:14px}.summary-box{background:#f9f9f9;padding:10px;border-radius:5px;font-size:12px;max-height:250px;overflow-y:auto;text-align:left;margin-bottom:10px;border:1px solid #eee}.qr-box{display:none;text-align:center}.qr-box img{width:180px;height:180px;margin:10px 0}
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
 </style>
-<script src="jiwu-data.js?v=20261015"></script>
+<script src="jiwu-data.js?v=20261023-mac1"></script>
 </head>
 
 <body>
@@ -107,7 +107,7 @@ function getCartSourceName(i){return String(i.groupName||i.ipName||i.ip||i.group
 function getUrlGroup(){return new URLSearchParams(location.search).get("group")||""}
 
 function loadData(){
-const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 fetch(url).then(r=>r.text()).then(t=>{try{
 const data=JSON.parse(t.substr(47).slice(0,-2)),H={group:"團名",role:"角色",name:"名稱",originalPrice:"原價",price:"售價",stock:"庫存",status:"狀態",sn:"貨號",img:"圖片",url:"商品網址",size:"尺寸",note:"備註",banner:"首圖",color:"主色系"},labels=(data.table.cols||[]).map(c=>String(c.label||"").trim()),C={};
 Object.keys(H).forEach(k=>C[k]=labels.indexOf(H[k]));

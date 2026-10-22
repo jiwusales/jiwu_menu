@@ -28,7 +28,7 @@
       LINE_ID: "@jiwusales", 
       LINE_LINK: "https://line.me/R/ti/p/@tei8245t",
       LINE_MSG_URL: "https://line.me/R/oaMessage/@tei8245t/?",
-      DEPLOY_URL: "https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
+      DEPLOY_URL: "https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
 
       // 這個頁面要顯示哪些貨況標籤？把不想顯示的名稱刪掉即可（順序不影響顯示邏輯）
       // 可用選項："現貨"、"SOLD OUT"、"受注"、"路上"、"預訂"
@@ -51,7 +51,7 @@
     };
   </script>
   
-  <script src="jiwu-data.js?v=20261015"></script>
+  <script src="jiwu-data.js?v=20261023-mac1"></script>
 <script src="common.js?v=20261015"></script>
   
   <style>
@@ -443,7 +443,7 @@ function toggleMenu(isOpen) {
 
 // 載入試算表資料（安全轉換字串型態）
 function loadData() {
-  const url = `https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  const url = `https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
   fetch(url).then(r => r.text()).then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));

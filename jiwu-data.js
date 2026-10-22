@@ -1,5 +1,5 @@
 // Public storefront transport. Credentials stay in the Supabase function.
-const JIWU_PUBLIC_API='https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public';
+const JIWU_PUBLIC_API='https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public';
 async function jiwuSubmitOrder(payload){
  const key='jiwu_supabase_pending_web_order_v1',signature=JSON.stringify(payload);
  let pending;try{pending=JSON.parse(sessionStorage.getItem(key)||'null');}catch(_){}

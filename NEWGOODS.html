@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="preconnect" href="https://rilompdypgjzhynqjlwv.supabase.co">
+<link rel="preconnect" href="https://jiwu-mac-relay.jiwusales.workers.dev">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JIWU吉物最新開團</title>
@@ -27,12 +27,12 @@ const CONFIG={
   LINE_ID:"@jiwusales",
   LINE_LINK:"https://line.me/R/ti/p/@tei8245t",
   LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",
-  DEPLOY_URL:"https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public",
+  DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","SOLD OUT","暫停收單"]
 };
 </script>
 
-<script src="jiwu-data.js?v=20261015" defer></script>
+<script src="jiwu-data.js?v=20261023-mac1" defer></script>
 
 <style>
 :root{--theme-color:#fff;--active-color:#f5b080;--nav-bg:#f9f9f9;--text-color:#333}
@@ -384,7 +384,7 @@ async function resolveShortGroup(){
   const page=new URL(location.href),code=page.searchParams.get('short');
   if(!code)return;
   if(!/^[a-f0-9]{6,8}$/.test(code))throw Error('短網址格式不正確');
-  const {response,data}=await requestGroupResource('https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),'json',15000);
+  const {response,data}=await requestGroupResource('https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),'json',15000);
   if(!response.ok||!data.ok)throw Error(data.error||'無法開啟此團');
   const target=new URL(data.url),group=target.searchParams.get('group');
   if(target.origin!==location.origin||target.pathname!=='/jiwu_menu/NEWGOODS.html'||!group)throw Error('開團連結無效');
@@ -401,7 +401,7 @@ function showGroupLoadError(error){
 }
 function loadData(){
   const box=document.getElementById('items-wrapper');box.innerHTML='<p role="status">商品載入中…</p>';
-  const url=`https://rilompdypgjzhynqjlwv.supabase.co/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+  const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
   return Promise.all([requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('商品暫時無法載入，請重試');return data;}),resolveShortGroup()]).then(([t])=>{
     try{
