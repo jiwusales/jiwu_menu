@@ -1386,6 +1386,17 @@ function getStockInfo(item){
     };
   }
 
+  if(stockNum>0){
+    const style=STOCK_STYLES["現貨"];
+    return{
+      tagKey:"現貨",
+      tagText:"現貨",
+      tagBg:style.bg,
+      tagColor:style.color,
+      tagClass:style.tagClass
+    };
+  }
+
   const key=String(item.status||"").trim();
   const style=STOCK_STYLES[key];
 
