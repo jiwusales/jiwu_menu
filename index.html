@@ -149,12 +149,32 @@
     const headers=json.table.cols.map(col=>String(col.label||'').trim());
     const nameIndex=headers.indexOf('團名'),imageIndex=headers.indexOf('首圖'),shelfIndex=headers.indexOf('上架'),configIndex=headers.indexOf('開團設定');
     if(nameIndex<0||imageIndex<0)throw new Error('最新開團缺少團名或首圖欄位');
-    return json.table.rows.filter(row=>String(row.c[nameIndex]?.v||'').trim()).flatMap(row=>{
-      const group=String(row.c[nameIndex]?.v||'').trim(),image=String(row.c[imageIndex]?.v||'').trim(),shelf=shelfIndex>=0?String(row.c[shelfIndex]?.v||'').trim():'';
-      let config={};try{config=JSON.parse(String(row.c[configIndex]?.v||'{}'));}catch(_){}
-      const adName=String(config.adName||'').trim();
-      const ads=Array.isArray(config.ads)&&config.ads.length?config.ads:[{name:group,image}];
-      return ads.map(ad=>({name:adName||String(ad?.name||group).trim()||group,image:String(ad?.image||image).trim(),group,shelf}));
+    const idIndex=headers.indexOf('開團ID'),groups=new Map(),idsByName=new Map();
+    const cell=(row,index)=>index>=0?String(row.c?.[index]?.v??'').trim():'';
+    json.table.rows.forEach(row=>{
+      const name=cell(row,nameIndex),id=cell(row,idIndex);
+      if(name&&id){if(!idsByName.has(name))idsByName.set(name,new Set());idsByName.get(name).add(id);}
+    });
+    let previousGroup=null;
+    json.table.rows.forEach(row=>{
+      const name=cell(row,nameIndex),id=cell(row,idIndex),knownIds=idsByName.get(name);
+      const key=id?'id:'+id:name?(knownIds?.size===1?'id:'+knownIds.values().next().value:'name:'+name):'';
+      let group=key?groups.get(key):previousGroup;
+      if(!group&&key){group={name:'',shelf:'',adName:'',ads:null,images:[]};groups.set(key,group);}
+      if(!group)return;
+      previousGroup=group;
+      if(name&&!group.name)group.name=name;
+      const image=cell(row,imageIndex),shelf=cell(row,shelfIndex);
+      if(image&&!group.images.some(value=>fastImg(value)===fastImg(image)))group.images.push(image);
+      if(shelf&&!group.shelf)group.shelf=shelf;
+      let config={};try{config=JSON.parse(cell(row,configIndex)||'{}')||{};}catch(_){}
+      if(!group.adName)group.adName=String(config.adName||'').trim();
+      if(!group.ads&&Array.isArray(config.ads)&&config.ads.length)group.ads=config.ads;
+    });
+    return Array.from(groups.values()).filter(group=>group.name).flatMap(group=>{
+      const image=group.images[0]||'';
+      const ads=group.ads||(group.images.length?group.images.map(image=>({image})):[{image:''}]);
+      return ads.map(ad=>({name:group.adName||String(ad?.name||group.name).trim()||group.name,image:String(ad?.image||image).trim(),group:group.name,shelf:group.shelf}));
     });
   }
 
