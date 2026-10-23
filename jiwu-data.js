@@ -11,6 +11,7 @@ async function jiwuSubmitOrder(payload){
   const result=await response.json();
   if(!response.ok||result.ok!==true)throw Error(result.error||'訂單儲存失敗，請重試');
   try{sessionStorage.removeItem(key);}catch(_){}
+  if(result.queued===true)alert('訂單已暫存成功，稍後會自動完成登記，請勿重複下單。');
   return result;
  }catch(error){if(error.name==='AbortError')throw Error('訂單傳送逾時，購物車已保留，請重試');throw error;}
  finally{clearTimeout(timer);}
