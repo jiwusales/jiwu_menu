@@ -502,7 +502,8 @@ function loadData(){
       allItems=rawItems.filter(item=>{
         if(!item.group||!String(item.name).trim())return false;
         const stockVal=String(item.stock).trim().toLowerCase();
-        return stockVal!=='x'&&stockVal!=='ｘ';
+        // x belongs to the old draft visibility marker, not live launch stock.
+        return true;
       });
 
       allGroups=[...new Set(allItems.map(i=>i.group))];
@@ -704,7 +705,7 @@ function jiwuSelectCatalogFormat(e,item,add){
   overlay.className='jiwu-format-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','選擇格式');
   overlay.style.cssText='position:fixed;inset:0;z-index:10001;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px';
   panel.style.cssText='background:white;border-radius:12px;padding:20px;max-width:360px;width:100%;display:flex;gap:10px;flex-wrap:wrap';
-  title.textContent='選擇格式';title.style.cssText='display:block;width:100%;margin-bottom:6px';panel.appendChild(title);
+  title.textContent='請選擇';title.style.cssText='display:block;width:100%;margin-bottom:6px';panel.appendChild(title);
   options.forEach(option=>{const button=document.createElement('button');button.type='button';button.textContent=option;button.className='variant-option';button.style.cssText='padding:8px 12px;border:1px solid #ddd;border-radius:7px;background:white;color:#444';button.onclick=()=>{overlay.remove();chosen(option);};panel.appendChild(button);});
   const close=document.createElement('button');close.type='button';close.textContent='取消';close.style.cssText='padding:8px 12px';close.onclick=()=>overlay.remove();panel.appendChild(close);
   overlay.onclick=event=>{if(event.target===overlay)overlay.remove();};overlay.appendChild(panel);document.body.appendChild(overlay);return true;
@@ -941,7 +942,7 @@ function openVariantPicker(e,variants){
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section" id="variant-size-section">
-        <div class="variant-label">格式</div>
+        
         <div class="variant-options" id="variant-size-options"></div>
       </div>
 
