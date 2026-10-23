@@ -450,7 +450,7 @@ function loadData() {
       const data = JSON.parse(t.substr(47).slice(0,-2));
 
       // 依標題名稱找出每個欄位在試算表中的實際位置
-      const HEADER_NAMES = { ip: "IP", role: "角色", type: "種類", name: "名稱", originalPrice: "原價", price: "售價", colStock: "庫存", colShop: "店面", colNonStock: "非現", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸", note: "首圖" };
+      const HEADER_NAMES = { ip: "IP", role: "角色", type: "種類", name: "名稱", originalPrice: "原價", price: "售價", colStock: "庫存", colShop: "店面", colNonStock: "非現", status: "狀態", sn: "貨號", img: "圖片", url: "商品網址", size: "尺寸",format:"格式", note: "首圖" };
       const colLabels = (data.table.cols || []).map(c => String(c.label || "").trim());
       const COL = {};
       Object.keys(HEADER_NAMES).forEach(key => {
@@ -478,7 +478,7 @@ function loadData() {
         images:productPhotos(getV(r,COL.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png"),
         img:productPhotos(getV(r,COL.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png")[0],
         url: getV(r, COL.url),
-        size: getV(r, COL.size),
+        size: getV(r, COL.size),format:getV(r, COL.format),
         note: getV(r, COL.note)
       }));
 
@@ -531,7 +531,113 @@ function renderSideMenu() {
 // 購物車邏輯
 function saveCart() { localStorage.setItem('jiwu_cart', JSON.stringify(cart)); }
 
+// Returns complete physical groups only; [] means ambiguous/nonphysical text.
+// Axis-internal spaces are not option separators (H400 × W390 × D180 is one group).
+function jiwuPhysicalSizeGroups(sizeValue) {
+  const text=String(sizeValue??'').normalize('NFKC').trim();if(!text)return [];
+  const axes='(?:長|寬|肩|袖|高|深|厚|着丈|身幅|身巾|肩幅|袖丈)',amount='\\d+(?:\\.\\d+)?',unit='(?:cm|mm|公分)?';
+  const axisToken=new RegExp('('+axes+')\\s*[:：]?\\s*'+amount+'\\s*'+unit,'gi');
+  const xBody='(?:[HWD]?\\s*'+amount+'\\s*'+unit+'\\s*[x×]\\s*){1,2}[HWD]?\\s*'+amount+'\\s*'+unit;
+  const singleX=new RegExp('^'+xBody+'$','i'),singleScalar=new RegExp('^'+amount+'\\s*(?:cm|mm|公分)$','i');
+  const one=value=>singleX.test(value)||singleScalar.test(value);
+  if(text.includes('/')){const parts=text.split('/').map(value=>value.trim());if(parts.every(Boolean)){const groups=parts.flatMap(value=>jiwuPhysicalSizeGroups(value));if(groups.length===parts.length)return groups;}return [];}
+  if(one(text))return [text];
+  const tokens=[...text.matchAll(axisToken)];
+  if(tokens.length&&tokens.map(token=>token[0]).join('').replace(/\s+/g,'')===text.replace(/\s+/g,'')){
+    const first=tokens[0][1],groups=[],seen=new Set();let current='';
+    for(const token of tokens){const axis=token[1];if(axis===first&&current){groups.push(current);current='';seen.clear();}if(seen.has(axis))return [];seen.add(axis);current+=token[0].replace(/\s+/g,'');}
+    if(current)groups.push(current);return groups;
+  }
+  const groupPattern=new RegExp('^(?:'+xBody+'|'+amount+'\\s*(?:cm|mm|公分))(?=$|\\s)','i');
+  const groups=[];let rest=text;
+  while(rest){const match=rest.match(groupPattern);if(!match)return [];groups.push(match[0].trim());rest=rest.slice(match[0].length).trim();}
+  return groups;
+}
+
+// Shared conservative projection; never changes name/role/SKU/ID/price.
+// inferFormat=false permits a client explicitly sending format:'' to clear it.
+function jiwuSplitProductSpec(sizeValue, formatValue, inferFormat = true) {
+  const normalizeFormat=value=>String(value??'').normalize('NFKC').trim().replace(/\bBOX\s+([1-9]\d*(?:入|款)?)(?=$|[\s/])/gi,'BOX$1').replace(/(單抽|单抽|抱盒)\s+([1-9]\d*(?:入|款))(?=$|[\s/])/g,'$1$2').replace(/[\s/]+/g,' ').trim();
+  const originalSize=String(sizeValue??'').trim(),explicitFormat=normalizeFormat(formatValue);
+  const normalized=originalSize.normalize('NFKC'),parts=normalized.split('/').map(value=>value.trim()),optionParts=normalizeFormat(originalSize).split(' ');
+  const clothing=value=>/^(?:XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|[2-5]XL|F|FREE|SML)$/i.test(value);
+  const option=value=>clothing(value)||/^(?:(?:單抽|单抽|抱盒)(?:\s*[1-9]\d*(?:入|款))?|BOX(?:\s*[1-9]\d*(?:入|款)?)?|針式|针式|夾式|夹式|針|针|夾|夹)$/i.test(value);
+  if(optionParts.length&&optionParts.every(value=>value&&option(value))){
+    return {format:explicitFormat||(inferFormat?optionParts.join(' '):''),size:''};
+  }
+  let labels=0;while(labels<parts.length&&clothing(parts[labels]))labels++;
+  const measures=jiwuPhysicalSizeGroups(parts.slice(labels).join('/'));
+  if(labels>0&&measures.length===labels){
+    return {format:explicitFormat||(inferFormat?parts.slice(0,labels).join(' '):''),size:measures.join(' ')};
+  }
+  const physicalGroups=jiwuPhysicalSizeGroups(originalSize);
+  return {format:explicitFormat,size:physicalGroups.length?physicalGroups.join(' '):originalSize};
+}
+
+// Display projection only. Existing carts and pending order payloads are never rewritten.
+function jiwuSpecEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function jiwuFormatOptions(value){return String(value??'').split(/[\/／、,，;；\s]+/).map(value=>value.trim()).filter(Boolean);}
+function parseItemVariant(item){
+  const spec=jiwuSplitProductSpec(item?.size,item?.format);
+  if(spec.format){
+    const sizes=jiwuFormatOptions(spec.format);
+    return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:spec.size};
+  }
+  if(typeof parseVariant==='function'){
+    const variant=parseVariant(item?.size);
+    // An unambiguous physical measurement is not a colour option.
+    const raw=String(item?.size??'').trim();
+    if(!variant.sizes?.length&&!variant.colorCode&&variant.color===raw&&/^(?:(?:[HWD長寬高深厚肩袖Φφ]|\d)[\s\S]*\d[\s\S]*(?:cm|mm|公分|毫米|[x×])|(?:長|寬|高|深|厚|肩|袖)\s*\d)/i.test(raw))
+      return {...variant,color:'',realSize:raw};
+    return variant;
+  }
+  return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
+}
+function jiwuCatalogSpecHtml(items){
+  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
+  const formats=[...new Set(variants.flatMap(variant=>variant.sizes||[]))];
+  const measurements=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
+  // Unknown legacy values are retained as text on the simple catalog pages.
+  if(!formats.length&&!measurements.length&&rows.length===1){
+    const raw=String(rows[0]?.size??'').trim();if(raw)measurements.push(raw);
+  }
+  const format=formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'';
+  return '<div class="size">'+format+(format&&measurements.length?'<br>':'')+jiwuSpecEscape(measurements.join(' '))+'</div>';
+}
+function jiwuCartFormatSuffix(item){
+  const values=[item?.selectedSize,item?.selectedColor].map(value=>String(value??'').trim()).filter(Boolean);
+  return values.length?' '+values.join('/'):'';
+}
+function jiwuActualSizeForOption(variant,option){
+  if(typeof getVariantRealSize==='function')return getVariantRealSize(variant,option);
+  const sizes=variant.sizes||[],measurements=jiwuPhysicalSizeGroups(variant.realSize);
+  if(sizes.length>1&&measurements.length===sizes.length){const index=sizes.indexOf(option);return index>=0?measurements[index]:'';}
+  return variant.realSize||'';
+}
+function jiwuSelectCatalogFormat(e,item,add){
+  const variant=parseItemVariant(item),options=variant.sizes||[];
+  if(String(item.selectedSize||'').trim()||!options.length)return false;
+  const chosen=option=>{
+    const actualSize=jiwuActualSizeForOption(variant,option);
+    add({...item,selectedSize:option,actualSize});
+  };
+  if(options.length===1){chosen(options[0]);return true;}
+  if(e)e.stopPropagation();
+  const overlay=document.createElement('div'),panel=document.createElement('div'),title=document.createElement('strong');
+  overlay.className='jiwu-format-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','選擇格式');
+  overlay.style.cssText='position:fixed;inset:0;z-index:10001;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px';
+  panel.style.cssText='background:white;border-radius:12px;padding:20px;max-width:360px;width:100%;display:flex;gap:10px;flex-wrap:wrap';
+  title.textContent='選擇格式';title.style.cssText='display:block;width:100%;margin-bottom:6px';panel.appendChild(title);
+  options.forEach(option=>{const button=document.createElement('button');button.type='button';button.textContent=option;button.className='variant-option';button.style.cssText='padding:8px 12px;border:1px solid #ddd;border-radius:7px;background:white;color:#444';button.onclick=()=>{overlay.remove();chosen(option);};panel.appendChild(button);});
+  const close=document.createElement('button');close.type='button';close.textContent='取消';close.style.cssText='padding:8px 12px';close.onclick=()=>overlay.remove();panel.appendChild(close);
+  overlay.onclick=event=>{if(event.target===overlay)overlay.remove();};overlay.appendChild(panel);document.body.appendChild(overlay);return true;
+}
+
+
 function addToCart(e,item,tagText,tagBg,tagColor){
+  // New additions only; never normalize existing cart or pending payloads.
+  if(jiwuSelectCatalogFormat(e,item,chosen=>addToCart(e,chosen,tagText,tagBg,tagColor)))return;
+
   if(e)e.stopPropagation();
   if(!canAddItem(item))return;
   const source=(item.ip&&String(item.ip).trim())?String(item.ip).trim():(CONFIG.IP_NAME||"");
@@ -638,18 +744,18 @@ function parseVariant(value){
 
 function getVariantRealSize(variant, selectedSize){
   if(variant.sharedRealSize)return variant.realSize||'';
-  const measurements=String(variant.realSize||'').split(/[／/]/).map(x=>x.trim());
+  const measurements=jiwuPhysicalSizeGroups(variant.realSize);
   const sizes=variant.sizes||[];
   // Multiple measurements follow the same order as the size buttons.
   if(sizes.length>1 && measurements.length===sizes.length){
-    const index=sizes.indexOf(String(selectedSize||'').toUpperCase());
+    const index=sizes.findIndex(value=>String(value).toUpperCase()===String(selectedSize||'').toUpperCase());
     return index>=0?measurements[index]:'';
   }
   return variant.realSize||'';
 }
 
 function getVariantKey(item){
-  const v=parseVariant(item.size);
+  const v=parseItemVariant(item);
   const base=[item.ip,item.type,item.name,item.role].map(x=>String(x||'').trim()).join('|||');
   return v.sizes.length||v.colorCode ? base : base+'|||'+String(item.sn||'')+'|||'+String(item.size||'');
 }
@@ -671,7 +777,7 @@ function getVariantDisplay(item){
 function getCartVariantTags(item){
   const size=String(item.selectedSize||"").trim();
   const color=String(item.selectedColor||"").trim();
-  return [size,color].filter(Boolean).map(x=>`<span class="cart-variant-tag">${x}</span>`).join("");
+  return [size,color].filter(Boolean).map(x=>`<span class="cart-variant-tag">${jiwuSpecEscape(x)}</span>`).join("");
 }
 
 function getColorDotsHtml(items){
@@ -679,7 +785,7 @@ function getColorDotsHtml(items){
   const dots=[];
 
   items.forEach(item=>{
-    const v=parseVariant(item.size);
+    const v=parseItemVariant(item);
     if(!v.colorCode)return;
 
     const key=v.colorCode.toLowerCase();
@@ -713,7 +819,7 @@ function openVariantPicker(e,variants){
   if(!available.length)return;
 
   const first=available.find(x=>String(x.colStock||"").trim()!=="-")||available[0];
-  const fv=parseVariant(first.size);
+  const fv=parseItemVariant(first);
 
   let selectedColor=fv.color||"";
   let selectedSize=(fv.sizes&&fv.sizes[0])||"";
@@ -735,7 +841,7 @@ function openVariantPicker(e,variants){
       <div class="variant-real-size" id="variant-real-size"></div>
 
       <div class="variant-section" id="variant-size-section">
-        <div class="variant-label">${fv.sharedRealSize?"購買方式":"尺寸"}</div>
+        <div class="variant-label">格式</div>
         <div class="variant-options" id="variant-size-options"></div>
       </div>
 
@@ -758,24 +864,24 @@ function openVariantPicker(e,variants){
   const addBtn=ov.querySelector('#variant-add');
 
   const colors=[...new Set(
-    available.map(x=>parseVariant(x.size).color).filter(Boolean)
+    available.map(x=>parseItemVariant(x).color).filter(Boolean)
   )];
 
   const allSizes=[...new Set(
-    available.flatMap(x=>parseVariant(x.size).sizes||[]).filter(Boolean)
+    available.flatMap(x=>parseItemVariant(x).sizes||[]).filter(Boolean)
   )];
 
   const hasAnySizes=allSizes.length>0;
 
   function rowsForSelectedColor(){
     if(!colors.length||!selectedColor)return available;
-    return available.filter(x=>parseVariant(x.size).color===selectedColor);
+    return available.filter(x=>parseItemVariant(x).color===selectedColor);
   }
 
   function validSizesForSelectedColor(){
     return [...new Set(
       rowsForSelectedColor()
-        .flatMap(x=>parseVariant(x.size).sizes||[])
+        .flatMap(x=>parseItemVariant(x).sizes||[])
         .filter(Boolean)
     )];
   }
@@ -785,7 +891,7 @@ function openVariantPicker(e,variants){
 
     if(selectedSize){
       const sizeMatches=matches.filter(x=>{
-        const v=parseVariant(x.size);
+        const v=parseItemVariant(x);
         return (v.sizes||[]).includes(selectedSize);
       });
 
@@ -851,7 +957,7 @@ function openVariantPicker(e,variants){
       return;
     }
 
-    const v=parseVariant(selectedItem.size);
+    const v=parseItemVariant(selectedItem);
 
     selectedItem={
       ...selectedItem,
@@ -1322,12 +1428,12 @@ function createCard(variants,sectionColor=""){
   const priceHtml=usable.length?`<div class="price">${getVariantGroupPrice(usable)}</div>`:"";
   const colorDotsHtml=getColorDotsHtml(variants);
 
-  const parsedItem=parseVariant(item.size);
+  const parsedItem=parseItemVariant(item);
   const isVariant=
     variants.length>1||
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
-  const sizeHtml=`<div class="size">${parsedItem.sharedRealSize?parsedItem.realSize:(isVariant?"":(item.size||""))}</div>`;
+  const sizeHtml=jiwuCatalogSpecHtml(variants);
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
   const displayName=item.name;

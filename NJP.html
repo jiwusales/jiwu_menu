@@ -109,11 +109,11 @@ function getUrlGroup(){return new URLSearchParams(location.search).get("group")|
 function loadData(){
 const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 fetch(url).then(r=>r.text()).then(t=>{try{
-const data=JSON.parse(t.substr(47).slice(0,-2)),H={group:"團名",role:"角色",name:"名稱",originalPrice:"原價",price:"售價",stock:"庫存",status:"狀態",sn:"貨號",img:"圖片",url:"商品網址",size:"尺寸",note:"備註",banner:"首圖",color:"主色系"},labels=(data.table.cols||[]).map(c=>String(c.label||"").trim()),C={};
+const data=JSON.parse(t.substr(47).slice(0,-2)),H={group:"團名",role:"角色",name:"名稱",originalPrice:"原價",price:"售價",stock:"庫存",launchItemId:"商品ID",status:"狀態",sn:"貨號",img:"圖片",url:"商品網址",size:"尺寸",format:"格式",note:"備註",banner:"首圖",color:"主色系"},labels=(data.table.cols||[]).map(c=>String(c.label||"").trim()),C={};
 Object.keys(H).forEach(k=>C[k]=labels.indexOf(H[k]));
 const v=(r,i)=>i===-1||!r.c||!r.c[i]?"":String(r.c[i].v??r.c[i].f??"").trim();
 let g="",banner="",color="",note="";groupSettings={};
-const raw=data.table.rows.map(r=>{const rg=v(r,C.group);if(rg){g=rg;banner=v(r,C.banner)||banner;color=v(r,C.color)||color;note=v(r,C.note)||note;groupSettings[g]={banner,color,note}}return{group:g,role:v(r,C.role)||" ",name:v(r,C.name),originalPrice:v(r,C.originalPrice),price:v(r,C.price),stock:v(r,C.stock),status:v(r,C.status),sn:v(r,C.sn),img:v(r,C.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png",url:v(r,C.url),size:v(r,C.size)}});
+const raw=data.table.rows.map(r=>{const rg=v(r,C.group);if(rg){g=rg;banner=v(r,C.banner)||banner;color=v(r,C.color)||color;note=v(r,C.note)||note;groupSettings[g]={banner,color,note}}return{group:g,role:v(r,C.role)||" ",name:v(r,C.name),originalPrice:v(r,C.originalPrice),price:v(r,C.price),stock:v(r,C.stock),launchItemId:v(r,C.launchItemId),status:v(r,C.status),sn:v(r,C.sn),img:v(r,C.img)||"https://raw.githubusercontent.com/jiwusales/imgh/main/images_1350/image_885310d2.png",url:v(r,C.url),size:v(r,C.size),format:v(r,C.format)}});
 allItems=raw.filter(i=>i.group&&String(i.name).trim()&&!["x","ｘ"].includes(String(i.stock).trim().toLowerCase()));
 allGroups=[...new Set(allItems.map(i=>i.group))];
 const ug=getUrlGroup();selectedGroup=allGroups.includes(ug)?ug:allGroups[0];
@@ -127,14 +127,120 @@ window.addEventListener("popstate",()=>{const g=getUrlGroup();if(allGroups.inclu
 function renderBanner(url){document.getElementById("banner-wrapper").innerHTML=(url||"").trim()?`<img src="${url.trim()}">`:""}
 function applyGroupSettings(g){const s=groupSettings[g]||{};let c=(s.color||CONFIG.THEME_COLOR).trim();if(c&&!c.startsWith("#"))c="#"+c;document.documentElement.style.setProperty("--theme-color",c);CONFIG.THEME_COLOR=c;document.getElementById("top-msg").textContent=(s.note||CONFIG.TOP_BAR_TEXT).trim();renderBanner(s.banner||"")}
 
-function addToCart(e,item,tagText,tagBg,tagColor){e.stopPropagation();if(/^n$/i.test(String(item.price||"").trim()))return;const source=String(item.group||selectedGroup).trim();cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});saveCart();updateCartUI();e.target.style.background="#fdd365";setTimeout(()=>e.target.style.background="#ddd",50)}
+// Returns complete physical groups only; [] means ambiguous/nonphysical text.
+// Axis-internal spaces are not option separators (H400 × W390 × D180 is one group).
+function jiwuPhysicalSizeGroups(sizeValue) {
+  const text=String(sizeValue??'').normalize('NFKC').trim();if(!text)return [];
+  const axes='(?:長|寬|肩|袖|高|深|厚|着丈|身幅|身巾|肩幅|袖丈)',amount='\\d+(?:\\.\\d+)?',unit='(?:cm|mm|公分)?';
+  const axisToken=new RegExp('('+axes+')\\s*[:：]?\\s*'+amount+'\\s*'+unit,'gi');
+  const xBody='(?:[HWD]?\\s*'+amount+'\\s*'+unit+'\\s*[x×]\\s*){1,2}[HWD]?\\s*'+amount+'\\s*'+unit;
+  const singleX=new RegExp('^'+xBody+'$','i'),singleScalar=new RegExp('^'+amount+'\\s*(?:cm|mm|公分)$','i');
+  const one=value=>singleX.test(value)||singleScalar.test(value);
+  if(text.includes('/')){const parts=text.split('/').map(value=>value.trim());if(parts.every(Boolean)){const groups=parts.flatMap(value=>jiwuPhysicalSizeGroups(value));if(groups.length===parts.length)return groups;}return [];}
+  if(one(text))return [text];
+  const tokens=[...text.matchAll(axisToken)];
+  if(tokens.length&&tokens.map(token=>token[0]).join('').replace(/\s+/g,'')===text.replace(/\s+/g,'')){
+    const first=tokens[0][1],groups=[],seen=new Set();let current='';
+    for(const token of tokens){const axis=token[1];if(axis===first&&current){groups.push(current);current='';seen.clear();}if(seen.has(axis))return [];seen.add(axis);current+=token[0].replace(/\s+/g,'');}
+    if(current)groups.push(current);return groups;
+  }
+  const groupPattern=new RegExp('^(?:'+xBody+'|'+amount+'\\s*(?:cm|mm|公分))(?=$|\\s)','i');
+  const groups=[];let rest=text;
+  while(rest){const match=rest.match(groupPattern);if(!match)return [];groups.push(match[0].trim());rest=rest.slice(match[0].length).trim();}
+  return groups;
+}
+
+// Shared conservative projection; never changes name/role/SKU/ID/price.
+// inferFormat=false permits a client explicitly sending format:'' to clear it.
+function jiwuSplitProductSpec(sizeValue, formatValue, inferFormat = true) {
+  const normalizeFormat=value=>String(value??'').normalize('NFKC').trim().replace(/\bBOX\s+([1-9]\d*(?:入|款)?)(?=$|[\s/])/gi,'BOX$1').replace(/(單抽|单抽|抱盒)\s+([1-9]\d*(?:入|款))(?=$|[\s/])/g,'$1$2').replace(/[\s/]+/g,' ').trim();
+  const originalSize=String(sizeValue??'').trim(),explicitFormat=normalizeFormat(formatValue);
+  const normalized=originalSize.normalize('NFKC'),parts=normalized.split('/').map(value=>value.trim()),optionParts=normalizeFormat(originalSize).split(' ');
+  const clothing=value=>/^(?:XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|[2-5]XL|F|FREE|SML)$/i.test(value);
+  const option=value=>clothing(value)||/^(?:(?:單抽|单抽|抱盒)(?:\s*[1-9]\d*(?:入|款))?|BOX(?:\s*[1-9]\d*(?:入|款)?)?|針式|针式|夾式|夹式|針|针|夾|夹)$/i.test(value);
+  if(optionParts.length&&optionParts.every(value=>value&&option(value))){
+    return {format:explicitFormat||(inferFormat?optionParts.join(' '):''),size:''};
+  }
+  let labels=0;while(labels<parts.length&&clothing(parts[labels]))labels++;
+  const measures=jiwuPhysicalSizeGroups(parts.slice(labels).join('/'));
+  if(labels>0&&measures.length===labels){
+    return {format:explicitFormat||(inferFormat?parts.slice(0,labels).join(' '):''),size:measures.join(' ')};
+  }
+  const physicalGroups=jiwuPhysicalSizeGroups(originalSize);
+  return {format:explicitFormat,size:physicalGroups.length?physicalGroups.join(' '):originalSize};
+}
+
+// Display projection only. Existing carts and pending order payloads are never rewritten.
+function jiwuSpecEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function jiwuFormatOptions(value){return String(value??'').split(/[\/／、,，;；\s]+/).map(value=>value.trim()).filter(Boolean);}
+function parseItemVariant(item){
+  const spec=jiwuSplitProductSpec(item?.size,item?.format);
+  if(spec.format){
+    const sizes=jiwuFormatOptions(spec.format);
+    return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:spec.size};
+  }
+  if(typeof parseVariant==='function'){
+    const variant=parseVariant(item?.size);
+    // An unambiguous physical measurement is not a colour option.
+    const raw=String(item?.size??'').trim();
+    if(!variant.sizes?.length&&!variant.colorCode&&variant.color===raw&&/^(?:(?:[HWD長寬高深厚肩袖Φφ]|\d)[\s\S]*\d[\s\S]*(?:cm|mm|公分|毫米|[x×])|(?:長|寬|高|深|厚|肩|袖)\s*\d)/i.test(raw))
+      return {...variant,color:'',realSize:raw};
+    return variant;
+  }
+  return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
+}
+function jiwuCatalogSpecHtml(items){
+  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
+  const formats=[...new Set(variants.flatMap(variant=>variant.sizes||[]))];
+  const measurements=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
+  // Unknown legacy values are retained as text on the simple catalog pages.
+  if(!formats.length&&!measurements.length&&rows.length===1){
+    const raw=String(rows[0]?.size??'').trim();if(raw)measurements.push(raw);
+  }
+  const format=formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'';
+  return '<div class="size">'+format+(format&&measurements.length?'<br>':'')+jiwuSpecEscape(measurements.join(' '))+'</div>';
+}
+function jiwuCartFormatSuffix(item){
+  const values=[item?.selectedSize,item?.selectedColor].map(value=>String(value??'').trim()).filter(Boolean);
+  return values.length?' '+values.join('/'):'';
+}
+function jiwuActualSizeForOption(variant,option){
+  if(typeof getVariantRealSize==='function')return getVariantRealSize(variant,option);
+  const sizes=variant.sizes||[],measurements=jiwuPhysicalSizeGroups(variant.realSize);
+  if(sizes.length>1&&measurements.length===sizes.length){const index=sizes.indexOf(option);return index>=0?measurements[index]:'';}
+  return variant.realSize||'';
+}
+function jiwuSelectCatalogFormat(e,item,add){
+  const variant=parseItemVariant(item),options=variant.sizes||[];
+  if(String(item.selectedSize||'').trim()||!options.length)return false;
+  const chosen=option=>{
+    const actualSize=jiwuActualSizeForOption(variant,option);
+    add({...item,selectedSize:option,actualSize});
+  };
+  if(options.length===1){chosen(options[0]);return true;}
+  if(e)e.stopPropagation();
+  const overlay=document.createElement('div'),panel=document.createElement('div'),title=document.createElement('strong');
+  overlay.className='jiwu-format-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','選擇格式');
+  overlay.style.cssText='position:fixed;inset:0;z-index:10001;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px';
+  panel.style.cssText='background:white;border-radius:12px;padding:20px;max-width:360px;width:100%;display:flex;gap:10px;flex-wrap:wrap';
+  title.textContent='選擇格式';title.style.cssText='display:block;width:100%;margin-bottom:6px';panel.appendChild(title);
+  options.forEach(option=>{const button=document.createElement('button');button.type='button';button.textContent=option;button.className='variant-option';button.style.cssText='padding:8px 12px;border:1px solid #ddd;border-radius:7px;background:white;color:#444';button.onclick=()=>{overlay.remove();chosen(option);};panel.appendChild(button);});
+  const close=document.createElement('button');close.type='button';close.textContent='取消';close.style.cssText='padding:8px 12px';close.onclick=()=>overlay.remove();panel.appendChild(close);
+  overlay.onclick=event=>{if(event.target===overlay)overlay.remove();};overlay.appendChild(panel);document.body.appendChild(overlay);return true;
+}
+
+
+function addToCart(e,item,tagText,tagBg,tagColor){
+  // New additions only; never normalize existing cart or pending payloads.
+  if(jiwuSelectCatalogFormat(e,item,chosen=>addToCart(e,chosen,tagText,tagBg,tagColor)))return;
+e.stopPropagation();if(/^n$/i.test(String(item.price||"").trim()))return;const source=String(item.group||selectedGroup).trim();cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});saveCart();updateCartUI();e.target.style.background="#fdd365";setTimeout(()=>e.target.style.background="#ddd",50)}
 function clearCart(){if(confirm("確定要清空購物車嗎？")){cart=[];saveCart();updateCartUI()}}
 function toggleCart(x){document.getElementById("cart-panel").classList.toggle("open",x);document.getElementById("cart-overlay-bg").style.display=x?"block":"none"}
 function getDisplayPrice(p){p=String(p||"").trim();return p.includes("-")?"參考圖示":p===""?"詢問花花":/^\d+$/.test(p)?`$${p}`:p}
 
 function updateCartUI(){
 const list=document.getElementById("cart-list"),badge=document.getElementById("cart-badge"),totalEl=document.getElementById("cart-total");list.innerHTML="";let total=0,inq=false;
-cart.forEach((i,n)=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div><span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${n})">✕</span>`;list.appendChild(d)});
+cart.forEach((i,n)=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div><span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${n})">✕</span>`;list.appendChild(d)});
 badge.textContent=cart.length;badge.style.display=cart.length?"flex":"none";totalEl.textContent=`$${total}${inq?" + 詢問報價":""}`;
 }
 function removeFromCart(n){cart.splice(n,1);saveCart();updateCartUI();if(document.getElementById("checkout-modal").style.display==="flex")renderCheckoutSummary()}
@@ -142,7 +248,7 @@ function removeFromCart(n){cart.splice(n,1);saveCart();updateCartUI();if(documen
 function generateLineMessage(){
 let msg="你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n",total=0,inq=false,n=1,groups={},order=[];
 cart.forEach(i=>{const g=getCartSourceName(i);if(!groups[g]){groups[g]=[];order.push(g)}groups[g].push(i)});
-order.forEach(g=>{msg+=`\n【${g}】\n`;groups[g].forEach(i=>{const p=String(i.price||"").trim();let pt="",pv=0;if(/^\d+$/.test(p)){pv=parseInt(p);pt=`$${p}`}else if(p.includes("-")){pt="參考圖示";inq=true}else if(!p){pt="詢問花花";inq=true}else{pt=p;inq=true}total+=pv;const st=i.currentStatus==="S☹LD OUT"?"(補貨登記)":"(預訂)",hidden=["三小隻","其他角色","綜合角色","水族","動物","食物"],role=i.role&&!hidden.includes(i.role)?` ${i.role}`:"";msg+=`${n++}. ${st} ${i.name}${role} ${pt}\n`})});
+order.forEach(g=>{msg+=`\n【${g}】\n`;groups[g].forEach(i=>{const p=String(i.price||"").trim();let pt="",pv=0;if(/^\d+$/.test(p)){pv=parseInt(p);pt=`$${p}`}else if(p.includes("-")){pt="參考圖示";inq=true}else if(!p){pt="詢問花花";inq=true}else{pt=p;inq=true}total+=pv;const st=i.currentStatus==="S☹LD OUT"?"(補貨登記)":"(預訂)",hidden=["三小隻","其他角色","綜合角色","水族","動物","食物"],role=i.role&&!hidden.includes(i.role)?` ${i.role}`:"";msg+=`${n++}. ${st} ${i.name}${jiwuCartFormatSuffix(i)}${role} ${pt}\n`})});
 return appendDeliveryMessage(msg+`\n總金額：$${total}${inq?" + 詢問報價":""}`);
 }
 
@@ -178,7 +284,7 @@ function closeModal(){document.getElementById("checkout-modal").style.display="n
 
 function renderCheckoutSummary(){
 const list=document.getElementById("modal-summary-list");list.innerHTML="";let total=0,inq=false;
-cart.forEach(i=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div>`;list.appendChild(d)});
+cart.forEach(i=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div>`;list.appendChild(d)});
 document.getElementById("modal-total-price").textContent=`$${total}${inq?" + 詢問報價":""}`;
 }
 
@@ -211,7 +317,7 @@ const card=document.createElement("div");card.className="card";const stock=Strin
 if(sold){const s=STOCK_STYLES["SOLD OUT"];x={tagKey:"SOLD OUT",tagText:"S☹LD OUT",tagBg:s.bg,tagColor:s.color,tagClass:s.tagClass}}else x=getStockInfo(i);
 if(x.tagKey==="SOLD OUT")card.classList.add("is-sold-out");
 const show=x.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(x.tagKey),text=show?x.tagText:"",tag=text?`<div class="stock-tag ${x.tagClass||""}" style="background:${x.tagBg};color:${x.tagColor}">${text}</div>`:"",hidden=["三小隻","其他角色","綜合角色","水族","動物","食物"],role=String(i.role||"").trim(),name=i.name+(role&&!hidden.includes(role)?` ${role}`:"");
-card.innerHTML=`${tag}${noSale?"":'<div class="add-btn-tag">＋</div>'}<img src="${i.img}"><div class="name">${formatName(name)}</div>${noSale?"":`<div class="price">${getDisplayPrice(i.price)}</div>`}<div class="size">${i.size||""}</div>`;
+card.innerHTML=`${tag}${noSale?"":'<div class="add-btn-tag">＋</div>'}<img src="${i.img}"><div class="name">${formatName(name)}</div>${noSale?"":`<div class="price">${getDisplayPrice(i.price)}</div>`}${jiwuCatalogSpecHtml(i)}`;
 if(!noSale)card.querySelector(".add-btn-tag").onclick=e=>addToCart(e,i,text,x.tagBg,x.tagColor);card.onclick=()=>zoomCard(card);return card;
 }
 
