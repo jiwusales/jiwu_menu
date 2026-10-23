@@ -483,7 +483,7 @@ function loadData() {
 
       // 取得同 IP 名稱底下第一列的備註欄，作為頁面最上方的 banner 圖片網址
       const ipRows = CONFIG.IP_NAME ? rawItems.filter(i => i.ip === CONFIG.IP_NAME) : rawItems;
-      const bannerUrl = ipRows.length > 0 ? ipRows[0].note : "";
+      const bannerUrl = ipRows.map(item=>item.note).find(value=>/^https?:\/\//i.test(String(value||"").trim())) || "";
       renderBanner(bannerUrl);
 
       allItems = rawItems.filter(item => {
@@ -1239,11 +1239,11 @@ function renderItems() {
   }
 
   if (!isFilterMode && !selectedRole) {
-    allCategories.forEach(cat => {
-      const catItems = filteredItems.filter(i => i.role === cat);
-      if (catItems.length === 0) return;
+    const orderedGroups=[];
+    filteredItems.forEach(item=>{const last=orderedGroups[orderedGroups.length-1];if(last&&last.role===item.role)last.items.push(item);else orderedGroups.push({role:item.role,items:[item]});});
+    orderedGroups.forEach(({role:cat,items:catItems}) => {
       const div = document.createElement('div');
-      div.className = 'type-divider'; div.id = cat; div.textContent = cat;
+      div.className = 'type-divider'; if(!document.getElementById(cat))div.id = cat; div.textContent = cat;
       container.appendChild(div);
       const grid = document.createElement('div');
       grid.className = 'group-grid';
