@@ -486,7 +486,7 @@ function loadData() {
       renderBanner(bannerUrl);
 
       allItems = rawItems.filter(item => {
-        if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
+        if (CONFIG.IP_NAME && item.ip !== CONFIG.IP_NAME) return false;
         const stockVal = String(item.colStock).trim().toLowerCase();
         return stockVal !== 'x' && stockVal !== 'ｘ';
       });
