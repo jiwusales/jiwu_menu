@@ -354,7 +354,7 @@ function loadData(){
         url:"商品網址",
         size:"尺寸",format:"格式",
         note:"備註",
-        banner:"首圖",
+        banner:"首圖",launchConfig:"開團設定",
         color:"主色系"
       };
 
@@ -407,7 +407,8 @@ function loadData(){
 
         lastNote=getV(r,COL.note)||lastNote;
         if(lastGroup){
-          groupSettings[lastGroup]={color:groupPrimaryColor,note:lastNote};
+          let config={};try{config=JSON.parse(getV(r,COL.launchConfig)||'{}');}catch(_){}
+          groupSettings[lastGroup]={...groupSettings[lastGroup],color:groupPrimaryColor,note:lastNote,...(Array.isArray(config.panels)&&config.panels.length?{panels:config.panels}:{})};
         }
 
         return{
@@ -1405,6 +1406,22 @@ function getStockInfo(item){
   };
 }
 
+function jiwuCanvasSections(items,panels){
+  const sections=new Map();
+  if(Array.isArray(panels)&&panels.length&&panels.every(panel=>Array.isArray(panel.productIds))){
+    panels.forEach((panel,index)=>{
+      const ids=new Set(panel.productIds);
+      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:items.filter(item=>ids.has(item.launchItemId))});
+    });
+    return sections;
+  }
+  items.forEach(item=>{
+    if(!sections.has(item.sectionId))sections.set(item.sectionId,{banner:item.sectionBanner,color:item.sectionColor||'',items:[]});
+    sections.get(item.sectionId).items.push(item);
+  });
+  return sections;
+}
+
 function renderItems(){
   const container=document.getElementById('items-wrapper');
   container.style.visibility='visible';
@@ -1419,18 +1436,7 @@ function renderItems(){
     return;
   }
 
-  // 依試算表首圖出現順序分段；規格商品只在同一段內合併。
-  const sections=new Map();
-  groupItems.forEach(item=>{
-    if(!sections.has(item.sectionId)){
-      sections.set(item.sectionId,{
-        banner:item.sectionBanner,
-        color:item.sectionColor||"",
-        items:[]
-      });
-    }
-    sections.get(item.sectionId).items.push(item);
-  });
+  const sections=jiwuCanvasSections(groupItems,groupSettings[selectedGroup]?.panels);
 
   let sectionIndex=0;
   sections.forEach((section)=>{
@@ -1679,3 +1685,4 @@ if(document.readyState==='loading'){
 
 </body>
 </html>
+
