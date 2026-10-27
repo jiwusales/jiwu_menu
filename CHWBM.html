@@ -593,16 +593,11 @@ function parseItemVariant(item){
   return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
 }
 function jiwuCatalogSpecHtml(items){
-  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
-  const formats=[...new Set(variants.flatMap(variant=>variant.sizes||[]))];
-  const measurements=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
-  // Unknown legacy values are retained as text on the simple catalog pages.
-  if(!formats.length&&!measurements.length&&rows.length===1){
-    const raw=String(rows[0]?.size??'').trim();if(raw)measurements.push(raw);
-  }
-  const format=formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'';
-  return '<div class="size">'+format+(format&&measurements.length?'<br>':'')+jiwuSpecEscape(measurements.join(' '))+'</div>';
+  const rows=Array.isArray(items)?items:[items];
+  const formats=[...new Set(rows.flatMap(item=>parseItemVariant(item).sizes||[]))];
+  return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'')+'</div>';
 }
+
 function jiwuCartFormatSuffix(item){
   const values=[item?.selectedSize,item?.selectedColor].map(value=>String(value??'').trim()).filter(Boolean);
   return values.length?' '+values.join('/'):'';
