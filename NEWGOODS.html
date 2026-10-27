@@ -673,13 +673,13 @@ function parseItemVariant(item){
 }
 function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
 function jiwuCatalogSpecHtml(items){
-  const rows=Array.isArray(items)?items:[items];
-  if(rows.some(jiwuIsDrawVariant)){
-    const sizes=[...new Set(rows.map(item=>parseItemVariant(item).realSize).filter(Boolean))];
-    return '<div class="size">'+sizes.map(size=>'<span class="product-physical-size">'+jiwuSpecEscape(size)+'</span>').join(' / ')+'</div>';
-  }
-  const formats=[...new Set(rows.flatMap(item=>parseItemVariant(item).sizes||[]))];
-  return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'')+'</div>';
+  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
+  const sizes=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
+  const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(variants.flatMap(variant=>variant.sizes||[]))];
+  const parts=[];
+  if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
+  if(sizes.length)parts.push('<span class="product-physical-size">'+jiwuSpecEscape(sizes.join(' / '))+'</span>');
+  return '<div class="size">'+parts.join(' · ')+'</div>';
 }
 
 function jiwuCartFormatSuffix(item){
