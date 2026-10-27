@@ -486,6 +486,7 @@ function loadData(){
           sectionColor,
           role:getV(r,COL.role)||" ",
           kind:String(productConfig.productKind||''),
+          draftHidden:productConfig.draftHidden===true,
           name:getV(r,COL.name),
           originalPrice:getV(r,COL.originalPrice),
           price:getV(r,COL.price),
@@ -504,8 +505,8 @@ function loadData(){
       allItems=rawItems.filter(item=>{
         if(!item.group||!String(item.name).trim())return false;
         const stockVal=String(item.stock).trim().toLowerCase();
-        // x belongs to the old draft visibility marker, not live launch stock.
-        return true;
+        // Preserve explicit draft hiding while keeping legacy x stock markers visible.
+        return !((stockVal==='x'||stockVal==='ｘ')&&item.draftHidden);
       });
 
       allGroups=[...new Set(allItems.map(i=>i.group))];
