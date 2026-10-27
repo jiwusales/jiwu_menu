@@ -160,7 +160,7 @@
       const name=cell(row,nameIndex),id=cell(row,idIndex),knownIds=idsByName.get(name);
       const key=id?'id:'+id:name?(knownIds?.size===1?'id:'+knownIds.values().next().value:'name:'+name):'';
       let group=key?groups.get(key):previousGroup;
-      if(!group&&key){group={name:'',shelf:'',adName:'',ads:null,images:[]};groups.set(key,group);}
+      if(!group&&key){group={name:'',shelf:'',adName:'',ads:null,panels:null,images:[]};groups.set(key,group);}
       if(!group)return;
       previousGroup=group;
       if(name&&!group.name)group.name=name;
@@ -170,8 +170,15 @@
       let config={};try{config=JSON.parse(cell(row,configIndex)||'{}')||{};}catch(_){}
       if(!group.adName)group.adName=String(config.adName||'').trim();
       if(!group.ads&&Array.isArray(config.ads)&&config.ads.length)group.ads=config.ads;
+      if(!group.panels&&Array.isArray(config.panels)&&config.panels.length)group.panels=config.panels;
     });
     return Array.from(groups.values()).filter(group=>group.name).flatMap(group=>{
+      if(group.panels){
+        return group.panels.map((panel,index)=>({
+          name:Object.prototype.hasOwnProperty.call(panel||{},'adTitle')?(String(panel.adTitle||'').trim()||group.name):(String(group.ads?.[index]?.name||'').trim()||group.adName||group.name),
+          image:String(panel?.image||'').trim(),group:group.name,shelf:group.shelf
+        }));
+      }
       const image=group.images[0]||'';
       const ads=group.ads||(group.images.length?group.images.map(image=>({image})):[{image:''}]);
       return ads.map(ad=>({name:group.adName||String(ad?.name||group.name).trim()||group.name,image:String(ad?.image||image).trim(),group:group.name,shelf:group.shelf}));
