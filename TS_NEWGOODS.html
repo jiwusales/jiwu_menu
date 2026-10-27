@@ -601,8 +601,13 @@ function parseItemVariant(item){
   }
   return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
 }
+function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items];
+  if(rows.some(jiwuIsDrawVariant)){
+    const sizes=[...new Set(rows.map(item=>parseItemVariant(item).realSize).filter(Boolean))];
+    return '<div class="size">'+sizes.map(size=>'<span class="product-physical-size">'+jiwuSpecEscape(size)+'</span>').join(' / ')+'</div>';
+  }
   const formats=[...new Set(rows.flatMap(item=>parseItemVariant(item).sizes||[]))];
   return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'')+'</div>';
 }
@@ -1410,8 +1415,8 @@ function jiwuCanvasSections(items,panels){
   const sections=new Map();
   if(Array.isArray(panels)&&panels.length&&panels.every(panel=>Array.isArray(panel.productIds))){
     panels.forEach((panel,index)=>{
-      const ids=new Set(panel.productIds);
-      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:items.filter(item=>ids.has(item.launchItemId))});
+      const ids=new Set(panel.productIds),drawKeys=new Set(items.filter(item=>ids.has(item.launchItemId)&&jiwuIsDrawVariant(item)).map(getVariantKey));
+      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:items.filter(item=>ids.has(item.launchItemId)||(jiwuIsDrawVariant(item)&&drawKeys.has(getVariantKey(item))))});
     });
     return sections;
   }
