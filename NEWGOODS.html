@@ -422,7 +422,7 @@ function loadData(){
         url:"商品網址",
         size:"尺寸",format:"格式",
         note:"備註",
-        banner:"首圖",
+        banner:"首圖",launchConfig:"開團設定",
         color:"主色系"
       };
 
@@ -449,6 +449,7 @@ function loadData(){
         const rawGroup=getV(r,COL.group);
         const rawBanner=getV(r,COL.banner);
         const rawColor=getV(r,COL.color);
+        let productConfig={};try{productConfig=JSON.parse(getV(r,COL.launchConfig)||'{}');}catch(_){}
 
         if(rawGroup!==""&&rawGroup!==lastGroup){
           lastGroup=rawGroup;
@@ -475,7 +476,7 @@ function loadData(){
 
         lastNote=getV(r,COL.note)||lastNote;
         if(lastGroup){
-          groupSettings[lastGroup]={color:groupPrimaryColor,note:lastNote};
+          groupSettings[lastGroup]={...groupSettings[lastGroup],color:groupPrimaryColor,note:lastNote,...(Array.isArray(productConfig.panels)&&productConfig.panels.length?{panels:productConfig.panels}:{})};
         }
 
         return{
@@ -484,6 +485,7 @@ function loadData(){
           sectionBanner,
           sectionColor,
           role:getV(r,COL.role)||" ",
+          kind:String(productConfig.productKind||''),
           name:getV(r,COL.name),
           originalPrice:getV(r,COL.originalPrice),
           price:getV(r,COL.price),
@@ -672,10 +674,14 @@ function parseItemVariant(item){
   return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
 }
 function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
+function jiwuIsApparel(item){
+  const kind=String(item?.kind||'').normalize('NFKC').trim(),name=String(item?.name||'').normalize('NFKC');
+  return /服飾|服装|衣著|衣服/.test(kind)||/(?:大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
+}
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
   const sizes=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
-  const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(variants.flatMap(variant=>variant.sizes||[]))];
+  const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
   const parts=[];
   if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
   if(sizes.length)parts.push('<span class="product-physical-size">'+jiwuSpecEscape(sizes.join(' / '))+'</span>');
@@ -1526,6 +1532,23 @@ function getStockInfo(item){
   };
 }
 
+function jiwuCanvasSections(items,panels){
+  const sections=new Map();
+  if(Array.isArray(panels)&&panels.length&&panels.every(panel=>Array.isArray(panel.productIds))){
+    panels.forEach((panel,index)=>{
+      const ids=new Set(panel.productIds),drawKeys=new Set(items.filter(item=>ids.has(item.launchItemId)&&jiwuIsDrawVariant(item)).map(getVariantKey));
+      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:items.filter(item=>ids.has(item.launchItemId)||(jiwuIsDrawVariant(item)&&drawKeys.has(getVariantKey(item))))});
+    });
+    return sections;
+  }
+  items.forEach(item=>{
+    if(!sections.has(item.sectionId))sections.set(item.sectionId,{banner:item.sectionBanner,color:item.sectionColor||'',items:[]});
+    sections.get(item.sectionId).items.push(item);
+  });
+  return sections;
+}
+
+
 function renderItems(){
   const container=document.getElementById('items-wrapper');
   container.style.visibility='visible';
@@ -1540,18 +1563,7 @@ function renderItems(){
     return;
   }
 
-  // 依試算表首圖出現順序分段；規格商品只在同一段內合併。
-  const sections=new Map();
-  groupItems.forEach(item=>{
-    if(!sections.has(item.sectionId)){
-      sections.set(item.sectionId,{
-        banner:item.sectionBanner,
-        color:item.sectionColor||"",
-        items:[]
-      });
-    }
-    sections.get(item.sectionId).items.push(item);
-  });
+  const sections=jiwuCanvasSections(groupItems,groupSettings[selectedGroup]?.panels);
 
   let sectionIndex=0;
   sections.forEach((section)=>{
