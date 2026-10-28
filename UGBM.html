@@ -775,7 +775,7 @@ function openVariantPicker(e,variants){
       ${showFirstTag?`<div class="variant-stock" id="variant-stock" style="background:${firstInfo.tagBg};color:${firstInfo.tagColor}">${firstInfo.tagText}</div>`:`<div class="variant-stock" id="variant-stock" style="display:none"></div>`}
       <div class="variant-close">✕</div>
       <img id="variant-img" src="${fastImg(first.img)}">
-      <div class="variant-name">${formatName(first.name)}</div>
+      <div class="variant-name">${formatName(ugDisplayName(first))}</div>
       <div class="variant-price" id="variant-price">${getVariantGroupPrice(available)}</div>
       <div class="variant-real-size" id="variant-real-size"></div>
 
@@ -1022,7 +1022,7 @@ function updateCartUI() {
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}${getCartVariantTags(item)}
-        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="font-weight:bold; margin-bottom:2px;">${ugDisplayName(item)}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
       <span style="cursor:pointer; color:#ccc; padding:5px;" onclick="removeFromCart(${index})">✕</span>
@@ -1088,7 +1088,7 @@ else if(item.currentStatus) statusText=`(${item.currentStatus})`;
       const roleText=item.role&&!hiddenRoles.includes(item.role)?` ${item.role}`:"";
 
       const variantText=getVariantDisplay(item);
-      msg+=`${index}.${statusText}${item.name}${roleText}${variantText ? " " + variantText : ""} ${priceText}\n`;
+      msg+=`${index}.${statusText}${ugDisplayName(item)}${roleText}${variantText ? " " + variantText : ""} ${priceText}\n`;
       index++;
     });
   });
@@ -1166,7 +1166,7 @@ function renderCheckoutSummary() {
       <img src="${fastImg(item.img)}" loading="lazy" decoding="async">
       <div class="cart-item-info">
         ${tagHtml}${getCartVariantTags(item)}
-        <div style="font-weight:bold; margin-bottom:2px;">${item.name}</div>
+        <div style="font-weight:bold; margin-bottom:2px;">${ugDisplayName(item)}</div>
         <div style="color:#e44d26; font-weight:bold; margin-top:2px;">${getDisplayPrice(item.price)}</div>
       </div>
     `;
@@ -1375,7 +1375,7 @@ function createCard(variants,sectionColor=""){
   const sizeHtml=jiwuCatalogSpecHtml(variants);
   const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
-  const displayName=item.name;
+  const displayName=ugDisplayName(item);
   const fullImg=fastImg(item.img);
 
   card.innerHTML=`${tagHtml}${addBtnHtml}<img src="${fullImg}" data-full="${fullImg}" loading="lazy" decoding="async"><div class="name">${formatName(displayName)}</div>${priceHtml}${colorDotsHtml}${sizeHtml}`;
@@ -1398,6 +1398,12 @@ function createCard(variants,sectionColor=""){
   };
   mountProductGallery(card.querySelector('img'),item.images||productPhotos(item.img));
   return card;
+}
+
+function ugDisplayName(item){
+  const name=String(item?.name||''),role=String(item?.role||'').trim();
+  if(!role||role==='綜合角色')return name;
+  return name.split(role+'的').join('').split(role).join('').replace(/\s+/g,' ').trim();
 }
 
 function formatName(n){
