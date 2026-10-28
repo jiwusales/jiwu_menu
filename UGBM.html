@@ -432,13 +432,24 @@ function toggleMenu(isOpen) {
 }
 
 // 載入試算表資料（安全轉換字串型態）
-// 售價、圖片、角色與種類集中在 UGBM-products.json，原價幣別為 JPY。
+// 所有商品資料統一從 Mac local backend 的商品庫存讀取。
 async function loadData() {
   try {
-    const response = await fetch('UGBM-products.json', {cache:'no-store'});
+    const response = await fetch(CONFIG.DEPLOY_URL+'?format=json&sheet='+encodeURIComponent(CONFIG.SHEET_NAME), {cache:'no-store'});
     if (!response.ok) throw new Error('商品資料載入失敗');
-    const data = await response.json();
-    allItems = data.items.filter(item => !['x','ｘ'].includes(String(item.colStock).trim().toLowerCase()));
+    const inventory = await response.json();
+    if (!inventory.table || !Array.isArray(inventory.table.rows)) throw new Error('商品資料格式不正確');
+    const headers=inventory.table.cols.map(column=>String(column.label||'').trim());
+    const read=(row,label)=>{const cell=row.c?.[headers.indexOf(label)];return String(cell?.v??cell?.f??'').trim();};
+    const data={typeOrder:["吊娃", "娃", "包袋", "鑰匙圈", "御守", "立牌", "徽章", "3C", "玩具", "貼紙", "文具", "磁鐵", "飾品", "服飾", "毛巾", "居家", "餐廚", "抽抽"],roleOrder:["開心熊貓", "小鼠", "戀愛兔", "壞壞貓", "金田狐", "綜合角色", "小白貓", "小呱呱", "河童與狸貓", "想太多的皮可醬", "小矮人"]};
+    allItems=inventory.table.rows.map(row=>({
+      ip:read(row,'IP'),role:read(row,'角色')||'其他角色',type:read(row,'種類')||'其他',name:read(row,'名稱'),
+      originalPrice:read(row,'原價'),price:read(row,'售價'),colStock:read(row,'庫存'),colShop:read(row,'店面'),colNonStock:read(row,'非現'),status:read(row,'狀態'),
+      sn:read(row,'貨號'),images:productPhotos(read(row,'圖片')),img:productPhotos(read(row,'圖片'))[0]||CONFIG.FAVICON,
+      url:read(row,'商品網址'),size:read(row,'尺寸'),format:read(row,'格式'),note:read(row,'首圖')
+    })).filter(item=>item.ip===CONFIG.IP_NAME && item.name && !['x','ｘ'].includes(item.colStock.toLowerCase()));
+    data.roleOrder=[...new Set([...data.roleOrder,...allItems.map(item=>item.role)])];
+    data.typeOrder=[...new Set([...data.typeOrder,...allItems.map(item=>item.type)])];
     const roleCounts = new Map();
     allItems.forEach(item => roleCounts.set(item.role, (roleCounts.get(item.role)||0)+1));
     allItems = allItems.map(item => ({...item, ugRoleGroup: item.role!=='綜合角色' && roleCounts.get(item.role)<10 ? '其他角色' : item.role}));
