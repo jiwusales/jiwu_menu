@@ -439,10 +439,13 @@ async function loadData() {
     if (!response.ok) throw new Error('商品資料載入失敗');
     const data = await response.json();
     allItems = data.items.filter(item => !['x','ｘ'].includes(String(item.colStock).trim().toLowerCase()));
-    allCategories = data.roleOrder.filter(role => allItems.some(item => item.role === role));
-    allItems = allCategories.flatMap(role => allItems.filter(item => item.role === role));
+    const roleCounts = new Map();
+    allItems.forEach(item => roleCounts.set(item.role, (roleCounts.get(item.role)||0)+1));
+    allItems = allItems.map(item => ({...item, ugRoleGroup: item.role!=='綜合角色' && roleCounts.get(item.role)<10 ? '其他角色' : item.role}));
+    allCategories = data.roleOrder.filter(role => !['其他角色','綜合角色'].includes(role) && allItems.some(item => item.ugRoleGroup===role));
+    ['其他角色','綜合角色'].forEach(role => {if(allItems.some(item => item.ugRoleGroup===role))allCategories.push(role);});
     const typeRank = type => data.typeOrder.indexOf(type);
-    allItems.sort((a,b) => allCategories.indexOf(a.role)-allCategories.indexOf(b.role) || typeRank(a.type)-typeRank(b.type));
+    allItems.sort((a,b) => allCategories.indexOf(a.ugRoleGroup)-allCategories.indexOf(b.ugRoleGroup) || typeRank(a.type)-typeRank(b.type));
     allTypes = data.typeOrder.filter(type => allItems.some(item => item.type === type));
     renderBanner(allItems.map(item=>item.note).find(value=>/^https?:\/\//i.test(String(value||''))) || '');
     renderSideMenu(); renderRoleNav(); renderFilters(); renderItems(); updateCartUI();
@@ -1088,7 +1091,7 @@ else if(item.currentStatus) statusText=`(${item.currentStatus})`;
       const roleText=item.role&&!hiddenRoles.includes(item.role)?` ${item.role}`:"";
 
       const variantText=getVariantDisplay(item);
-      msg+=`${index}.${statusText}${ugDisplayName(item)}${roleText}${variantText ? " " + variantText : ""} ${priceText}\n`;
+      msg+=`${index}.${statusText}${ugDisplayName(item,true)}${roleText}${variantText ? " " + variantText : ""} ${priceText}\n`;
       index++;
     });
   });
@@ -1269,7 +1272,7 @@ function renderItems() {
   if (selectedStockFilters.length > 0) {
     filteredItems = filteredItems.filter(i => selectedStockFilters.includes(getStockInfo(i).tagKey));
   }
-  if (selectedRole) { filteredItems = filteredItems.filter(i => i.role === selectedRole); }
+  if (selectedRole) { filteredItems = filteredItems.filter(i => i.ugRoleGroup === selectedRole); }
   
   if (filteredItems.length === 0) {
     container.innerHTML = "<div style='padding: 40px; color: #999;'>目前還沒有這類的酷東西(՞•̀ω•́՞)⸝ި ʕᦏ</div>";
@@ -1278,7 +1281,7 @@ function renderItems() {
 
   if (!isFilterMode && !selectedRole) {
     const orderedGroups=[];
-    filteredItems.forEach(item=>{const last=orderedGroups[orderedGroups.length-1];if(last&&last.role===item.role)last.items.push(item);else orderedGroups.push({role:item.role,items:[item]});});
+    filteredItems.forEach(item=>{const last=orderedGroups[orderedGroups.length-1];if(last&&last.role===item.ugRoleGroup)last.items.push(item);else orderedGroups.push({role:item.ugRoleGroup,items:[item]});});
     orderedGroups.forEach(({role:cat,items:catItems}) => {
       const div = document.createElement('div');
       div.className = 'type-divider'; if(!document.getElementById(cat))div.id = cat; div.textContent = cat;
@@ -1400,9 +1403,9 @@ function createCard(variants,sectionColor=""){
   return card;
 }
 
-function ugDisplayName(item){
+function ugDisplayName(item,forOrder=false){
   const name=String(item?.name||''),role=String(item?.role||'').trim();
-  if(!role||role==='綜合角色')return name;
+  if(!role||role==='綜合角色'||(!forOrder&&item.ugRoleGroup==='其他角色'))return name;
   return name.split(role+'的').join('').split(role).join('').replace(/\s+/g,' ').trim();
 }
 
