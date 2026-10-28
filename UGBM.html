@@ -5,9 +5,9 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JIWU吉物｜西村裕治・スタジオUG</title>
+  <title>JIWU吉物｜西村優志</title>
 
-  <meta property="og:title" content="JIWU吉物｜西村裕治・スタジオUG" />
+  <meta property="og:title" content="JIWU吉物｜西村優志" />
   <meta property="og:description" content="官LINE請搜尋（@jiwusales）" />
   <meta property="og:image" content="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon_9a717cff.png" />
   <meta property="og:type" content="website" />
@@ -19,7 +19,7 @@
      *  IP 與 頁面 控制設定區 (不同 IP HTML 頁面請修改此處)
      * ========================================================= */
     const CONFIG = {
-      IP_NAME: "西村裕治・スタジオUG",                                       // 當前 IP 名稱
+      IP_NAME: "西村優志",                                       // 當前 IP 名稱
       THEME_COLOR: "#ed4518",                                  // 主要色系
       ACTIVE_COLOR: "#d93612",                                 // 高亮 / 啟用色系
       SHEET_ID: "10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ", // Google 試算表 ID
@@ -242,6 +242,7 @@
 
 
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
+.card .size{overflow-wrap:anywhere;line-height:1.35;padding:0 3px;box-sizing:border-box}
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 </head>
@@ -439,9 +440,11 @@ async function loadData() {
     if (!response.ok) throw new Error('商品資料載入失敗');
     const data = await response.json();
     allItems = data.items.filter(item => !['x','ｘ'].includes(String(item.colStock).trim().toLowerCase()));
-    allCategories = [...new Set(allItems.map(item => item.role))];
+    allCategories = data.roleOrder.filter(role => allItems.some(item => item.role === role));
     allItems = allCategories.flatMap(role => allItems.filter(item => item.role === role));
-    allTypes = [...new Set(allItems.map(item => item.type))];
+    const typeRank = type => data.typeOrder.indexOf(type);
+    allItems.sort((a,b) => allCategories.indexOf(a.role)-allCategories.indexOf(b.role) || typeRank(a.type)-typeRank(b.type));
+    allTypes = data.typeOrder.filter(type => allItems.some(item => item.type === type));
     renderBanner(allItems.map(item=>item.note).find(value=>/^https?:\/\//i.test(String(value||''))) || '');
     renderSideMenu(); renderRoleNav(); renderFilters(); renderItems(); updateCartUI();
   } catch (error) {
@@ -523,25 +526,14 @@ function jiwuSplitProductSpec(sizeValue, formatValue, inferFormat = true) {
 function jiwuSpecEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function jiwuFormatOptions(value){return String(value??'').split(/[\/／、,，;；\s]+/).map(value=>value.trim()).filter(Boolean);}
 function parseItemVariant(item){
-  const spec=jiwuSplitProductSpec(item?.size,item?.format);
-  if(spec.format){
-    const sizes=jiwuFormatOptions(spec.format);
-    return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:spec.size};
-  }
-  if(typeof parseVariant==='function'){
-    const variant=parseVariant(item?.size);
-    // An unambiguous physical measurement is not a colour option.
-    const raw=String(item?.size??'').trim();
-    if(!variant.sizes?.length&&!variant.colorCode&&variant.color===raw&&/^(?:(?:[HWD長寬高深厚肩袖Φφ]|\d)[\s\S]*\d[\s\S]*(?:cm|mm|公分|毫米|[x×])|(?:長|寬|高|深|厚|肩|袖)\s*\d)/i.test(raw))
-      return {...variant,color:'',realSize:raw};
-    return variant;
-  }
-  return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
+  const sizes=jiwuFormatOptions(item?.format||'');
+  return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:String(item?.size||'')};
 }
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items];
   const formats=[...new Set(rows.flatMap(item=>parseItemVariant(item).sizes||[]))];
-  return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>':'')+'</div>';
+  const sizes=[...new Set(rows.map(item=>String(item.size||'').trim()).filter(Boolean))];
+  return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span><br>':'')+(sizes.length?jiwuSpecEscape(sizes.join(' / ')):'官方未提供尺寸')+'</div>';
 }
 
 function jiwuCartFormatSuffix(item){
