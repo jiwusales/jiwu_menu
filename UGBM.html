@@ -242,7 +242,6 @@
 
 
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
-.card .size{overflow-wrap:anywhere;line-height:1.35;padding:0 3px;box-sizing:border-box}
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 </head>
@@ -529,11 +528,19 @@ function parseItemVariant(item){
   const sizes=jiwuFormatOptions(item?.format||'');
   return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:String(item?.size||'')};
 }
+function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
+function jiwuIsApparel(item){
+  const kind=String(item?.kind||item?.type||'').normalize('NFKC').trim(),name=String(item?.name||'').normalize('NFKC');
+  return /服飾|服装|衣著|衣服/.test(kind)||/(?:大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
+}
 function jiwuCatalogSpecHtml(items){
-  const rows=Array.isArray(items)?items:[items];
-  const formats=[...new Set(rows.flatMap(item=>parseItemVariant(item).sizes||[]))];
-  const sizes=[...new Set(rows.map(item=>String(item.size||'').trim()).filter(Boolean))];
-  return '<div class="size">'+(formats.length?'<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span><br>':'')+(sizes.length?jiwuSpecEscape(sizes.join(' / ')):'官方未提供尺寸')+'</div>';
+  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
+  const sizes=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
+  const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
+  const parts=[];
+  if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
+  if(sizes.length)parts.push('<span class="product-physical-size">'+jiwuSpecEscape(sizes.join(' / '))+'</span>');
+  return '<div class="size">'+parts.join(' · ')+'</div>';
 }
 
 function jiwuCartFormatSuffix(item){
