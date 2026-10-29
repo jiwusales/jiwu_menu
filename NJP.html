@@ -15,6 +15,10 @@
 
 <script>
 const CONFIG={THEME_COLOR:"#ffffff",ACTIVE_COLOR:"#f5b080",SHEET_ID:"10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",SHEET_NAME:"景品開團",TOP_BAR_TEXT:" ",LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]};
+// 商品資料先下載，不等待選單、QR 圖與其他頁面圖片。
+const catalogDataRequest=fetch(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`)
+  .then(response=>{if(!response.ok)throw new Error('商品資料載入失敗');return response.text();});
+catalogDataRequest.catch(()=>{});
 </script>
 
 <style>
@@ -108,8 +112,7 @@ function getCartSourceName(i){return String(i.groupName||i.ipName||i.ip||i.group
 function getUrlGroup(){return new URLSearchParams(location.search).get("group")||""}
 
 function loadData(){
-const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
-fetch(url).then(r=>r.text()).then(t=>{try{
+  return catalogDataRequest.then(t=>{try{
 const data=JSON.parse(t.substr(47).slice(0,-2)),H={group:"團名",role:"角色",name:"名稱",originalPrice:"原價",price:"售價",stock:"庫存",launchItemId:"商品ID",status:"狀態",sn:"貨號",img:"圖片",url:"商品網址",size:"尺寸",format:"格式",note:"備註",banner:"首圖",color:"主色系"},labels=(data.table.cols||[]).map(c=>String(c.label||"").trim()),C={};
 Object.keys(H).forEach(k=>C[k]=labels.indexOf(H[k]));
 const v=(r,i)=>i===-1||!r.c||!r.c[i]?"":String(r.c[i].v??r.c[i].f??"").trim();
@@ -328,7 +331,11 @@ function end(){document.removeEventListener("mousemove",move);document.removeEve
 el.onclick=e=>drag?e.preventDefault():toggleCart(true);el.addEventListener("mousedown",start);el.addEventListener("touchstart",start,{passive:false});
 })();
 
-window.onload=loadData;
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',loadData,{once:true});
+}else{
+  loadData();
+}
 </script>
 
 <div style="text-align:center;font-size:11px;color:#999;padding:10px;margin-top:10px;border-top:1px solid #eee">模擬圖僅供參考，以實際商品為準，有問題請私訊官方LINE @jiwusales</div>

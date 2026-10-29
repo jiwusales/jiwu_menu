@@ -29,6 +29,10 @@ const CONFIG={
   DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]
 };
+// 商品資料先下載，不等待選單、QR 圖與其他頁面圖片。
+const catalogDataRequest=fetch(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`)
+  .then(response=>{if(!response.ok)throw new Error('商品資料載入失敗');return response.text();});
+catalogDataRequest.catch(()=>{});
 </script>
 
 <script src="jiwu-data.js?v=20261023-queue1"></script>
@@ -335,9 +339,7 @@ function getUrlGroup(){
 }
 
 function loadData(){
-  const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
-
-  fetch(url).then(r=>r.text()).then(t=>{
+  return catalogDataRequest.then(t=>{
     try{
       const data=JSON.parse(t.substr(47).slice(0,-2));
 
@@ -461,7 +463,7 @@ function loadData(){
       document.getElementById('items-wrapper').innerHTML="載入失敗。";
       console.error(e);
     }
-  });
+  }).catch(()=>{document.getElementById('items-wrapper').textContent='載入失敗。';});
 }
 
 window.addEventListener('popstate',()=>{

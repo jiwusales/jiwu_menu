@@ -14,6 +14,12 @@
   <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/jiwusales/imgh@main/images_1350/icon026_d47caf43.png" />
   <meta name="theme-color" content="#dac7b7" />
   
+<script>
+// 首頁開團資料與圖片並行下載。
+const homeCatalogRequest=fetch('https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?sheet=最新開團',{cache:'no-store'})
+  .then(response=>{if(!response.ok)throw new Error('最新開團資料讀取失敗');return response.json();});
+homeCatalogRequest.catch(()=>{});
+</script>
   <style>
     body{margin:0;padding:0;font-family:Arial,sans-serif;color:#333;background:#fff}
     a{text-decoration:none!important;-webkit-tap-highlight-color:transparent}
@@ -143,9 +149,7 @@
   const fallback='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
 
   async function fetchSheetData(){
-    const response=await fetch(API_URL,{cache:'no-store'});
-    if(!response.ok)throw new Error('最新開團資料讀取失敗');
-    const json=await response.json();
+    const json=await homeCatalogRequest;
     if(!json.table)throw new Error('無法讀取最新開團分頁');
     const headers=json.table.cols.map(col=>String(col.label||'').trim());
     const nameIndex=headers.indexOf('團名'),imageIndex=headers.indexOf('首圖'),shelfIndex=headers.indexOf('上架'),configIndex=headers.indexOf('開團設定');

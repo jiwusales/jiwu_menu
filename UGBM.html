@@ -38,7 +38,11 @@
       // 同 IP 下不同角色的商品卡邊框顏色對照表 (未設定的角色會預設使用 THEME_COLOR)
       ROLE_BORDER_COLORS: {}
     };
-  </script>
+  // 商品資料先下載，不等待選單、QR 圖與其他頁面圖片。
+const catalogDataRequest=fetch(`${CONFIG.DEPLOY_URL}?format=json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`,{cache:'no-store'})
+  .then(response=>{if(!response.ok)throw new Error('商品資料載入失敗');return response.json();});
+catalogDataRequest.catch(()=>{});
+</script>
   
   <script src="jiwu-data.js?v=20261023-queue1"></script>
 <script src="common.js?v=20261015"></script>
@@ -435,9 +439,7 @@ function toggleMenu(isOpen) {
 // 所有商品資料統一從 Mac local backend 的商品庫存讀取。
 async function loadData() {
   try {
-    const response = await fetch(CONFIG.DEPLOY_URL+'?format=json&sheet='+encodeURIComponent(CONFIG.SHEET_NAME), {cache:'no-store'});
-    if (!response.ok) throw new Error('商品資料載入失敗');
-    const inventory = await response.json();
+    const inventory = await catalogDataRequest;
     if (!inventory.table || !Array.isArray(inventory.table.rows)) throw new Error('商品資料格式不正確');
     const headers=inventory.table.cols.map(column=>String(column.label||'').trim());
     const read=(row,label)=>{const cell=row.c?.[headers.indexOf(label)];return String(cell?.v??cell?.f??'').trim();};
@@ -1485,7 +1487,11 @@ function zoomCard(c) {
 })();
 
 // 頁面初始化
-window.onload = loadData;
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',loadData,{once:true});
+}else{
+  loadData();
+}
 </script>
 </body>
 </html>

@@ -30,6 +30,24 @@ const CONFIG={
   DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","SOLD OUT","暫停收單"]
 };
+async function requestGroupResource(url,type,timeout=20000){
+  const controller=typeof AbortController==='function'?new AbortController():null;
+  let timer;
+  const expired=new Promise((resolve,reject)=>{
+    timer=setTimeout(()=>{
+      const error=new Error('商品頁連線逾時，請重試。');error.name='TimeoutError';
+      reject(error);if(controller)controller.abort();
+    },timeout);
+  });
+  const pending=Promise.resolve().then(()=>fetch(url,controller?{signal:controller.signal}:{})).then(response=>
+    response[type]().then(data=>({response,data}))
+  );
+  // 期限涵蓋下載回應內容；舊 WebView 沒有 AbortController 時也會結束等待。
+  try{return await Promise.race([pending,expired]);}finally{clearTimeout(timer);}
+}
+// 提早下載商品資料；首次顯示後，重新載入仍會發出新的請求。
+let initialCatalogDataRequest = requestGroupResource(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`,'text').then(({response,data})=>{if(!response.ok)throw Error('商品暫時無法載入，請重試');return data;});
+initialCatalogDataRequest.catch(()=>{});
 </script>
 
 <script src="jiwu-data.js?v=20261026-discord-manual" defer></script>
@@ -366,21 +384,6 @@ function getUrlGroup(){
   return new URLSearchParams(location.search).get('group')||'';
 }
 
-async function requestGroupResource(url,type,timeout=20000){
-  const controller=typeof AbortController==='function'?new AbortController():null;
-  let timer;
-  const expired=new Promise((resolve,reject)=>{
-    timer=setTimeout(()=>{
-      const error=new Error('商品頁連線逾時，請重試。');error.name='TimeoutError';
-      reject(error);if(controller)controller.abort();
-    },timeout);
-  });
-  const pending=Promise.resolve().then(()=>fetch(url,controller?{signal:controller.signal}:{})).then(response=>
-    response[type]().then(data=>({response,data}))
-  );
-  // 期限涵蓋下載回應內容；舊 WebView 沒有 AbortController 時也會結束等待。
-  try{return await Promise.race([pending,expired]);}finally{clearTimeout(timer);}
-}
 async function resolveShortGroup(){
   const page=new URL(location.href),code=page.searchParams.get('short');
   if(!code)return;
@@ -404,7 +407,8 @@ function loadData(){
   const box=document.getElementById('items-wrapper');box.innerHTML='<p role="status">商品載入中…</p>';
   const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
-  return Promise.all([requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('商品暫時無法載入，請重試');return data;}),resolveShortGroup()]).then(([t])=>{
+  const pending=initialCatalogDataRequest;initialCatalogDataRequest=null;
+  return Promise.all([pending || requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('商品暫時無法載入，請重試');return data;}),resolveShortGroup()]).then(([t])=>{
     try{
       const data=JSON.parse(t.substr(47).slice(0,-2));
 
