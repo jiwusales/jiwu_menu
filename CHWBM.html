@@ -488,6 +488,8 @@ function loadData() {
       renderBanner(bannerUrl);
 
       allItems = rawItems.filter(item => {
+        // 空白列與首圖設定列不產生商品卡片。
+        if (!String(item.name || "").trim()) return false;
         if (CONFIG.IP_NAME && item.ip && item.ip !== CONFIG.IP_NAME) return false;
         const stockVal = String(item.colStock).trim().toLowerCase();
         return stockVal !== 'x' && stockVal !== 'ｘ';
