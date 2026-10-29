@@ -51,6 +51,11 @@
         "其他角色": "#45818e"
       }
     };
+    // 商品資料先下載，不等待選單、QR 圖與其他頁面圖片。
+    const catalogDataRequest = fetch(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`)
+      .then(response => { if (!response.ok) throw new Error('商品資料載入失敗'); return response.text(); });
+    // 初始化前若網路失敗，保留原始錯誤交由 loadData 顯示。
+    catalogDataRequest.catch(() => {});
   </script>
   
   <script src="jiwu-data.js?v=20261023-queue1"></script>
@@ -343,8 +348,7 @@ function toggleMenu(isOpen) {
 
 // 載入試算表資料（安全轉換字串型態）
 function loadData() {
-  const url = `https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
-  fetch(url).then(r => r.text()).then(t => {
+  return catalogDataRequest.then(t => {
     try {
       const data = JSON.parse(t.substr(47).slice(0,-2));
 
@@ -402,7 +406,7 @@ function loadData() {
       renderItems();
       updateCartUI();
     } catch (e) { document.getElementById('items-wrapper').innerHTML = "載入失敗。"; }
-  });
+  }).catch(() => { document.getElementById('items-wrapper').innerHTML = "載入失敗。"; });
 }
 
 // 渲染頁面最上方的 banner 圖片（網址取自同 IP 名稱第一列的備註欄）
@@ -986,7 +990,11 @@ function zoomCard(c) {
 })();
 
 // 頁面初始化
-window.onload = loadData;
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadData, { once: true });
+} else {
+  loadData();
+}
 </script>
 </body>
 </html>
