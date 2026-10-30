@@ -7,7 +7,6 @@ function paint(items){
  if(modal?.style.display==='flex'&&typeof renderCheckoutSummary==='function')renderCheckoutSummary();
 
 }
-function notify(lines){if(lines.length)alert('購物車已更新，請確認：\n'+lines.join('\n'));}
 async function readQuote(){
  const before=structuredClone(current()),signature=JSON.stringify(before);
  if(!before.length)return {changed:false,blocked:false};
@@ -21,7 +20,7 @@ async function readQuote(){
   result.items=result.items.map((item,index)=>({...before[index],...item}));
   const lines=cartChanges(before,result.items),changed=lines.length>0;
   if(JSON.stringify(before)!==JSON.stringify(result.items))paint(result.items);
-  lastRead=Date.now();notify(lines);
+  lastRead=Date.now();
   return {changed,blocked:result.items.some(item=>item._cartBlocked)};
  }finally{clearTimeout(timer);}
 }
