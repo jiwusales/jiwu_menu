@@ -2,7 +2,7 @@ import {cartChanges} from './cart-catalog.mjs?v=20261030-cart-source-v2';
 let pending=null,lastRead=0,checking=false;
 const current=()=>typeof cart!=='undefined'&&Array.isArray(cart)?cart:[];
 function paint(items){
- cart=items;saveCart();updateCartUI();
+ cart=items.map(item=>item.currentStatus==='預訂'?{...item,tagBg:item.catalogSheet==='商品庫存'?'#C197D2':'#fab460'}:item);saveCart();updateCartUI();
  const modal=document.getElementById('checkout-modal');
  if(modal?.style.display==='flex'&&typeof renderCheckoutSummary==='function')renderCheckoutSummary();
 
