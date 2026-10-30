@@ -50,8 +50,9 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;color:var(--text-c
 #checkout-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;display:none;align-items:center;justify-content:center}.modal-content{background:#fff;width:85%;max-width:380px;border-radius:15px;padding:20px;position:relative}.input-box{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:5px;font-size:14px}.summary-box{background:#f9f9f9;padding:10px;border-radius:5px;font-size:12px;max-height:250px;overflow-y:auto;text-align:left;margin-bottom:10px;border:1px solid #eee}.qr-box{display:none;text-align:center}.qr-box img{width:180px;height:180px;margin:10px 0}
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
 </style>
-<script src="jiwu-data.js?v=20261023-queue1"></script>
+<script src="jiwu-data.js?v=20261030-workflow-cart-v1"></script>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
+<script type="module" src="cart-live.js?v=20261030-workflow-cart-v1"></script>
 </head>
 
 <body>
@@ -232,22 +233,25 @@ function jiwuSelectCatalogFormat(e,item,add){
 function addToCart(e,item,tagText,tagBg,tagColor){
   // New additions only; never normalize existing cart or pending payloads.
   if(jiwuSelectCatalogFormat(e,item,chosen=>addToCart(e,chosen,tagText,tagBg,tagColor)))return;
-e.stopPropagation();if(/^n$/i.test(String(item.price||"").trim()))return;const source=String(item.group||selectedGroup).trim();cart.push({...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});saveCart();updateCartUI();e.target.style.background="#fdd365";setTimeout(()=>e.target.style.background="#ddd",50)}
+e.stopPropagation();if(/^n$/i.test(String(item.price||"").trim()))return;const source=String(item.group||selectedGroup).trim();cart.push({catalogSheet:CONFIG.SHEET_NAME,...item,ip:source,ipName:source,group:source,groupName:source,currentStatus:tagText||"",tagBg,tagColor});saveCart();updateCartUI();e.target.style.background="#fdd365";setTimeout(()=>e.target.style.background="#ddd",50)}
 function clearCart(){if(confirm("確定要清空購物車嗎？")){cart=[];saveCart();updateCartUI()}}
-function toggleCart(x){document.getElementById("cart-panel").classList.toggle("open",x);document.getElementById("cart-overlay-bg").style.display=x?"block":"none"}
+function toggleCart(x){
+ if(x&&window.jiwuRefreshCart)void window.jiwuRefreshCart();
+document.getElementById("cart-panel").classList.toggle("open",x);document.getElementById("cart-overlay-bg").style.display=x?"block":"none"}
 function getDisplayPrice(p){p=String(p||"").trim();return p.includes("-")?"參考圖示":p===""?"詢問花花":/^\d+$/.test(p)?`$${p}`:p}
 
 function updateCartUI(){
 const list=document.getElementById("cart-list"),badge=document.getElementById("cart-badge"),totalEl=document.getElementById("cart-total");list.innerHTML="";let total=0,inq=false;
-cart.forEach((i,n)=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div><span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${n})">✕</span>`;list.appendChild(d)});
+cart.forEach((i,n)=>{const num=/^\d+$/.test(String(i.price||"").trim());if(!isCartRestockItem(i)){total+=num?parseInt(i.price):0;if(!num)inq=true;}const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div><span style="cursor:pointer;color:#ccc;padding:5px" onclick="removeFromCart(${n})">✕</span>`;list.appendChild(d)});
 badge.textContent=cart.length;badge.style.display=cart.length?"flex":"none";totalEl.textContent=`$${total}${inq?" + 詢問報價":""}`;
 }
 function removeFromCart(n){cart.splice(n,1);saveCart();updateCartUI();if(document.getElementById("checkout-modal").style.display==="flex")renderCheckoutSummary()}
 
+function isCartRestockItem(item){return ['S☹LD OUT','SOLD OUT','補貨登記','補登'].includes(String(item.currentStatus||'').trim().toUpperCase());}
 function generateLineMessage(){
 let msg="你好，我想購買以下酷東西(৹˙꒳​˙ฅ)：\n",total=0,inq=false,n=1,groups={},order=[];
 cart.forEach(i=>{const g=getCartSourceName(i);if(!groups[g]){groups[g]=[];order.push(g)}groups[g].push(i)});
-order.forEach(g=>{msg+=`\n【${g}】\n`;groups[g].forEach(i=>{const p=String(i.price||"").trim();let pt="",pv=0;if(/^\d+$/.test(p)){pv=parseInt(p);pt=`$${p}`}else if(p.includes("-")){pt="參考圖示";inq=true}else if(!p){pt="詢問花花";inq=true}else{pt=p;inq=true}total+=pv;const st=i.currentStatus==="S☹LD OUT"?"(補貨登記)":"(預訂)",hidden=["三小隻","其他角色","綜合角色","水族","動物","食物"],role=i.role&&!hidden.includes(i.role)?` ${i.role}`:"";msg+=`${n++}. ${st} ${i.name}${jiwuCartFormatSuffix(i)}${role} ${pt}\n`})});
+order.forEach(g=>{msg+=`\n【${g}】\n`;groups[g].forEach(i=>{const p=String(i.price||"").trim();let pt="",pv=0;if(/^\d+$/.test(p)){pv=parseInt(p);pt=`$${p}`}else if(p.includes("-")){pt="參考圖示";inq=inq||!isCartRestockItem(i)}else if(!p){pt="詢問花花";inq=inq||!isCartRestockItem(i)}else{pt=p;inq=inq||!isCartRestockItem(i)}if(!isCartRestockItem(i))total+=pv;const st=isCartRestockItem(i)?"(補貨登記)":"(預訂)",hidden=["三小隻","其他角色","綜合角色","水族","動物","食物"],role=i.role&&!hidden.includes(i.role)?` ${i.role}`:"";msg+=`${n++}. ${st} ${i.name}${jiwuCartFormatSuffix(i)}${role} ${pt}\n`})});
 return appendDeliveryMessage(msg+`\n總金額：$${total}${inq?" + 詢問報價":""}`);
 }
 
@@ -277,17 +281,21 @@ function appendDeliveryMessage(message){
 }
 document.getElementById(isDeliveryMobile() ? 'delivery-cart' : 'delivery-modal').hidden = false;
 
-function handleCheckoutEntry(){if(!cart.length)return alert("購物車是空的唷！");if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){if(!requireDelivery())return;location.href=CONFIG.LINE_MSG_URL+encodeURIComponent(generateLineMessage());setTimeout(()=>{cart=[];saveCart();updateCartUI();toggleCart(false)},1500)}else openCheckoutModal()}
+async function handleCheckoutEntry(){
+  if(!jiwuManualNext){if(typeof window.jiwuEnsureCartCurrent!=='function'){alert('購物車更新功能尚未載入，請重新整理後再試');return;}if(!await window.jiwuEnsureCartCurrent())return;}
+if(!cart.length)return alert("購物車是空的唷！");if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){if(!requireDelivery())return;location.href=CONFIG.LINE_MSG_URL+encodeURIComponent(generateLineMessage());setTimeout(()=>{cart=[];saveCart();updateCartUI();toggleCart(false)},1500)}else openCheckoutModal()}
 function openCheckoutModal(){toggleCart(false);document.getElementById("step-1").style.display="block";document.getElementById("step-2").style.display="none";renderCheckoutSummary();document.getElementById("checkout-modal").style.display="flex"}
 function closeModal(){document.getElementById("checkout-modal").style.display="none"}
 
 function renderCheckoutSummary(){
 const list=document.getElementById("modal-summary-list");list.innerHTML="";let total=0,inq=false;
-cart.forEach(i=>{const num=/^\d+$/.test(String(i.price||"").trim());total+=num?parseInt(i.price):0;if(!num)inq=true;const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div>`;list.appendChild(d)});
+cart.forEach(i=>{const num=/^\d+$/.test(String(i.price||"").trim());if(!isCartRestockItem(i)){total+=num?parseInt(i.price):0;if(!num)inq=true;}const d=document.createElement("div");d.className="cart-item";const tag=i.currentStatus?`<div class="cart-tag" style="background:${i.tagBg};color:${i.tagColor||"white"}">${i.currentStatus}</div>`:"";d.innerHTML=`<img src="${i.img}"><div class="cart-item-info">${tag}<div style="font-weight:bold">${i.name}${jiwuSpecEscape(jiwuCartFormatSuffix(i))}</div><div style="color:#e44d26;font-weight:bold">${getDisplayPrice(i.price)}</div></div>`;list.appendChild(d)});
 document.getElementById("modal-total-price").textContent=`$${total}${inq?" + 詢問報價":""}`;
 }
 
 async function handleFinalCheckout(){
+  if(!jiwuManualNext){if(typeof window.jiwuEnsureCartCurrent!=='function'){alert('購物車更新功能尚未載入，請重新整理後再試');return;}if(!await window.jiwuEnsureCartCurrent())return;}
+
   if (!requireDelivery()) return;
 const lineName=document.getElementById("user-line").value.trim(),igAcc=document.getElementById("user-ig").value.trim();if(!lineName)return alert("請輸入LINE名稱方便核對ι(｀･-･´)/");
 const btn=document.getElementById("send-btn");btn.disabled=true;btn.textContent="傳送中 ᓫ(๑º꒳º๑)ꜝꜝ";

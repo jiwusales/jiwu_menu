@@ -35,8 +35,11 @@ function initCommonMenu() {
       </a>
     </div>
   `;
-  // 插入到頁面中
-  document.body.insertAdjacentHTML('afterbegin', menuHtml);
+  // Preserve each catalog's dynamic group menu; fill missing elements only.
+  const template=document.createElement('template');template.innerHTML=menuHtml;
+  for(const id of ['menu-overlay','side-menu']){
+    if(!document.getElementById(id))document.body.prepend(template.content.querySelector('#'+id));
+  }
 }
 
 // 處理官網下單儲存至資料庫
