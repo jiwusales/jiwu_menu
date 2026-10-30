@@ -58,12 +58,12 @@ export function quoteItems(items,products){
   const hidden=hiddenProduct(p);
   const paused=p.paused,disabled=norm(p.price).toLowerCase()==='n'||(p.sheet!=='商品庫存'&&norm(p.price)==='0');
   const soldOut=stock==='-'||/^(?:缺貨|SOLD OUT|S☹LD OUT)$/i.test(p.status);
-  let currentStatus,tagBg='#C197D2',tagColor='#fff';
+  let currentStatus,tagBg=p.sheet==='商品庫存'?'#C197D2':'#fab460',tagColor='#fff';
   if(paused){currentStatus='暫停收單';tagBg='#A68C73';}
   else if(hidden||soldOut){currentStatus='補貨登記';tagBg='#3a3a3a';}
   else if(text(item.currentStatus)){
    currentStatus=text(item.currentStatus);
-   const colors={'預訂':['#C197D2','#fff'],'現貨':['#FFF4BD','#333'],'最後一個':['#E24C60','#fff'],'路上':['#6C95B0','#fff'],'受注':['#B1DEC1','#fff'],'補貨登記':['#3a3a3a','#fff']};
+   const colors={'預訂':[p.sheet==='商品庫存'?'#C197D2':'#fab460','#fff'],'現貨':['#FFF4BD','#333'],'最後一個':['#E24C60','#fff'],'路上':['#6C95B0','#fff'],'受注':['#B1DEC1','#fff'],'補貨登記':['#3a3a3a','#fff']};
    [tagBg,tagColor]=colors[currentStatus]||[item.tagBg||tagBg,item.tagColor||tagColor];
   }
   else if(Number(p.stock)===1){currentStatus='最後一個';tagBg='#E24C60';}
