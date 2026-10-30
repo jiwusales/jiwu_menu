@@ -229,6 +229,7 @@
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 <script type="module" src="cart-live.js?v=20261030-workflow-cart-v1"></script>
+<script src="catalog-locate.js?v=20261030-collection-wishes-v1" defer></script>
 </head>
 <body>
  <div class="top-bar">
@@ -909,7 +910,7 @@ function getStockInfo(item) {
 
 function createCard(item) {
   const card = document.createElement('div');
-  card.className = 'card';
+  card.className = 'card';card.dataset.catalogSkus=JSON.stringify([item].map(v=>String(v.sn||'')));card.dataset.catalogIds=JSON.stringify([item].map(v=>String(v.launchItemId||'')));
   
   const borderCol = CONFIG.ROLE_BORDER_COLORS[item.role] || CONFIG.THEME_COLOR;
   card.style.borderColor = borderCol;
@@ -995,4 +996,5 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
 

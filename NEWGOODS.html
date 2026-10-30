@@ -160,6 +160,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 <script type="module" src="cart-live.js?v=20261030-workflow-cart-v1"></script>
+<script src="catalog-locate.js?v=20261030-collection-wishes-v1" defer></script>
 </head>
 
 <body>
@@ -1612,7 +1613,7 @@ function createCard(variants,sectionColor=""){
   const usable=variants.filter(canAddItem);
   const item=usable.find(x=>String(x.stock||"").trim()!=="-")||usable[0]||variants[0];
   const card=document.createElement('div');
-  card.className='card';
+  card.className='card';card.dataset.catalogSkus=JSON.stringify(variants.map(v=>String(v.sn||'')));card.dataset.catalogIds=JSON.stringify(variants.map(v=>String(v.launchItemId||'')));
 
   const borderColor=String(sectionColor||"").trim();
   if(borderColor){
@@ -1821,4 +1822,5 @@ loadData();
 
 </body>
 </html>
+
 
