@@ -1,4 +1,4 @@
-import {cartChanges} from './cart-catalog.mjs?v=20261030-workflow-cart-v1';
+import {cartChanges} from './cart-catalog.mjs?v=20261030-cart-source-v2';
 let pending=null,lastRead=0,checking=false;
 const current=()=>typeof cart!=='undefined'&&Array.isArray(cart)?cart:[];
 function paint(items){
@@ -11,7 +11,7 @@ function notify(lines){if(lines.length)alert('購物車已更新，請確認：\
 async function readQuote(){
  const before=structuredClone(current()),signature=JSON.stringify(before);
  if(!before.length)return {changed:false,blocked:false};
- const quoteFields=['catalogSheet','launchItemId','groupName','group','ipName','ip','name','role','sn','format','selectedSize','selectedColor','price','currentStatus','_cartRestockIntent','_cartIssue'];
+ const quoteFields=['catalogSheet','launchItemId','groupName','group','ipName','ip','name','role','sn','format','selectedSize','selectedColor','productMasterId','catalogRecordId','url','price','currentStatus','_cartRestockIntent','_cartIssue','_cartOriginalGroup','_cartOriginalSheet','_cartOriginalItemId'];
  const compact=before.map(item=>Object.fromEntries(quoteFields.filter(key=>item[key]!==undefined).map(key=>[key,item[key]])));
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
  try{
