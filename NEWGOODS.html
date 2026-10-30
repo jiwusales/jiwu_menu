@@ -676,7 +676,7 @@ function parseItemVariant(item){
     const variant=parseVariant(item?.size);
     // An unambiguous physical measurement is not a colour option.
     const raw=String(item?.size??'').trim();
-    if(!variant.sizes?.length&&!variant.colorCode&&variant.color===raw&&/^(?:(?:[HWD長寬高深厚肩袖Φφ]|\d)[\s\S]*\d[\s\S]*(?:cm|mm|公分|毫米|[x×])|(?:長|寬|高|深|厚|肩|袖)\s*\d)/i.test(raw))
+    if(!variant.sizes?.length&&!variant.colorCode&&variant.color===raw&&/\d/.test(raw))
       return {...variant,color:'',realSize:raw};
     return variant;
   }
