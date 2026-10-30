@@ -667,6 +667,7 @@ function jiwuSpecEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>(
 function jiwuFormatOptions(value){return String(value??'').split(/[\/／、,，;；\s]+/).map(value=>value.trim()).filter(Boolean);}
 function parseItemVariant(item){
   const spec=jiwuSplitProductSpec(item?.size,item?.format);
+  if(!spec.format&&/^(?:[HWD]|長|寬|高|深|厚|肩|袖|[ΦφøØ])\s*[:：]?\s*\d+(?:\.\d+)?\s*(?:mm|cm|公分|毫米)?$/i.test(String(spec.size||'').normalize('NFKC').trim()))return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
   if(spec.format){
     const sizes=jiwuFormatOptions(spec.format);
     return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:spec.size};
