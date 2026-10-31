@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<script id="jiwu-friendly-errors">
+// Display wording only: original errors remain available to retry/offline logic.
+window.jiwuErrorText=function(error,kind){
+ const system="網站暫時罷工ㄌ，小法師維修中請稍等இдஇ",data="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)",raw=String(error?.message??error??'');
+ if(raw===system||raw===data)return raw;
+ if(/密碼錯誤|密碼不正確|登入已失效|請先登入|報表已鎖定|剪貼簿權限|不支援|請允許|請輸入|請選擇|請填|請貼上|請先|庫存不足|無法訂購|數量不足|權限不足|沒有權限|購物車內容正在變更|價格或貨況已變更|資料已被更新|版本.*衝突/.test(raw))return raw;
+ if(kind==='data'||/(?:資料|商品|團名|清單|畫布|名稱|圖片|設定|種類).*(?:載入失敗|讀取失敗|無法載入|暫時無法讀取)|(?:載入|讀取).*(?:失敗|逾時)|背景同步失敗/.test(raw))return data;
+ if(kind==='system'||(error&&typeof error==='object')||/錯誤|失敗|異常|罷工|連線.*(?:中斷|逾時)|伺服器|Relay is busy|Mac (?:connection|API)|Public data|fetch|network|load failed|abort|timeout|^Error\b/i.test(raw))return system;
+ return raw;
+};
+(()=>{const original=window.alert.bind(window);window.alert=message=>original(window.jiwuErrorText(message));})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>JIWU團務進度表</title>
@@ -42,7 +54,7 @@ function thumbnail(value){return 'https://images.weserv.nl/?url='+encodeURICompo
 const CACHE_KEY='jiwu_public_group_work_v2:'+API_URL;
 let loading=false,hasData=false,lastSuccess=0;
 function validData(value){return !!value&&Array.isArray(value.entries)&&Array.isArray(value.categories)&&value.entries.every(entry=>entry&&typeof entry==='object'&&typeof entry.name==='string');}
-function syncInfo(message,retry=false){document.getElementById('syncText').textContent=message;document.getElementById('syncRetry').hidden=!retry;}
+function syncInfo(message,retry=false){document.getElementById('syncText').textContent=retry?jiwuErrorText(message,'data'):message;document.getElementById('syncRetry').hidden=!retry;}
 function restoreCache(){
  try{const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!validData(cached?.data))return false;data=cached.data;hasData=true;render();syncInfo('顯示上次資料，背景更新中…');return true;}catch(_){return false;}
 }
@@ -54,7 +66,7 @@ async function request(action,params={}){
 async function load(){
  if(loading)return;loading=true;syncInfo(hasData?'顯示上次資料，背景更新中…':'首次同步資料中…');
  try{const next=await request('publicGroupWork');if(!validData(next))throw new Error('團務資料格式不正確');const changed=!hasData||JSON.stringify(next.entries)!==JSON.stringify(data.entries)||JSON.stringify(next.categories)!==JSON.stringify(data.categories);data=next;hasData=true;lastSuccess=Date.now();if(changed)render();try{localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:lastSuccess,data}));}catch(_){}syncInfo('已同步 '+new Date(lastSuccess).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));}
- catch(error){if(hasData)syncInfo('更新失敗，保留上次資料：'+error.message,true);else{document.getElementById('activeGrid').innerHTML='<p class="empty">暫時無法取得團務資料，請點「重試」。</p>';syncInfo(error.message,true);}}
+ catch(error){if(hasData)syncInfo(jiwuErrorText(error,'system'),true);else{document.getElementById('activeGrid').innerHTML='<p class="empty">資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)</p>';syncInfo(error.message,true);}}
  finally{loading=false;}
 }
 function compare(a,b){const ao=Number(a.workOrder),bo=Number(b.workOrder),ha=Number.isFinite(ao)&&ao>0,hb=Number.isFinite(bo)&&bo>0;if(ha||hb){if(ha&&hb)return ao-bo;return ha?-1:1}const date=x=>{const m=String(x.name||'').match(/^(\d{2})(\d{2})/);return m?Number(m[1])*32+Number(m[2]):-1};return date(b)-date(a)}

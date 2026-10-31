@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+<script id="jiwu-friendly-errors">
+// Display wording only: original errors remain available to retry/offline logic.
+window.jiwuErrorText=function(error,kind){
+ const system="網站暫時罷工ㄌ，小法師維修中請稍等இдஇ",data="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)",raw=String(error?.message??error??'');
+ if(raw===system||raw===data)return raw;
+ if(/密碼錯誤|密碼不正確|登入已失效|請先登入|報表已鎖定|剪貼簿權限|不支援|請允許|請輸入|請選擇|請填|請貼上|請先|庫存不足|無法訂購|數量不足|權限不足|沒有權限|購物車內容正在變更|價格或貨況已變更|資料已被更新|版本.*衝突/.test(raw))return raw;
+ if(kind==='data'||/(?:資料|商品|團名|清單|畫布|名稱|圖片|設定|種類).*(?:載入失敗|讀取失敗|無法載入|暫時無法讀取)|(?:載入|讀取).*(?:失敗|逾時)|背景同步失敗/.test(raw))return data;
+ if(kind==='system'||(error&&typeof error==='object')||/錯誤|失敗|異常|罷工|連線.*(?:中斷|逾時)|伺服器|Relay is busy|Mac (?:connection|API)|Public data|fetch|network|load failed|abort|timeout|^Error\b/i.test(raw))return system;
+ return raw;
+};
+(()=>{const original=window.alert.bind(window);window.alert=message=>original(window.jiwuErrorText(message));})();
+</script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -17,7 +29,7 @@
 const CONFIG={THEME_COLOR:"#ffffff",ACTIVE_COLOR:"#f5b080",SHEET_ID:"10Q4EOGZPMsu9WOyabxZjU8j6QNuGduM8L-h_mZ10ypQ",SHEET_NAME:"景品開團",TOP_BAR_TEXT:" ",LINE_MSG_URL:"https://line.me/R/oaMessage/@tei8245t/?",DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",VISIBLE_STOCK_TAGS:["現貨","SOLD OUT"]};
 // 商品資料先下載，不等待選單、QR 圖與其他頁面圖片。
 const catalogDataRequest=fetch(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`)
-  .then(response=>{if(!response.ok)throw new Error('商品資料載入失敗');return response.text();});
+  .then(response=>{if(!response.ok)throw new Error('資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return response.text();});
 catalogDataRequest.catch(()=>{});
 </script>
 
@@ -52,7 +64,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;color:var(--text-c
 </style>
 <script src="jiwu-data.js?v=20261030-workflow-cart-v1"></script>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
-<script type="module" src="cart-live.js?v=20261031-silent-cart-v1"></script>
+<script type="module" src="cart-live.js?v=20261031-friendly-errors"></script>
 </head>
 
 <body>
@@ -124,7 +136,7 @@ allGroups=[...new Set(allItems.map(i=>i.group))];
 const ug=getUrlGroup();selectedGroup=allGroups.includes(ug)?ug:allGroups[0];
 if(!ug&&selectedGroup){const u=new URL(location.href);u.searchParams.set("group",selectedGroup);history.replaceState({},"",u.pathname+"?"+u.searchParams)}
 renderGroupNav();applyGroupSettings(selectedGroup);renderItems();updateCartUI();
-}catch(e){console.error(e);document.getElementById("items-wrapper").innerHTML="載入失敗。"}}).catch(()=>document.getElementById("items-wrapper").innerHTML="載入失敗。");
+}catch(e){console.error(e);document.getElementById("items-wrapper").innerHTML="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)"}}).catch(()=>document.getElementById("items-wrapper").innerHTML="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)");
 }
 
 window.addEventListener("popstate",()=>{const g=getUrlGroup();if(allGroups.includes(g)&&g!==selectedGroup){selectedGroup=g;renderGroupNav();applyGroupSettings(g);renderItems();scrollTo({top:0,behavior:"smooth"})}});

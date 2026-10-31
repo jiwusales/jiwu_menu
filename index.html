@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+<script id="jiwu-friendly-errors">
+// Display wording only: original errors remain available to retry/offline logic.
+window.jiwuErrorText=function(error,kind){
+ const system="網站暫時罷工ㄌ，小法師維修中請稍等இдஇ",data="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)",raw=String(error?.message??error??'');
+ if(raw===system||raw===data)return raw;
+ if(/密碼錯誤|密碼不正確|登入已失效|請先登入|報表已鎖定|剪貼簿權限|不支援|請允許|請輸入|請選擇|請填|請貼上|請先|庫存不足|無法訂購|數量不足|權限不足|沒有權限|購物車內容正在變更|價格或貨況已變更|資料已被更新|版本.*衝突/.test(raw))return raw;
+ if(kind==='data'||/(?:資料|商品|團名|清單|畫布|名稱|圖片|設定|種類).*(?:載入失敗|讀取失敗|無法載入|暫時無法讀取)|(?:載入|讀取).*(?:失敗|逾時)|背景同步失敗/.test(raw))return data;
+ if(kind==='system'||(error&&typeof error==='object')||/錯誤|失敗|異常|罷工|連線.*(?:中斷|逾時)|伺服器|Relay is busy|Mac (?:connection|API)|Public data|fetch|network|load failed|abort|timeout|^Error\b/i.test(raw))return system;
+ return raw;
+};
+(()=>{const original=window.alert.bind(window);window.alert=message=>original(window.jiwuErrorText(message));})();
+</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JIWU吉物販售</title>
@@ -17,7 +29,7 @@
 <script>
 // 首頁開團資料與圖片並行下載。
 const homeCatalogRequest=fetch('https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?sheet=最新開團',{cache:'no-store'})
-  .then(response=>{if(!response.ok)throw new Error('最新開團資料讀取失敗');return response.json();});
+  .then(response=>{if(!response.ok)throw new Error('資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return response.json();});
 homeCatalogRequest.catch(()=>{});
 </script>
   <style>
@@ -243,7 +255,7 @@ homeCatalogRequest.catch(()=>{});
       renderCarousel(rows);
     }catch(e){
       console.error('載入失敗',e);
-      inner.textContent='開團資料暫時無法載入，請稍後重新整理。';
+      inner.textContent='資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)';
     }
   }
 

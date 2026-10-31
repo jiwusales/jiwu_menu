@@ -36,7 +36,7 @@ async function sync({checkout=false,force=false}={}){
   if(result.raced)throw Error('購物車內容正在變更，請確認後再送出');
   if(checkout&&result.blocked){if(!result.changed)alert('購物車內有無法訂購的商品：\n'+current().filter(item=>item._cartBlocked).map(item=>item.name+'：'+item._cartIssue).join('\n'));return false;}
   return !checkout||!result.changed;
- }catch(error){if(checkout)alert(error.message||'無法確認最新價格與貨況，購物車已保留');return false;}
+ }catch(error){if(checkout)alert(jiwuErrorText(error,'data'));return false;}
  finally{if(checkout)checking=false;}
 }
 window.jiwuEnsureCartCurrent=()=>sync({checkout:true,force:true});
