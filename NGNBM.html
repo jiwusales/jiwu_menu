@@ -969,7 +969,7 @@ function openVariantPicker(e,variants){
 
     mountProductGallery(imgEl,selectedItem.images||productPhotos(selectedItem.img||first.img));
     priceEl.textContent=getDisplayPrice(selectedItem.price);
-    realSizeEl.textContent=selectedItem.actualSize;
+    realSizeEl.textContent=String(selectedItem.actualSize||'').replace(/^[^:：]*[:：]\s*/, '');
 
     const info=getItemOrderInfo(selectedItem);
     const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);

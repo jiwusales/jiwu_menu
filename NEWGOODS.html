@@ -697,11 +697,11 @@ function parseItemVariant(item){
 function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
 function jiwuIsApparel(item){
   const kind=String(item?.kind||'').normalize('NFKC').trim(),name=String(item?.name||'').normalize('NFKC');
-  return /服飾|服装|衣著|衣服/.test(kind)||/(?:大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
+  return /服飾|服装|衣著|衣服/.test(kind)||/(?:POLO|大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
 }
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
-  const sizes=[...new Set(variants.map(variant=>String(variant.realSize||'').trim()).filter(Boolean))];
+  const sizes=[...new Set(rows.filter(item=>!jiwuIsApparel(item)).map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
   const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
   const parts=[];
   if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
@@ -1096,7 +1096,7 @@ function openVariantPicker(e,variants){
 
     mountProductGallery(imgEl,selectedItem.images||productPhotos(selectedItem.img||first.img));
     priceEl.textContent=getDisplayPrice(selectedItem.price);
-    realSizeEl.textContent=selectedItem.actualSize;
+    realSizeEl.textContent=String(selectedItem.actualSize||'').replace(/^[^:：]*[:：]\s*/, '');
 
     const info=getItemOrderInfo(selectedItem);
     const showTag=info.tagKey&&CONFIG.VISIBLE_STOCK_TAGS.includes(info.tagKey);
