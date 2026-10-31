@@ -5,7 +5,7 @@
 <script id="jiwu-friendly-errors">
 // Display wording only: original errors remain available to retry/offline logic.
 window.jiwuErrorText=function(error,kind){
- const system="網站暫時罷工ㄌ，小法師維修中請稍等இдஇ",data="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)",raw=String(error?.message??error??'');
+ const system="網站暫時罷工ㄌ，小法師維修中請稍等இдஇ",data="資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)",raw=String(error?.message??error??'');
  if(raw===system||raw===data)return raw;
  if(/密碼錯誤|密碼不正確|登入已失效|請先登入|報表已鎖定|剪貼簿權限|不支援|請允許|請輸入|請選擇|請填|請貼上|請先|庫存不足|無法訂購|數量不足|權限不足|沒有權限|購物車內容正在變更|價格或貨況已變更|資料已被更新|版本.*衝突/.test(raw))return raw;
  if(kind==='data'||/(?:資料|商品|團名|清單|畫布|名稱|圖片|設定|種類).*(?:載入失敗|讀取失敗|無法載入|暫時無法讀取)|(?:載入|讀取).*(?:失敗|逾時)|背景同步失敗/.test(raw))return data;
@@ -47,7 +47,7 @@ async function requestGroupResource(url,type,timeout=20000){
   let timer;
   const expired=new Promise((resolve,reject)=>{
     timer=setTimeout(()=>{
-      const error=new Error('資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');error.name='TimeoutError';
+      const error=new Error('資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');error.name='TimeoutError';
       reject(error);if(controller)controller.abort();
     },timeout);
   });
@@ -58,7 +58,7 @@ async function requestGroupResource(url,type,timeout=20000){
   try{return await Promise.race([pending,expired]);}finally{clearTimeout(timer);}
 }
 // 提早下載商品資料；首次顯示後，重新載入仍會發出新的請求。
-let initialCatalogDataRequest = requestGroupResource(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`,'text').then(({response,data})=>{if(!response.ok)throw Error('資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return data;});
+let initialCatalogDataRequest = requestGroupResource(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`,'text').then(({response,data})=>{if(!response.ok)throw Error('資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return data;});
 initialCatalogDataRequest.catch(()=>{});
 </script>
 
@@ -413,7 +413,7 @@ function showGroupLoadError(error){
   const box=document.getElementById('items-wrapper');
   box.textContent='';
   const message=document.createElement('p');message.setAttribute('role','alert');
-  message.textContent="資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)";
+  message.textContent="資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)";
   const retry=document.createElement('button');retry.type='button';retry.textContent='重新載入';retry.onclick=loadData;
   box.appendChild(message);box.appendChild(retry);console.error(error);
 }
@@ -422,7 +422,7 @@ function loadData(){
   const url=`https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?format=gviz&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
   const pending=initialCatalogDataRequest;initialCatalogDataRequest=null;
-  return Promise.all([pending || requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('資料暫時逃走中，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return data;}),resolveShortGroup()]).then(([t])=>{
+  return Promise.all([pending || requestGroupResource(url,'text').then(({response,data})=>{if(!response.ok)throw Error('資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)');return data;}),resolveShortGroup()]).then(([t])=>{
     try{
       const data=JSON.parse(t.substr(47).slice(0,-2));
 
