@@ -1,0 +1,28 @@
+#checkout-modal .modal-content{max-height:calc(100dvh - 28px);overflow-y:auto;box-sizing:border-box}
+#checkout-modal .jiwu-checkout-review,#checkout-modal .jiwu-checkout-done{width:94%;max-width:590px;padding:24px}
+.jiwu-checkout-review h3{text-align:center;font-size:22px!important;color:#514c45;margin:0 0 20px!important}
+.jiwu-checkout-review .summary-box{max-height:36dvh;background:#f9f9f9;padding:10px;border:1px solid #d4d0c9;border-radius:7px;margin-bottom:14px}
+.jiwu-checkout-review .cart-item{align-items:center;margin:0;padding:9px 0;border-color:#d4d0c9;font-size:14px}
+.jiwu-checkout-review .cart-item:last-child{border-bottom:0}
+.jiwu-checkout-review .cart-item>img{object-fit:contain;flex:none;border-radius:4px;background:#fff;align-self:center}
+.jiwu-review-total{border-top:0!important;border-bottom:1px solid #d4d0c9!important;text-align:left!important;justify-content:flex-start!important;gap:4px;padding:0 0 14px!important;margin:0 0 20px!important;font-size:16px!important}
+.jiwu-customer-field{display:block;text-align:left;font-size:14px;color:#777;margin-top:14px}
+.jiwu-customer-field>span{display:block;margin-bottom:6px}
+.jiwu-customer-field .input-box{margin:0;box-sizing:border-box;font-size:16px}
+.jiwu-checkout-choices{margin:10px 0 20px;text-align:left;color:#514c45;font-family:inherit}
+.jiwu-choice-row{display:grid;grid-template-columns:5em minmax(0,1fr);column-gap:10px;align-items:center;margin:9px 0}
+.jiwu-choice-title{white-space:nowrap;font-size:15px;color:#777}
+.jiwu-choice-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 10em;gap:8px;font-size:16px;min-height:38px;align-items:center}
+.jiwu-choice-options label{display:flex;align-items:center;gap:5px;margin:0;white-space:nowrap;min-height:38px;cursor:pointer;font-size:inherit}
+.jiwu-choice-options input{appearance:auto;width:16px;height:16px;margin:0;accent-color:#d94349;flex:none}
+.jiwu-mobile-choices{display:block}.jiwu-mobile-choices[hidden]{display:none!important}
+.jiwu-checkout-done h3{color:#514c45;text-align:center;font-size:22px;margin:0 25px 20px;line-height:1.4}
+.jiwu-checkout-close{position:absolute;top:10px;right:12px;background:none;border:0;color:#999;font-size:26px;padding:0 4px;cursor:pointer}
+.jiwu-receipt-image{display:block;width:100%;height:auto;border:1px solid #d4d0c9}
+.jiwu-copy-receipt{display:block;width:100%;padding:15px;border:0;border-radius:9px;background:#a58a6f;color:#fff;font-size:16px;font-weight:bold;margin-top:17px;cursor:pointer}
+.jiwu-copy-status{font-size:13px;margin-top:8px;color:#777;text-align:left}
+.jiwu-copy-status:empty{display:none}
+@media(max-width:600px){.jiwu-mobile-choices{display:block}.jiwu-choice-row{grid-template-columns:60px minmax(0,1fr);column-gap:6px}.jiwu-choice-options{font-size:13px;gap:5px}.jiwu-choice-title{font-size:13px}#cart-panel .cart-footer{overflow-y:auto;max-height:50dvh}#checkout-modal .jiwu-checkout-review,#checkout-modal .jiwu-checkout-done{padding:20px 12px}.jiwu-choice-options input{width:14px;height:14px}}
+@media(max-width:360px){.jiwu-choice-row{grid-template-columns:55px minmax(0,1fr);column-gap:4px}.jiwu-choice-title,.jiwu-choice-options{font-size:12px}.jiwu-choice-options{grid-template-columns:repeat(2,minmax(0,1fr)) 9em;gap:3px}.jiwu-choice-options label{gap:3px}}
+
+#checkout-modal .jiwu-checkout-done .jiwu-receipt-image{width:100%;height:auto;margin:0}
