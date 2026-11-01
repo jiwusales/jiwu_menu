@@ -32,10 +32,12 @@ window.JiwuManualBackup={clean,file,summary,open};
 
 const JIWU_PUBLIC_API='https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?__manual_backup=1';
 let jiwuManualNext=false;
+let jiwuPendingWebOrder=null;
 async function jiwuSubmitOrder(payload){
- const key='jiwu_supabase_pending_web_order_v1',signature=JSON.stringify(payload);
- let pending;try{pending=JSON.parse(localStorage.getItem(key)||sessionStorage.getItem(key)||'null');}catch{}
+ const key='jiwu_supabase_pending_web_order_v1',signature=JSON.stringify(payload.checkoutVersion?{...payload,receiptPNG:undefined}:payload);
+ let pending=jiwuPendingWebOrder;try{pending=pending||JSON.parse(localStorage.getItem(key)||sessionStorage.getItem(key)||'null');}catch{}
  if(!pending||pending.signature!==signature)pending={signature,requestId:crypto.randomUUID()};
+ jiwuPendingWebOrder=pending;
  let durable=false;try{localStorage.setItem(key,JSON.stringify(pending));durable=true;}catch{}try{sessionStorage.setItem(key,JSON.stringify(pending));}catch{}
  const params={...payload,requestId:pending.requestId};
  const submittedCartSignature=typeof cart!=='undefined'?JSON.stringify(cart):'';
@@ -45,6 +47,6 @@ async function jiwuSubmitOrder(payload){
  try{const response=await fetch(JIWU_PUBLIC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...params,action:'webOrder'}),signal:controller.signal});let result;try{result=await response.json();}catch{throw Error('伺服器回覆無法確認');}
  if(response.status===409&&result.cartChanged){window.jiwuApplyCartQuote?.(result.items,submittedCartSignature);throw Error((result.error||'購物車價格或貨況已變更，請確認後重新送出')+(Array.isArray(result.changes)&&result.changes.length?'\n'+result.changes.join('\n'):''));}
  if(!response.ok||result.ok!==true){const e=Error(result.error||'訂單儲存失敗');if(response.status>=500)e.connection=true;throw e;}
- try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch{}return result;
- }catch(e){if(e.connection||e.name==='AbortError'||/fetch|network|load failed|伺服器回覆無法確認/i.test(e.message))return manual();throw e;}finally{clearTimeout(timer);}
+ jiwuPendingWebOrder=null;try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch{}return result;
+ }catch(e){if(payload.checkoutVersion==='20261101-order-content')throw e;if(e.connection||e.name==='AbortError'||/fetch|network|load failed|伺服器回覆無法確認/i.test(e.message))return manual();throw e;}finally{clearTimeout(timer);}
 }
