@@ -39,7 +39,8 @@ const image=document.createElement('img');image.className='jiwu-receipt-image';i
 const copy=document.createElement('button');copy.type='button';copy.className='jiwu-copy-receipt';copy.textContent='複製明細';
 const copyStatus=document.createElement('div');copyStatus.className='jiwu-copy-status';copyStatus.setAttribute('role','status');done.append(doneTitle,close,image,copy,copyStatus);
 function syncChoices(){document.querySelectorAll('[data-choice]').forEach(input=>input.checked=input.value===(input.dataset.choice==='payment'?payment:delivery));}
-function requireChoices(){if(!payments.includes(payment)){alert('請選擇付款方式');return false}if(!deliveries[delivery]){alert('請選擇取貨方式');return false}return true;}
+function allStock(){return cart.length>0&&cart.every(item=>['現貨','最後一個'].includes(String(item.currentStatus||'').trim()));}
+function requireChoices(){if(!allStock()&&!payments.includes(payment)){alert('請選擇付款方式');return false}if(!deliveries[delivery]){alert('請選擇取貨方式');return false}return true;}
 function resizeThumbs(){step.querySelectorAll('.cart-item').forEach(row=>{const info=row.querySelector('.cart-item-info'),img=row.querySelector('img');if(info&&img&&info.offsetHeight){img.style.height=info.offsetHeight+'px';img.style.width=info.offsetHeight+'px';}});}
 window.renderCheckoutSummary=function(){originalSummary();requestAnimationFrame(resizeThumbs);};
 new ResizeObserver(()=>requestAnimationFrame(resizeThumbs)).observe(step);
@@ -65,7 +66,7 @@ async function buildReceipt(snapshot){
  ctx.font='17px '+font;ctx.textAlign='left';ctx.fillText('名稱',pad,y);ctx.textAlign='center';ctx.fillText('數量',width-pad-115,y);ctx.textAlign='right';ctx.fillText('金額',width-pad,y);y+=29;rule([4,3]);
  rows.forEach((row,i)=>{y+=13;ctx.textAlign='left';row.name.forEach((line,j)=>ctx.fillText(line,pad,y+j*25));ctx.textAlign='center';ctx.fillText('1',width-pad-115,y);ctx.textAlign='right';ctx.fillText(row.price,width-pad,y);y+=Math.max(33,row.name.length*25+4);if(i<rows.length-1)rule([1,3]);});
  y+=12;rule([4,3]);y+=13;ctx.font='21px '+font;ctx.textAlign='left';ctx.fillText('共計（'+rows.length+'件）',pad,y);ctx.textAlign='right';const money=amounts(snapshot.items);ctx.fillText('$'+money.total.toLocaleString()+(money.inquiry?'＋詢問報價':''),width-pad,y);y+=49;
- ctx.font='14px '+font;ctx.textAlign='left';ctx.fillText('付款方式：'+snapshot.paymentMethod,pad,y);y+=25;ship.forEach(line=>{ctx.fillText(line,pad,y);y+=22});
+ ctx.font='14px '+font;ctx.textAlign='left';ctx.fillText('付款方式：'+(snapshot.paymentMethod||'未選擇'),pad,y);y+=25;ship.forEach(line=>{ctx.fillText(line,pad,y);y+=22});
  const dataURL=canvas.toDataURL('image/png');const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('明細圖片產生失敗')),'image/png'));
  return {dataURL,blob};
 }
@@ -76,7 +77,7 @@ window.handleCheckoutEntry=async function(){
  try{if(!await checkCart())return;if(!cart.length)return alert('購物車是空的唷！');
  if(mobile()){
   if(!requireChoices())return;
-  const message=generateLineMessage()+'\n'+payment+'/'+deliveryText(delivery);
+  const message=generateLineMessage()+'\n'+[payment,deliveryText(delivery)].filter(Boolean).join('/');
   window.location.href=CONFIG.LINE_MSG_URL+encodeURIComponent(message);
   setTimeout(()=>{cart=[];saveCart();updateCartUI();toggleCart(false);},1500);
  }else{document.getElementById('send-btn').disabled=false;document.getElementById('send-btn').textContent='確認訂購';openCheckoutModal();syncChoices();}
@@ -89,6 +90,7 @@ window.handleFinalCheckout=async function(){
  busy=true;const button=document.getElementById('send-btn');button.disabled=true;button.textContent='傳送中 ᓫ(๑º꒳º๑)ꜝꜝ';
  try{
   if(!await checkCart())return;if(!cart.length)throw Error('購物車是空的唷！');
+  if(!requireChoices())return;
   const items=structuredClone(cart),snapshot={items,lineName,igAccount,paymentMethod:payment,deliveryMethod:delivery,date:dateText()};
   const signature=JSON.stringify({...snapshot,date:undefined});
   if(!prepared||prepared.signature!==signature)prepared={signature,snapshot,...await buildReceipt(snapshot)};
@@ -104,3 +106,4 @@ window.handleFinalCheckout=async function(){
 copy.onclick=async()=>{if(!shown)return;copy.disabled=true;copyStatus.textContent='';try{if(!navigator.clipboard?.write||!window.ClipboardItem)throw Error('此瀏覽器無法複製圖片，請長按或右鍵儲存明細。');await navigator.clipboard.write([new ClipboardItem({'image/png':shown.blob})]);copyStatus.textContent='已複製明細';}catch(error){copyStatus.textContent=error.message||'無法複製明細，請再試一次';}finally{copy.disabled=false;}};
 window.JiwuOrderCheckout={version:VERSION,buildReceipt,deliveryText};
 })();
+
