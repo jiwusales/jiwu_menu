@@ -157,7 +157,7 @@ homeCatalogRequest.catch(()=>{});
   const SHEET_NAME='最新開團';
   const API_URL='https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public?sheet=最新開團';
 
-  let allRows=[],columns=0,dragged=false;
+  let allRows=[],columns=0,dragged=false,pageCount=0,settleTimer,touching=false;
   const fallback='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
 
   async function fetchSheetData(){
@@ -225,28 +225,65 @@ homeCatalogRequest.catch(()=>{});
       filtered.slice(start,start+capacity).forEach((row,i)=>page.appendChild(createItem(row,start+i)));inner.appendChild(page);
       const dot=document.createElement('button');dot.className='dot';dot.type='button';
       const pageIndex=start/capacity;dot.setAttribute('aria-label','第 '+(pageIndex+1)+' 頁');
-      dot.onclick=()=>wrapper.scrollTo({left:pageIndex*wrapper.clientWidth,behavior:'smooth'});dotsContainer.appendChild(dot);
+      dot.onclick=()=>goToPage(pageIndex);dotsContainer.appendChild(dot);
     }
     if(!filtered.length){inner.textContent='目前沒有開團資訊。';}
-    wrapper.scrollLeft=0;updateDots();
+    pageCount=dotsContainer.children.length;
+    if(pageCount>1){
+      const first=inner.firstElementChild.cloneNode(true),last=inner.lastElementChild.cloneNode(true);
+      for(const clone of [first,last]){
+        clone.dataset.loopClone='true';clone.setAttribute('aria-hidden','true');
+        clone.querySelectorAll('a').forEach(a=>a.tabIndex=-1);
+        clone.querySelectorAll('img').forEach(img=>img.loading='eager');
+      }
+      inner.prepend(last);inner.append(first);
+    }
+    wrapper.scrollTo({left:pageCount>1?wrapper.clientWidth:0,behavior:'instant'});updateDots();
+  }
+  // The end copies let both boundaries slide one page in the same direction.
+  function physicalPage(){return Math.round(wrapper.scrollLeft/wrapper.clientWidth);}
+  function logicalPage(){return pageCount>1?((physicalPage()-1)%pageCount+pageCount)%pageCount:0;}
+  function settleLoop(){
+    clearTimeout(settleTimer);
+    if(pageCount<2||down||touching)return;
+    const page=physicalPage(),width=wrapper.clientWidth;
+    if(Math.abs(wrapper.scrollLeft-page*width)>1)return;
+    if(page===0||page===pageCount+1){
+      wrapper.scrollTo({left:(page===0?pageCount:1)*width,behavior:'instant'});
+    }
+    updateDots();
   }
   function updateDots(){
-    const active=Math.round(wrapper.scrollLeft/wrapper.clientWidth);
+    const active=logicalPage();
     dotsContainer.querySelectorAll('.dot').forEach((dot,i)=>{dot.classList.toggle('active',i===active);dot.setAttribute('aria-current',i===active?'true':'false');});
-    const pageCount=inner.querySelectorAll('.carousel-page').length;
     previousButton.disabled=pageCount<2;nextButton.disabled=pageCount<2;
   }
-  function movePage(direction){const pages=inner.querySelectorAll('.carousel-page').length;if(pages<2)return;const next=(Math.round(wrapper.scrollLeft/wrapper.clientWidth)+direction+pages)%pages;wrapper.scrollTo({left:next*wrapper.clientWidth,behavior:'smooth'});}
+  function goToPage(index){
+    if(pageCount<2)return;
+    settleLoop();
+    const current=logicalPage();
+    let target=index+1;
+    if(current===0&&index===pageCount-1)target=0;
+    if(current===pageCount-1&&index===0)target=pageCount+1;
+    wrapper.scrollTo({left:target*wrapper.clientWidth,behavior:'smooth'});
+  }
+  function movePage(direction){
+    if(pageCount<2)return;
+    settleLoop();
+    wrapper.scrollTo({left:Math.max(0,Math.min(pageCount+1,physicalPage()+direction))*wrapper.clientWidth,behavior:'smooth'});
+  }
   previousButton.onclick=()=>movePage(-1);nextButton.onclick=()=>movePage(1);
-  wrapper.addEventListener('scroll',updateDots,{passive:true});
+  wrapper.addEventListener('scroll',()=>{updateDots();clearTimeout(settleTimer);settleTimer=setTimeout(settleLoop,160);},{passive:true});
+  wrapper.addEventListener('scrollend',settleLoop);
   let down=false,startX=0,startScroll=0;
   wrapper.addEventListener('mousedown',e=>{if(e.button!==0)return;down=true;dragged=false;startX=e.clientX;startScroll=wrapper.scrollLeft;});
   window.addEventListener('mousemove',e=>{if(!down)return;if(Math.abs(e.clientX-startX)>5){dragged=true;wrapper.style.scrollSnapType='none';e.preventDefault();wrapper.scrollLeft=startScroll-(e.clientX-startX);}});
   window.addEventListener('mouseup',()=>{if(!down)return;down=false;wrapper.style.scrollSnapType='';if(dragged)wrapper.scrollTo({left:Math.round(wrapper.scrollLeft/wrapper.clientWidth)*wrapper.clientWidth,behavior:'smooth'});});
   wrapper.addEventListener('click',e=>{if(dragged){e.preventDefault();dragged=false;}},true);
-  let touchStartX=0,touchStartScroll=0;
-  wrapper.addEventListener('touchstart',event=>{dragged=false;touchStartX=event.touches[0]?.clientX||0;touchStartScroll=wrapper.scrollLeft;},{passive:true});
-  wrapper.addEventListener('touchend',event=>{const pages=inner.querySelectorAll('.carousel-page').length,delta=(event.changedTouches[0]?.clientX||0)-touchStartX,max=wrapper.scrollWidth-wrapper.clientWidth;if(pages<2||Math.abs(delta)<35)return;if(delta<0&&touchStartScroll>=max-2)wrapper.scrollTo({left:0,behavior:'smooth'});if(delta>0&&touchStartScroll<=2)wrapper.scrollTo({left:max,behavior:'smooth'});},{passive:true});
+  wrapper.addEventListener('touchstart',()=>{dragged=false;touching=true;clearTimeout(settleTimer);},{passive:true});
+  function finishTouch(){touching=false;clearTimeout(settleTimer);settleTimer=setTimeout(settleLoop,160);}
+  wrapper.addEventListener('touchend',finishTouch,{passive:true});
+  wrapper.addEventListener('touchcancel',finishTouch,{passive:true});
   let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderCarousel(),150);});
 
   async function init(){
