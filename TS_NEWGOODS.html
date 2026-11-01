@@ -47,7 +47,7 @@ const catalogDataRequest=fetch(`${CONFIG.DEPLOY_URL}?format=gviz&sheet=${encodeU
 catalogDataRequest.catch(()=>{});
 </script>
 
-<script src="jiwu-data.js?v=20261101-registration"></script>
+<script src="jiwu-data.js?v=20261101-order-content"></script>
 <script src="common.js?v=20261030-workflow-cart-v1"></script>
 
 <style>
@@ -153,6 +153,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 <script type="module" src="cart-live.js?v=20261031-friendly-errors"></script>
+<link rel="stylesheet" href="order-checkout.css?v=20261101-order-content">
 </head>
 
 <body>
@@ -212,7 +213,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 
 <div id="checkout-modal">
   <div class="modal-content" id="step-1">
-    <h3 style="margin-top:0;font-size:18px">確認訂購資料</h3>
+    <h3 style="margin-top:0;font-size:18px">訂單內容</h3>
     <div class="summary-box" id="modal-summary-list"></div>
     <div style="padding:5px 0;border-top:1px solid #eee;margin-bottom:5px;text-align:right;font-weight:bold;font-size:14px">
       總計：<span id="modal-total-price" style="color:#e44d26">$0</span>
@@ -1697,6 +1698,7 @@ if(document.readyState==='loading'){
   模擬圖僅供參考，以實際商品為準，有問題請私訊官方LINE @jiwusales
 </div>
 
+<script src="order-checkout.js?v=20261101-order-content" defer></script>
 </body>
 </html>
 
