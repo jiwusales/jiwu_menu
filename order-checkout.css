@@ -32,9 +32,12 @@
 
 /* Mobile cart: title above one compact row of options. */
 @media(max-width:600px){
-#cart-panel .jiwu-choice-row{grid-template-columns:minmax(0,1fr);row-gap:2px;margin:10px 0}
+#cart-panel .jiwu-choice-row{grid-template-columns:minmax(0,1fr);row-gap:0;margin:4px 0}
 #cart-panel .jiwu-choice-title{font-size:13px;line-height:1.5}
-#cart-panel .jiwu-choice-options{grid-template-columns:max-content max-content max-content;justify-content:space-between;gap:6px;font-size:12px;min-height:36px}
-#cart-panel .jiwu-choice-options label{gap:4px;min-height:36px;line-height:1.5}
+#cart-panel .jiwu-choice-options{grid-template-columns:56px 52px minmax(0,1fr);justify-content:start;gap:12px;font-size:13px;min-height:30px}
+#cart-panel .jiwu-choice-options label{gap:4px;min-height:30px;line-height:1.5}
 #cart-panel .jiwu-choice-options input{width:14px;height:14px;margin:0;flex:none}
 }
+
+
+@media(max-width:600px){#cart-panel .jiwu-checkout-choices{margin:6px 0 12px}#cart-panel .jiwu-review-total{margin-bottom:12px!important}}
