@@ -27,3 +27,5 @@
 @media(max-width:360px){.jiwu-choice-row{grid-template-columns:55px minmax(0,1fr);column-gap:4px}.jiwu-choice-title,.jiwu-choice-options{font-size:12px}.jiwu-choice-options{grid-template-columns:repeat(2,minmax(0,1fr)) 9em;gap:3px}.jiwu-choice-options label{gap:3px}}
 
 #checkout-modal .jiwu-checkout-done .jiwu-receipt-image{width:100%;height:auto;margin:0}
+
+@media(min-width:601px){#checkout-modal .jiwu-checkout-review,#checkout-modal .jiwu-checkout-done{max-width:420px}#checkout-modal .jiwu-choice-row{font-size:14px;column-gap:8px}#checkout-modal .jiwu-choice-title{font-size:14px}#checkout-modal .jiwu-choice-options{font-size:14px;grid-template-columns:repeat(2,minmax(0,1fr)) 9em;gap:6px}}
