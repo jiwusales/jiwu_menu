@@ -9,6 +9,7 @@
 .jiwu-customer-field{display:block;text-align:left;font-size:14px;color:#777;margin-top:14px}
 .jiwu-customer-field>span{display:block;margin-bottom:6px}
 .jiwu-customer-field .input-box{margin:0;box-sizing:border-box;font-size:16px}
+#checkout-modal .jiwu-checkout-review #send-btn{margin-top:16px}
 .jiwu-checkout-choices{margin:10px 0 20px;text-align:left;color:#514c45;font-family:inherit}
 .jiwu-choice-row{display:grid;grid-template-columns:5em minmax(0,1fr);column-gap:10px;align-items:center;margin:9px 0}
 .jiwu-choice-title{white-space:nowrap;font-size:15px;color:#777}
