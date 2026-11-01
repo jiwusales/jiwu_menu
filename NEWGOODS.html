@@ -228,7 +228,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
       <span>總金額</span>
       <span id="cart-total" style="color:#e44d26">$0</span>
     </div>
-    <button class="btn-checkout" onclick="handleCheckoutEntry()">確認結帳</button>
+    <button class="btn-checkout" onclick="handleCheckoutEntry()">確認訂單</button>
   </div>
 </div>
 
@@ -578,7 +578,7 @@ function renderBanner(url){
 function applyGroupSettings(groupName){
   const settings=groupSettings[groupName]||{};
   const checkoutButton=document.querySelector('#cart-panel [onclick="handleCheckoutEntry()"]');
-  if(checkoutButton)checkoutButton.textContent=CONFIG.SHEET_NAME==='最新開團'&&settings.noGuarantee===true?'確認登記':'確認結帳';
+  if(checkoutButton)checkoutButton.textContent='確認訂單';
 
   let color=(settings.color&&settings.color.trim())
     ?settings.color.trim()
