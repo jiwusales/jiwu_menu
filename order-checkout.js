@@ -76,7 +76,7 @@ window.handleCheckoutEntry=async function(){
  try{if(!await checkCart())return;if(!cart.length)return alert('購物車是空的唷！');
  if(mobile()){
   if(!requireChoices())return;
-  const money=amounts(cart),message='總金額'+money.total+(money.inquiry?'＋詢問報價':'')+'\n'+payment+'/'+deliveryText(delivery);
+  const message=generateLineMessage()+'\n'+payment+'/'+deliveryText(delivery);
   window.location.href=CONFIG.LINE_MSG_URL+encodeURIComponent(message);
   setTimeout(()=>{cart=[];saveCart();updateCartUI();toggleCart(false);},1500);
  }else{document.getElementById('send-btn').disabled=false;document.getElementById('send-btn').textContent='確認訂購';openCheckoutModal();syncChoices();}
