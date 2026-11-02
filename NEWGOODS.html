@@ -513,6 +513,7 @@ function loadData(){
           price:getV(r,COL.price),
           stock:getV(r,COL.stock),
           preorderQuantity:getV(r,COL.preorderQuantity),
+          stockOutWhenEmpty:productConfig.stockOutWhenEmpty===true,
           paused:/^(true|1|是)$/i.test(String(getV(r,COL.paused)||'').trim()),
           launchItemId:getV(r,COL.launchItemId),
           status:getV(r,COL.status),
@@ -887,7 +888,7 @@ function getVariantKey(item){
 function getItemOrderInfo(item){
   if(item.paused)return{tagKey:"暫停收單",tagText:"暫停收單",tagBg:"#A68C73",tagColor:"#fff",tagClass:""};
   const stockVal=String(item.stock||"").trim();
-  if(stockVal==='-'){
+  if((item.stockOutWhenEmpty===true||stockVal==='-')&&!(Number(item.stock)>0||Number(item.preorderQuantity)>0)){
     const s=STOCK_STYLES["SOLD OUT"];
     return{tagKey:"SOLD OUT",tagText:"S☹LD OUT",tagBg:s.bg,tagColor:s.color,tagClass:s.tagClass};
   }
@@ -1640,7 +1641,7 @@ function createCard(variants,sectionColor=""){
     card.style.borderColor=borderColor.startsWith("#")?borderColor:"#"+borderColor;
   }
 
-  const allSoldOut=variants.every(x=>String(x.stock||"").trim()==='-');
+  const allSoldOut=variants.every(x=>(x.stockOutWhenEmpty===true||String(x.stock||"").trim()==='-')&&!(Number(x.stock)>0||Number(x.preorderQuantity)>0));
   const info=item.paused?getItemOrderInfo(item):allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
   if(allSoldOut)card.classList.add('is-sold-out');
 
