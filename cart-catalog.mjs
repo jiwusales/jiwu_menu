@@ -8,7 +8,7 @@ export function catalogProducts(table,sheet){
   const get=name=>{const i=labels.indexOf(name);return i<0?'':text(row.c?.[i]?.v??row.c?.[i]?.f)};
   group=get('團名')||group;const name=get('名稱');if(!name)return sheet!=='商品庫存'&&group?[{sheet,group,_groupOnly:true}]:[];
   let config={};try{config=JSON.parse(get('開團設定')||'{}')}catch{}
-  return [{recordId:row.recordId||null,masterId:row.masterId||'',sheet,group:sheet==='商品庫存'?get('IP'):group,name,role:get('角色'),url:get('商品網址'),sn:get('貨號'),id:get('商品ID'),format:get('格式'),price:get('售價'),stock:get('庫存'),shop:get('店面'),non:get('非現'),status:get('狀態'),listing:get('目錄狀態'),hidden:config.draftHidden===true||(Number(config.visibilityVersion)>=2&&config.visible===false),paused:/^(true|1|是)$/i.test(get('暫停收單'))}];
+  return [{recordId:row.recordId||null,masterId:row.masterId||'',sheet,group:sheet==='商品庫存'?get('IP'):group,name,role:get('角色'),url:get('商品網址'),sn:get('貨號'),id:get('商品ID'),format:get('格式'),price:get('售價'),stock:get('庫存'),shop:get('店面'),non:get('非現'),preorder:get('受注數量'),status:get('狀態'),listing:get('目錄狀態'),hidden:config.draftHidden===true||(Number(config.visibilityVersion)>=2&&config.visible===false),paused:/^(true|1|是)$/i.test(get('暫停收單'))}];
  });
 }
 const launchSheets=new Set(['最新開團','尚未上架','景品開團']);
@@ -63,6 +63,12 @@ export function quoteItems(items,products){
   let currentStatus,tagBg=p.sheet==='商品庫存'?'#C197D2':'#fab460',tagColor='#fff';
   if(paused){currentStatus='暫停收單';tagBg='#A68C73';}
   else if(hidden||soldOut){currentStatus='補貨登記';tagBg='#3a3a3a';}
+  else if(p.sheet!=='商品庫存'&&(!priorIntent||recovered)){
+   if(Number(p.stock)===1){currentStatus='最後一個';tagBg='#E24C60';}
+   else if(Number(p.stock)>0){currentStatus='現貨';tagBg='#FFF4BD';tagColor='#333';}
+   else if(Number(p.preorder)>0){currentStatus='路上';tagBg='#6C95B0';}
+   else {currentStatus=['預訂','路上','受注'].includes(p.status)?p.status:'預訂';if(currentStatus==='路上')tagBg='#6C95B0';if(currentStatus==='受注')tagBg='#B1DEC1';}
+  }
   else if(text(item.currentStatus)&&!recovered){
    currentStatus=text(item.currentStatus);
    const colors={'預訂':[p.sheet==='商品庫存'?'#C197D2':'#fab460','#fff'],'現貨':['#FFF4BD','#333'],'最後一個':['#E24C60','#fff'],'路上':['#6C95B0','#fff'],'受注':['#B1DEC1','#fff'],'補貨登記':['#3a3a3a','#fff']};
