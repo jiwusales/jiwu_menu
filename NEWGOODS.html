@@ -707,7 +707,7 @@ function jiwuIsApparel(item){
 }
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
-  const sizes=[...new Set(rows.filter(item=>!jiwuIsApparel(item)).map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
+  const sizes=[...new Set(rows.map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
   const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
   const parts=[];
   if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
