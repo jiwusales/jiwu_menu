@@ -1689,14 +1689,10 @@ function createCard(variants,sectionColor=""){
 
 function formatName(n){
   if(!n)return n;
-  const text=String(n).trim(),charCount=[...text.replace(/\s/g,"")].length;
+  const text=String(n).trim(),count=[...text.replace(/\s/g,'')].length;
   const escape=value=>String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  // Up to eight non-space characters stay together, including the role suffix.
-  if(charCount<=8)return '<span style="white-space:nowrap">'+escape(text).replace(/\s/g,'&nbsp;')+'</span>';
-  if(/\s/.test(text))return text.split(/\s+/).map(escape).join('<br>');
-  return [...text].length>9
-    ?escape([...text].slice(0,9).join(''))+'<br>'+escape([...text].slice(9).join(''))
-    :escape(text);
+  if(count<=8||! /\s/.test(text))return '<span style="white-space:nowrap">'+escape(text).replace(/\s/g,'&nbsp;')+'</span>';
+  return '<span style="white-space:normal;word-break:normal;overflow-wrap:normal">'+text.split(/\s+/).map(part=>'<span style="white-space:nowrap">'+escape(part)+'</span>').join(' ')+'</span>';
 }
 
 function zoomCard(c){
