@@ -46,7 +46,7 @@ window.jiwuErrorText=function(error,kind){
 <script>
 const API_URL='https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public';
 const FALLBACK='https://raw.githubusercontent.com/jiwusales/imgh/main/images/img_20260927162319_04b00fa2.png';
-const CATEGORY_ORDER=['吉伊卡哇&白熊','寶可夢','三麗鷗','海綿寶寶','綜合IP','鬼滅之刃','呪術廻戦','鏈鋸人','坂本日常','銀魂','薰香','冰之城牆&相反','綜合動漫'];
+const CATEGORY_ORDER=['吉伊&白熊','寶可夢','三麗鷗','海綿寶寶','綜合IP','鬼滅之刃','呪術廻戦','鏈鋸人','坂本日常','銀魂','薰香','冰之城牆&相反','綜合動漫'];
 let data={entries:[],categories:[]},filter='全部';
 const esc=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function safeURL(value){try{const url=new URL(value);return /^https?:$/.test(url.protocol)?url.href:''}catch(_){return ''}}
