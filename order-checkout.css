@@ -41,3 +41,12 @@
 
 
 @media(max-width:600px){#cart-panel .jiwu-checkout-choices{margin:6px 0 12px}#cart-panel .jiwu-review-total{margin-bottom:12px!important}}
+
+/* Four payment choices share their column starts with the delivery row. */
+.jiwu-choice-options{grid-template-columns:repeat(3,minmax(0,1fr)) max-content}
+@media(min-width:601px){#checkout-modal .jiwu-choice-options{grid-template-columns:repeat(3,minmax(0,1fr)) max-content;gap:6px;font-size:12px}}
+@media(max-width:600px){
+#cart-panel .jiwu-choice-row .jiwu-choice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) calc(4em + 15px);gap:0;width:100%;font-size:clamp(10px,3.1vw,13px)}
+#cart-panel .jiwu-choice-row label{gap:3px}
+#cart-panel .jiwu-choice-row input{width:12px;height:12px}
+}

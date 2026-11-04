@@ -1,7 +1,8 @@
 /* Payment controls for catalog carts; preserves their existing desktop order flow. */
 (()=>{
 'use strict';
-const payments=['網銀','ipass','Line好友轉帳'];
+const payments=['網銀','無卡','ipass','Line好友轉帳'];
+const paymentLabel=value=>value==='無卡'?'無　卡':value==='Line好友轉帳'?'Line好友':value;
 let payment='',delivery='',busy=false;
 const mobile=()=>/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const deliveryText=value=>value==='undecided'?'到貨再決定怎麼取！感ㄣ(੭•̀ᵕ•̀)੭':({shipping:'賣貨便',pickup:'自取'}[value]||'');
@@ -10,7 +11,7 @@ function validate(){if(!allStock()&&!payments.includes(payment)){alert('請選�
 function sync(){document.querySelectorAll('[data-choice]').forEach(input=>input.checked=input.value===(input.dataset.choice==='payment'?payment:delivery));}
 function controls(place){
  const root=document.createElement('div');root.className='jiwu-checkout-choices';
- for(const [kind,title,values]of [['payment','付款方式：',payments.map(p=>[p,p])],['delivery','取貨方式：',[['shipping','賣貨便'],['pickup','自取'],['undecided','還沒想好']]]]){
+ for(const [kind,title,values]of [['payment','付款方式：',payments.map(p=>[p,paymentLabel(p)])],['delivery','取貨方式：',[['pickup','自取'],['shipping','賣貨便'],['undecided','還沒想好']]]]){
   const row=document.createElement('div');row.className='jiwu-choice-row';row.setAttribute('role','group');row.setAttribute('aria-label',title.replace('：',''));
   const label=document.createElement('span');label.className='jiwu-choice-title';label.textContent=title;row.append(label);
   const options=document.createElement('div');options.className='jiwu-choice-options';
