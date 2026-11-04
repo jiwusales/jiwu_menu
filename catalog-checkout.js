@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const payments=['網銀','無卡','ipass','Line好友轉帳'];
-const paymentLabel=value=>value==='無卡'?'無　卡':value==='Line好友轉帳'?'Line好友':value;
+const paymentLabel=value=>value==='無卡'?'無卡':value==='Line好友轉帳'?'Line好友':value;
 let payment='',delivery='',busy=false;
 const mobile=()=>/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const deliveryText=value=>value==='undecided'?'到貨再決定怎麼取！感ㄣ(੭•̀ᵕ•̀)੭':({shipping:'賣貨便',pickup:'自取'}[value]||'');
