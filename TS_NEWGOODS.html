@@ -1227,7 +1227,7 @@ function generateLineMessage(){
         statusText=`(${item.currentStatus})`;
       }
 
-      const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
+      const hiddenRoles=["其他角色","綜合角色","水族","動物","食物"];
       const roleText=item.role&&!hiddenRoles.includes(item.role)
         ?` ${item.role}`
         :"";
@@ -1529,7 +1529,7 @@ function createCard(variants,sectionColor=""){
     parsedItem.sizes.length>0||
     !!parsedItem.colorCode;
   const sizeHtml=jiwuCatalogSpecHtml(variants);
-  const hiddenRoles=["三小隻","其他角色","綜合角色","水族","動物","食物"];
+  const hiddenRoles=["其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
   const displayName=item.name+(role&&!hiddenRoles.includes(role)?` ${role}`:"");
   const fullImg=fastImg(item.img);
