@@ -1,5 +1,5 @@
 import {cartChanges} from './cart-catalog.mjs?v=20261030-cart-source-v2';
-let pending=null,lastRead=0,checking=false;
+let pending=null,checking=false;
 const current=()=>typeof cart!=='undefined'&&Array.isArray(cart)?cart:[];
 function paint(items){
  cart=items.map(item=>item.currentStatus==='預訂'?{...item,tagBg:item.catalogSheet==='商品庫存'?'#C197D2':'#fab460'}:item);saveCart();updateCartUI();
@@ -20,13 +20,11 @@ async function readQuote(){
   result.items=result.items.map((item,index)=>({...before[index],...item}));
   const lines=cartChanges(before,result.items),changed=lines.length>0;
   if(JSON.stringify(before)!==JSON.stringify(result.items))paint(result.items);
-  lastRead=Date.now();
   return {changed,blocked:result.items.some(item=>item._cartBlocked)};
  }finally{clearTimeout(timer);}
 }
-async function sync({checkout=false,force=false}={}){
- if(!current().length)return true;
- if(!checkout&&!force&&Date.now()-lastRead<30000)return true;
+async function sync({checkout=false}={}){
+ if(!checkout||!current().length)return true;
  if(checkout&&checking)return false;
  if(checkout)checking=true;
  try{
@@ -39,8 +37,12 @@ async function sync({checkout=false,force=false}={}){
  }catch(error){if(checkout)alert(jiwuErrorText(error,'data'));return false;}
  finally{if(checkout)checking=false;}
 }
-window.jiwuEnsureCartCurrent=()=>sync({checkout:true,force:true});
-window.jiwuRefreshCart=()=>sync({force:true});
+window.jiwuEnsureCartCurrent=()=>sync({checkout:true});
+window.jiwuRefreshCart=()=>{
+ updateCartUI();
+ if(document.getElementById('checkout-modal')?.style.display==='flex'&&typeof renderCheckoutSummary==='function')renderCheckoutSummary();
+ return Promise.resolve(true);
+};
 window.jiwuApplyCartQuote=(items,submittedSignature)=>{
  if(Array.isArray(items)&&submittedSignature===JSON.stringify(current())){paint(items);}
 };
@@ -53,14 +55,9 @@ function paintIssues(){
 }
 const originalCartRender=updateCartUI;updateCartUI=function(...args){const result=originalCartRender(...args);paintIssues();return result;};
 if(typeof renderCheckoutSummary==='function'){const originalSummary=renderCheckoutSummary;renderCheckoutSummary=function(...args){const result=originalSummary(...args);paintIssues();return result;};}
-window.addEventListener('focus',()=>{void sync()});
-window.addEventListener('pageshow',()=>{void sync()});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void sync({force:true})});
 window.addEventListener('storage',event=>{
  const storageKey=typeof CART_KEY!=='undefined'?CART_KEY:'jiwu_cart';
  if(event.key!==storageKey)return;
  if(event.newValue===null){cart=[];updateCartUI();return;}
- try{const saved=JSON.parse(event.newValue);if(Array.isArray(saved)){cart=saved;updateCartUI();if(document.getElementById('checkout-modal')?.style.display==='flex'&&typeof renderCheckoutSummary==='function')renderCheckoutSummary();void sync();}}catch{}
+ try{const saved=JSON.parse(event.newValue);if(Array.isArray(saved)){cart=saved;updateCartUI();if(document.getElementById('checkout-modal')?.style.display==='flex'&&typeof renderCheckoutSummary==='function')renderCheckoutSummary();}}catch{}
 });
-setInterval(()=>{if(!document.hidden&&navigator.onLine&&current().length)void sync();},30000);
-void sync({force:true});

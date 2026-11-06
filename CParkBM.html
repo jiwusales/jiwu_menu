@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+<!-- JIWU_FAILOVER:BEGIN -->
+<script id="jiwu-failover-config">window.JIWU_FAILOVER_CONFIG={"primaryOrigin":"https://jiwu-mac-relay.jiwusales.workers.dev","backupOrigin":"https://jiwu-api.eu1.netbird.services","preferredRoute":"backup"};</script>
+<script id="jiwu-failover-transport" src="jiwu-transport.js?v=20261107-failover-3"></script>
+<!-- JIWU_FAILOVER:END -->
+
 <script id="jiwu-friendly-errors">
 // Display wording only: original errors remain available to retry/offline logic.
 window.jiwuErrorText=function(error,kind){
@@ -275,7 +280,7 @@ window.jiwuErrorText=function(error,kind){
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
-<script type="module" src="cart-live.js?v=20261031-friendly-errors"></script>
+<script type="module" src="cart-live.js?v=20261107-failover-3-checkout-only"></script>
 <script src="catalog-locate.js?v=20261030-collection-wishes-v1" defer></script>
 <link rel="stylesheet" href="order-checkout.css?v=20261104-cardless-aligned">
 </head>

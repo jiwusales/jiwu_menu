@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+<!-- JIWU_FAILOVER:BEGIN -->
+<script id="jiwu-failover-config">window.JIWU_FAILOVER_CONFIG={"primaryOrigin":"https://jiwu-mac-relay.jiwusales.workers.dev","backupOrigin":"https://jiwu-api.eu1.netbird.services","preferredRoute":"backup"};</script>
+<script id="jiwu-failover-transport" src="jiwu-transport.js?v=20261107-failover-3"></script>
+<!-- JIWU_FAILOVER:END -->
+
 <script id="jiwu-friendly-errors">
 // Display wording only: original errors remain available to retry/offline logic.
 window.jiwuErrorText=function(error,kind){
@@ -16,7 +21,7 @@ window.jiwuErrorText=function(error,kind){
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="preconnect" href="https://jiwu-mac-relay.jiwusales.workers.dev">
+<link rel="preconnect" href="https://jiwu-api.eu1.netbird.services">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>開團預覽</title>
@@ -154,7 +159,7 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .photo-arrow:focus-visible,.photo-dots button:focus-visible{outline:2px solid #f5b080;outline-offset:2px}
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
-<script type="module" src="cart-live.js?v=20261031-friendly-errors"></script>
+<script type="module" src="cart-live.js?v=20261107-failover-3-checkout-only"></script>
 <link rel="stylesheet" href="order-checkout.css?v=20261104-cardless-aligned">
 </head>
 
