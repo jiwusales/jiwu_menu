@@ -52,6 +52,7 @@ homeCatalogRequest.catch(()=>{});
     .carousel-wrapper::-webkit-scrollbar{display:none}
     .carousel-wrapper:active{cursor:grabbing}
     .carousel{display:flex;width:100%}
+    .carousel-message{flex:0 0 100%;width:100%;box-sizing:border-box;padding:0 50px;text-align:center;overflow-wrap:anywhere}
     .carousel-page{flex:0 0 100%;box-sizing:border-box;padding:0 50px;display:grid;grid-template-columns:repeat(var(--columns,1),minmax(0,1fr));grid-template-rows:repeat(3,auto);align-content:start;gap:12px;scroll-snap-align:start;scroll-snap-stop:always}
     .carousel a{display:block;min-width:0;text-align:center;overflow:hidden;background:#fff}
     .carousel img{width:100%;aspect-ratio:1080/400;object-fit:cover;display:block;pointer-events:none;border-radius:10px}
@@ -291,7 +292,7 @@ homeCatalogRequest.catch(()=>{});
   function finishTouch(){touching=false;clearTimeout(settleTimer);settleTimer=setTimeout(settleLoop,160);}
   wrapper.addEventListener('touchend',finishTouch,{passive:true});
   wrapper.addEventListener('touchcancel',finishTouch,{passive:true});
-  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderCarousel(),150);});
+  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);if(inner.querySelector('.carousel-message'))return;resizeTimer=setTimeout(()=>renderCarousel(),150);});
 
   async function init(){
     try{
@@ -299,7 +300,10 @@ homeCatalogRequest.catch(()=>{});
       renderCarousel(rows);
     }catch(e){
       console.error('載入失敗',e);
-      inner.textContent='資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)';
+      const message=document.createElement('div');
+      message.className='carousel-message';
+      message.textContent='資料暫時逃跑ㄌ，小法師捕捉中請稍等(๑⁼̴̀д⁼̴́๑)';
+      inner.replaceChildren(message);
     }
   }
 
