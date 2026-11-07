@@ -716,7 +716,7 @@ function jiwuIsApparel(item){
 }
 function jiwuCatalogSpecHtml(items){
   const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
-  const sizes=[...new Set(rows.map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
+  const sizes=[...new Set(rows.filter(item=>!jiwuIsApparel(item)).map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
   const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
   const parts=[];
   if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
@@ -1668,7 +1668,8 @@ function createCard(variants,sectionColor=""){
   const isVariant=
     variants.length>1||
     parsedItem.sizes.length>0||
-    !!parsedItem.colorCode;
+    !!parsedItem.colorCode||
+    (jiwuIsApparel(item)&&!!parsedItem.realSize);
   const sizeHtml=jiwuCatalogSpecHtml(variants);
   const hiddenRoles=["其他角色","綜合角色","水族","動物","食物"];
   const role=String(item.role||"").trim();
