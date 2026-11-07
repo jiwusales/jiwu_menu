@@ -158,6 +158,10 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .photo-dots button{width:6px;height:6px;border:0;border-radius:50%;background:#ccc;padding:0;cursor:pointer}
 .photo-dots button.active{background:#555}
 .photo-arrow:focus-visible,.photo-dots button:focus-visible{outline:2px solid #f5b080;outline-offset:2px}
+/* 手機版左上貨況標籤整體縮至 75%，保留彈窗原有放大比例。 */
+@media(max-width:767px){
+  .stock-tag,.variant-stock{scale:.75;transform-origin:top left}
+}
 </style>
 <script src="https://jiwusales.github.io/imgh/image-refresh.js?v=20261028-2" defer></script>
 <script type="module" src="cart-live.js?v=20261107-failover-3-checkout-only"></script>
