@@ -4,8 +4,8 @@
 <html lang="zh-Hant">
 <head>
 <!-- JIWU_FAILOVER:BEGIN -->
-<script id="jiwu-failover-config">window.JIWU_FAILOVER_CONFIG={"primaryOrigin":"https://jiwu-mac-relay.jiwusales.workers.dev","backupOrigin":"https://jiwu-api.eu1.netbird.services","preferredRoute":"primary"};</script>
-<script id="jiwu-failover-transport" src="jiwu-transport.js?v=20261107-failover-3"></script>
+<script id="jiwu-failover-config">window.JIWU_FAILOVER_CONFIG={"primaryOrigin":"https://jiwu-mac-relay.jiwusales.workers.dev","backupOrigin":"https://jiwu-api.eu1.netbird.services","preferredRoute":"primary","publicReadTimeoutMs":45000};</script>
+<script id="jiwu-failover-transport" src="jiwu-transport.js?v=20261108-public-read-1"></script>
 <!-- JIWU_FAILOVER:END -->
 
 <script id="jiwu-friendly-errors">
@@ -50,7 +50,7 @@ const CONFIG={
   DEPLOY_URL:"https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-public",
   VISIBLE_STOCK_TAGS:["現貨","路上","SOLD OUT","暫停收單"]
 };
-async function requestGroupResource(url,type,timeout=20000){
+async function requestGroupResource(url,type,timeout=60000){
   const controller=typeof AbortController==='function'?new AbortController():null;
   let timer;
   const expired=new Promise((resolve,reject)=>{
@@ -412,7 +412,7 @@ async function resolveShortGroup(){
   const page=new URL(location.href),code=page.searchParams.get('short');
   if(!code)return;
   if(!/^[a-f0-9]{6,8}$/.test(code))throw Error('短網址格式不正確');
-  const {response,data}=await requestGroupResource('https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),'json',15000);
+  const {response,data}=await requestGroupResource('https://jiwu-mac-relay.jiwusales.workers.dev/functions/v1/jiwu-short-links?code='+encodeURIComponent(code),'json',60000);
   if(!response.ok||!data.ok)throw Error(data.error||'無法開啟此團');
   const target=new URL(data.url),group=target.searchParams.get('group');
   if(target.origin!==location.origin||target.pathname!=='/jiwu_menu/NEWGOODS.html'||!group)throw Error('開團連結無效');

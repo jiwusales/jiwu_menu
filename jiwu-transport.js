@@ -19,7 +19,7 @@
  const bounded=(value,fallback,maximum)=>Number.isFinite(value)&&value>0?Math.min(value,maximum):fallback;
  const stickyMs=bounded(raw.stickyMs,180000,3600000),readTimeout=bounded(raw.readTimeoutMs,4000,60000),
   probeTimeout=bounded(raw.probeTimeoutMs,4000,30000),mutationTimeout=bounded(raw.mutationTimeoutMs,0,120000),
-  backupTimeout=bounded(raw.backupTimeoutMs,15000,120000),wsTimeout=bounded(raw.webSocketTimeoutMs,6000,30000);
+  backupTimeout=bounded(raw.backupTimeoutMs,15000,120000),publicReadTimeout=bounded(raw.publicReadTimeoutMs,backupTimeout,60000),wsTimeout=bounded(raw.webSocketTimeoutMs,6000,30000);
  const nativeFetch=root.fetch.bind(root),NativeWS=root.WebSocket;
  const functions=new Set(['jiwu-admin-test','jiwu-line-orders','jiwu-public','jiwu-launch-register','jiwu-inventory-auto','jiwu-short-links','jiwu-free-shipping','jiwu-calendar-sync']);
  const adminReads=new Set(('authWarmup authLogin authCheck ping backendSync inventory online onlineCustomer onlineCargo group storeSales storeProduct storeCart storeActiveSalesperson ship purchaseChannels purchaseOrders purchaseMatch customerLineChatData lineChatCustomers getCustomerLineChat launchList launchGet launchAuxSheet launchURLs launchImageProxy launchProductInfo launchAnnouncementPreview launchPriceHistory manualOrderSuggestions inventoryPriceHistory helperSnapshot helperLoadPlan profitDashboard profitAuthCheck').split(' '));
@@ -111,7 +111,7 @@
   return new Request(url,init);
  }
  function classify(request,entry,prepared){
-  if(['GET','HEAD'].includes(request.method))return {retry:entry.asset||['jiwu-public','jiwu-short-links'].includes(entry.slug),read:true};
+  if(['GET','HEAD'].includes(request.method))return {retry:entry.asset||['jiwu-public','jiwu-short-links'].includes(entry.slug),read:true,publicRead:['jiwu-public','jiwu-short-links'].includes(entry.slug)};
   if(request.method!=='POST'||entry.asset||!/^application\/json(?:;|$)/i.test(request.headers.get('content-type')||''))return {retry:false,read:false};
   let data;
   try{if(prepared.text===null||prepared.length>12*1024*1024)return {retry:false,read:false};data=JSON.parse(prepared.text.replace(/^\uFEFF/,''));}catch{return {retry:false,read:false};}
@@ -159,8 +159,9 @@
   const target=selected();
   const bufferMode=policy.retry&&original.method!=='HEAD'&&!entry.asset?(entry.slug==='jiwu-public'&&entry.url.searchParams.get('format')==='gviz'?'gviz':'json'):false;
   const attempt=(destination,timeout)=>withTimeout(requestAt(replaceOrigin(entry.url,destination),original,prepared),timeout,bufferMode);
+  const readBudget=destination=>policy.longRead||(destination===primary?readTimeout:policy.publicRead?publicReadTimeout:backupTimeout);
   try{
-   const response=await attempt(target,policy.retry?(policy.read?(policy.longRead||(target===primary?readTimeout:backupTimeout)):mutationTimeout):0);
+   const response=await attempt(target,policy.retry?(policy.read?readBudget(target):mutationTimeout):0);
    if(!await failedResponse(response))return response;
    fail('http-'+response.status,target);
    if(!policy.retry||original.signal.aborted)return response;
@@ -171,7 +172,7 @@
   }
   if(original.signal.aborted)throw abortReason(original.signal);
   const alternative=otherOrigin(target);
-  return attempt(alternative,policy.read?(policy.longRead||(alternative===primary?readTimeout:backupTimeout)):mutationTimeout);
+  return attempt(alternative,policy.read?readBudget(alternative):mutationTimeout);
  };
  root.addEventListener?.('storage',event=>{if(event.key!==storageKey)return;if(event.newValue===null){state={route:preferred,retryAt:0,reason:''};notify();}else{restore();notify();}});
  if(typeof NativeWS==='function'&&typeof EventTarget==='function'){
@@ -221,5 +222,5 @@
   Object.defineProperty(JiwuWebSocket,Symbol.hasInstance,{value:value=>JiwuWebSocket.prototype.isPrototypeOf(value)||NativeWS.prototype.isPrototypeOf(value)});
   root.WebSocket=JiwuWebSocket;
  }
- root.JIWUTransport=Object.freeze({version:'20261107-v2',getState:()=>({...state,preferredRoute:preferred}),resolveURL,probePrimary,probePreferred});
+ root.JIWUTransport=Object.freeze({version:'20261108-public-read-1',getState:()=>({...state,preferredRoute:preferred}),resolveURL,probePrimary,probePreferred});
 })();
