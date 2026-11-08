@@ -1,12 +1,30 @@
 // Highlight a catalog item without changing the cart or product data.
 (()=>{
- const params=new URLSearchParams(location.search),id=params.get('item'),sku=params.get('sku');
- if(!id&&!sku)return;
+ const params=new URLSearchParams(location.search),id=params.get('item'),sku=params.get('sku'),name=params.get('name'),role=params.get('role');
+ if(!id&&!sku&&!(name&&role))return;
  const style=document.createElement('style');style.textContent='.card.catalog-jump-target{position:relative;z-index:20;transform:scale(1.5);transition:transform .2s ease}';document.head.append(style);
  const container=document.getElementById('items-wrapper');if(!container)return;
  let observer,expiry;
+ const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
+ function findNameCard(){
+  if(!name||!role||typeof allItems==='undefined'||!Array.isArray(allItems)||typeof selectedRole==='undefined'||typeof renderItems!=='function')return null;
+  const targets=allItems.filter(item=>String(item.role??'').trim()===role&&normalize(item.name)===normalize(name));
+  if(targets.length!==1)return null;
+  let rerender=selectedRole!==role;
+  selectedRole=role;
+  if(typeof selectedTypes!=='undefined'&&selectedTypes.length){selectedTypes=[];rerender=true;}
+  if(typeof selectedStockFilters!=='undefined'&&selectedStockFilters.length){selectedStockFilters=[];rerender=true;}
+  if(rerender){
+   if(typeof renderRoleNav==='function')renderRoleNav();
+   if(typeof renderFilters==='function')renderFilters();
+   renderItems();
+  }
+  const expected=normalize(targets[0].name),withRole=normalize(targets[0].name+' '+role);
+  const cards=[...container.querySelectorAll('.card')].filter(card=>{const text=normalize(card.querySelector('.name')?.textContent);return text===expected||text===withRole;});
+  return cards.length===1?cards[0]:null;
+ }
  function locate(){
-  const card=[...container.querySelectorAll('.card[data-catalog-skus]')].find(card=>{try{return id?JSON.parse(card.dataset.catalogIds).includes(id):JSON.parse(card.dataset.catalogSkus).includes(sku);}catch{return false;}});
+  const card=id||sku?[...container.querySelectorAll('.card[data-catalog-skus]')].find(card=>{try{return id?JSON.parse(card.dataset.catalogIds).includes(id):JSON.parse(card.dataset.catalogSkus).includes(sku);}catch{return false;}}):findNameCard();
   if(!card)return false;
   const rect=card.getBoundingClientRect(),width=document.documentElement.clientWidth,extra=rect.width*.5;
   const low=extra?Math.max(0,(rect.right+extra-(width-8))/extra):.5,high=extra?Math.min(1,(rect.left-8)/extra):.5;
