@@ -561,13 +561,23 @@ function parseItemVariant(item){
 }
 function jiwuIsDrawVariant(item){return (parseItemVariant(item).sizes||[]).some(value=>/單抽|单抽|抱盒|BOX/i.test(value));}
 function jiwuIsApparel(item){
-  const kind=String(item?.kind||item?.type||'').normalize('NFKC').trim(),name=String(item?.name||'').normalize('NFKC');
-  return /服飾|服装|衣著|衣服/.test(kind)||/(?:POLO|大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
+  const kind=String(item?.kind||item?.type||'').normalize('NFKC').trim();
+  if(kind&&!/^(?:其他|未分類)$/.test(kind))return /服飾|服装|服裝|衣著|衣服/.test(kind);
+  const name=String(item?.name||'').normalize('NFKC');
+  return /(?:POLO|大學\s*T|(?:長|短|半袖)\s*T(?:[^a-z]|$)|T恤|Tシャツ|上衣|襯衫|外套|毛衣|針織衫|衛衣|帽T|連帽衫|背心|洋裝|連身裙|裙子|棉褲|長褲|短褲|居家服|睡衣|服飾|襪|圍巾|手套|帽子)/i.test(name);
 }
 function jiwuCatalogSpecHtml(items){
-  const rows=Array.isArray(items)?items:[items],variants=rows.map(parseItemVariant);
-  const sizes=[...new Set(rows.map(item=>String(parseItemVariant(item).realSize||'').trim()).filter(Boolean))];
-  const formats=rows.some(jiwuIsDrawVariant)?[]:[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>parseItemVariant(item).sizes||[]))];
+  const rows=Array.isArray(items)?items:[items];
+  const formats=[...new Set(rows.filter(jiwuIsApparel).flatMap(item=>{
+    const variant=parseItemVariant(item);
+    return variant.sizes?.length?variant.sizes:jiwuFormatOptions(jiwuSplitProductSpec(item?.size,item?.format).format);
+  }))];
+  const sizes=[...new Set(rows.filter(item=>!jiwuIsApparel(item)).map(item=>{
+    const spec=jiwuSplitProductSpec(item?.size,item?.format);
+    if(!spec.size)return '';
+    const raw=String(item?.size??'').trim(),parsed=String(parseItemVariant(item).realSize||'').trim();
+    return parsed&&parsed!==raw?parsed:String(spec.size).trim();
+  }).filter(Boolean))];
   const parts=[];
   if(formats.length)parts.push('<span class="product-format">'+jiwuSpecEscape(formats.join(' '))+'</span>');
   if(sizes.length)parts.push('<span class="product-physical-size">'+jiwuSpecEscape(sizes.join(' / '))+'</span>');
