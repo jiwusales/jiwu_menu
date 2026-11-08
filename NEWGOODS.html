@@ -1585,10 +1585,23 @@ function getStockInfo(item){
 function jiwuCanvasSections(items,panels){
   const sections=new Map();
   if(Array.isArray(panels)&&panels.length&&panels.every(panel=>Array.isArray(panel.productIds))){
+    const assigned=new Set();
     panels.forEach((panel,index)=>{
-      const ids=new Set(panel.productIds),drawKeys=new Set(items.filter(item=>ids.has(item.launchItemId)&&jiwuIsDrawVariant(item)).map(getVariantKey));
-      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:items.filter(item=>ids.has(item.launchItemId)||(jiwuIsDrawVariant(item)&&drawKeys.has(getVariantKey(item))))});
+      const ids=new Set(panel.productIds),variantKeys=new Set(items.filter(item=>ids.has(item.launchItemId)).map(getVariantKey));
+      const sectionItems=items.filter(item=>ids.has(item.launchItemId)||variantKeys.has(getVariantKey(item)));
+      sectionItems.forEach(item=>assigned.add(item));
+      sections.set(index,{banner:panel.image||'',color:panel.mainColor||'',items:sectionItems});
     });
+    // Canvas selections control the artwork; every catalog variant remains orderable.
+    items.forEach(item=>{
+      if(assigned.has(item))return;
+      const original=panels.findIndex(panel=>panel.image&&panel.image===item.sectionBanner);
+      sections.get(original<0?0:original).items.push(item);
+    });
+    // Preserve catalog order when variants are restored to their canvas section.
+    for(const section of sections.values()){
+      const members=new Set(section.items);section.items=items.filter(item=>members.has(item));
+    }
     return sections;
   }
   items.forEach(item=>{
