@@ -1495,6 +1495,12 @@ function formatName(n){
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
   const clone = c.cloneNode(true);
+  // cloneNode copies the card markup; restore its add-to-cart handler too.
+  const addBtn=clone.querySelector('.add-btn-tag');
+  if(addBtn){
+    addBtn.onclick=c.querySelector('.add-btn-tag')?.onclick||null;
+    addBtn.style.pointerEvents='auto';
+  }
   restoreProductGallery(clone);
   const img = clone.querySelector('img');
   if (img) { img.src = img.dataset.full || img.src; img.removeAttribute('loading'); img.decoding = 'async'; }

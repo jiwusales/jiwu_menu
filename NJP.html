@@ -353,7 +353,16 @@ if(!noSale)card.querySelector(".add-btn-tag").onclick=e=>addToCart(e,i,text,x.ta
 }
 
 function formatName(n){if(!n)return n;return n.includes(" ")?n.split(" ").join("<br>"):n.length>9?n.slice(0,9)+"<br>"+n.slice(9):n}
-function zoomCard(c){const o=document.createElement("div");o.className="card-overlay";o.appendChild(c.cloneNode(true));o.onclick=()=>o.remove();document.body.appendChild(o)}
+function zoomCard(c){
+const o=document.createElement("div");o.className="card-overlay";
+const clone=c.cloneNode(true);
+const addBtn=clone.querySelector(".add-btn-tag");
+if(addBtn){
+    addBtn.onclick=c.querySelector('.add-btn-tag')?.onclick||null;
+    addBtn.style.pointerEvents='auto';
+  }
+o.appendChild(clone);o.onclick=()=>o.remove();document.body.appendChild(o);
+}
 
 (function(){
 const el=document.getElementById("cart-trigger");let drag=false,sx,sy,ix,iy;

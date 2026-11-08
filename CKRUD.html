@@ -965,7 +965,13 @@ function formatName(n) {
 
 function zoomCard(c) {
   const ov = document.createElement('div'); ov.className = 'card-overlay';
-  const clone = c.cloneNode(true); ov.appendChild(clone);
+  const clone = c.cloneNode(true);
+  // cloneNode copies the card markup; restore its add-to-cart handler too.
+  const addBtn=clone.querySelector('.add-btn-tag');
+  if(addBtn){
+    addBtn.onclick=c.querySelector('.add-btn-tag')?.onclick||null;
+    addBtn.style.pointerEvents='auto';
+  } ov.appendChild(clone);
   ov.onclick = () => ov.remove(); document.body.appendChild(ov);
 }
 

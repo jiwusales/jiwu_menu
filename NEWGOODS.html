@@ -1730,6 +1730,12 @@ function zoomCard(c){
   ov.className='card-overlay';
 
   const clone=c.cloneNode(true);
+  // cloneNode copies the card markup; restore its add-to-cart handler too.
+  const addBtn=clone.querySelector('.add-btn-tag');
+  if(addBtn){
+    addBtn.onclick=c.querySelector('.add-btn-tag')?.onclick||null;
+    addBtn.style.pointerEvents='auto';
+  }
   restoreProductGallery(clone);
   const img=clone.querySelector('img');
 
