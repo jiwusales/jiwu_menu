@@ -178,6 +178,9 @@ body{font-family:Arial,sans-serif;background:#f9f9f9;margin:0;padding:0;color:va
 .photo-dots button.active{background:#555}
 .photo-arrow:focus-visible,.photo-dots button:focus-visible{outline:2px solid #f5b080;outline-offset:2px}
 .delivery-options{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 12px;text-align:left;font-size:14px;color:#333}.delivery-options[hidden]{display:none}.delivery-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.delivery-options input{margin:0;width:16px;height:16px}
+@media(width > 767px){
+  .card-overlay .stock-tag,.variant-stock{scale:.8;transform-origin:top left}
+}
 /* 手機版左上貨況標籤整體縮至 75%，保留彈窗原有放大比例。 */
 @media(max-width:767px){
   .stock-tag,.variant-stock{scale:.75;transform-origin:top left}
