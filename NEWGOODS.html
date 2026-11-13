@@ -525,6 +525,7 @@ function loadData(){
           originalPrice:getV(r,COL.originalPrice),
           price:getV(r,COL.price),
           stock:getV(r,COL.stock),
+          sizeStockOut:productConfig.sizeStockOut,
           preorderQuantity:getV(r,COL.preorderQuantity),
           stockOutWhenEmpty:productConfig.stockOutWhenEmpty===true,
           paused:/^(true|1|是)$/i.test(String(getV(r,COL.paused)||'').trim()),
@@ -696,8 +697,14 @@ function jiwuSplitProductSpec(sizeValue, formatValue, inferFormat = true) {
 // Display projection only. Existing carts and pending order payloads are never rewritten.
 function jiwuSpecEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function jiwuFormatOptions(value){return String(value??'').split(/[\/／、,，;；\s]+/).map(value=>value.trim()).filter(Boolean);}
+const catalogClothingSize=/^(?:XXXS|XXS|XS|S|M|L|XL|XXL|XXXL|[2-5]XL|F|FREE)$/i;
 function parseItemVariant(item){
   const spec=jiwuSplitProductSpec(item?.size,item?.format);
+  const legacyOptions=jiwuFormatOptions(String(spec.size||'').normalize('NFKC'));
+  if(!spec.format&&legacyOptions.length>1&&legacyOptions.every(size=>catalogClothingSize.test(size))){
+    const sizes=[...new Set(legacyOptions.map(size=>size.toUpperCase()))];
+    return {size:sizes[0]||'',sizes,color:'',colorCode:'',realSize:''};
+  }
   if(!spec.format&&/^(?:[HWD]|長|寬|高|深|厚|肩|袖|[ΦφøØ])\s*[:：]?\s*\d+(?:\.\d+)?\s*(?:mm|cm|公分|毫米)?$/i.test(String(spec.size||'').normalize('NFKC').trim()))return {size:'',sizes:[],color:'',colorCode:'',realSize:spec.size};
   if(spec.format){
     const sizes=jiwuFormatOptions(spec.format);
@@ -752,7 +759,15 @@ function jiwuSelectCatalogFormat(e,item,add){
   overlay.style.cssText='position:fixed;inset:0;z-index:10001;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px';
   panel.style.cssText='background:white;border-radius:12px;padding:20px;max-width:360px;width:100%;display:flex;gap:10px;flex-wrap:wrap';
   title.textContent='請選擇';title.style.cssText='display:block;width:100%;margin-bottom:6px';panel.appendChild(title);
-  options.forEach(option=>{const button=document.createElement('button');button.type='button';button.textContent=option;button.className='variant-option';button.style.cssText='padding:8px 12px;border:1px solid #ddd;border-radius:7px;background:white;color:#444';button.onclick=()=>{overlay.remove();chosen(option);};panel.appendChild(button);});
+  options.forEach(option=>{
+    const button=document.createElement('button');
+    button.type='button';button.textContent=option;button.className='variant-option';button.style.padding='8px 12px';
+    if(catalogSizeStockOverride(item,option)===true){
+      button.classList.add('is-sold-out');
+      button.setAttribute('aria-label',option+' 缺貨');
+    }
+    button.onclick=()=>{overlay.remove();chosen(option);};panel.appendChild(button);
+  });
   const close=document.createElement('button');close.type='button';close.textContent='取消';close.style.cssText='padding:8px 12px';close.onclick=()=>overlay.remove();panel.appendChild(close);
   overlay.onclick=event=>{if(event.target===overlay)overlay.remove();};overlay.appendChild(panel);document.body.appendChild(overlay);return true;
 }
@@ -760,7 +775,10 @@ function jiwuSelectCatalogFormat(e,item,add){
 
 function addToCart(e,item,tagText,tagBg,tagColor){
   // New additions only; never normalize existing cart or pending payloads.
-  if(jiwuSelectCatalogFormat(e,item,chosen=>addToCart(e,chosen,tagText,tagBg,tagColor)))return;
+  if(jiwuSelectCatalogFormat(e,item,chosen=>{
+    const info=getItemOrderInfo(chosen);
+    addToCart(e,chosen,info.tagText||"預訂",info.tagBg,info.tagColor);
+  }))return;
 
   if(e)e.stopPropagation();
   if(item.paused)return;
@@ -898,14 +916,35 @@ function getVariantKey(item){
   return `${String(item.name||"").trim()}|||${String(item.role||"").trim()}`;
 }
 
-function getItemOrderInfo(item){
-  if(item.paused)return{tagKey:"暫停收單",tagText:"暫停收單",tagBg:"#A68C73",tagColor:"#fff",tagClass:""};
+function catalogLegacySoldOut(item){
   const stockVal=String(item.stock||"").trim();
-  if((item.stockOutWhenEmpty===true||stockVal==='-')&&!(Number(item.stock)>0||Number(item.preorderQuantity)>0)){
+  return (item.stockOutWhenEmpty===true||stockVal==='-')&&!(Number(item.stock)>0||Number(item.preorderQuantity)>0);
+}
+
+function catalogSizeStockOverride(item, selectedSize){
+  if(!item.sizeStockOut)return undefined;
+  const option=value=>{
+    const size=String(value??'').normalize('NFKC').trim().toUpperCase();
+    if(!catalogClothingSize.test(size))return undefined;
+    const out=item.sizeStockOut[size];
+    return typeof out==='boolean'?out:undefined;
+  };
+  if(selectedSize)return option(selectedSize);
+  const overrides=(parseItemVariant(item).sizes||[]).map(option);
+  if(!overrides.some(out=>typeof out==='boolean'))return undefined;
+  const fallback=catalogLegacySoldOut(item)||getStockInfo(item).tagKey==='SOLD OUT';
+  return overrides.every(out=>out??fallback);
+}
+
+function getItemOrderInfo(item, size=item.selectedSize){
+  if(item.paused)return{tagKey:"暫停收單",tagText:"暫停收單",tagBg:"#A68C73",tagColor:"#fff",tagClass:""};
+  const sizeOut=catalogSizeStockOverride(item,size);
+  if(sizeOut??catalogLegacySoldOut(item)){
     const s=STOCK_STYLES["SOLD OUT"];
     return{tagKey:"SOLD OUT",tagText:"S☹LD OUT",tagBg:s.bg,tagColor:s.color,tagClass:s.tagClass};
   }
-  return getStockInfo(item);
+  const info=getStockInfo(item);
+  return sizeOut===false&&info.tagKey==='SOLD OUT'?getStockInfo({...item,status:''}):info;
 }
 
 function canAddItem(item){
@@ -965,11 +1004,12 @@ function openVariantPicker(e,variants){
   const available=variants.filter(canAddItem);
   if(!available.length)return;
 
-  const first=available.find(x=>String(x.stock||"").trim()!=="-")||available[0];
+  const first=available.find(item=>!(catalogSizeStockOverride(item)??(String(item.stock||"").trim()==='-')))||available[0];
   const fv=parseItemVariant(first);
 
   let selectedColor=fv.color||"";
-  let selectedSize=(fv.sizes&&fv.sizes[0])||"";
+  const firstSizes=fv.sizes||[];
+  let selectedSize=(catalogSizeStockOverride(first)===false&&firstSizes.find(size=>getItemOrderInfo(first,size).tagKey!=='SOLD OUT'))||firstSizes[0]||"";
   let selectedItem=null;
 
   const ov=document.createElement('div');
@@ -1073,7 +1113,10 @@ function openVariantPicker(e,variants){
       b.textContent=size;
       b.classList.toggle('active',size===selectedSize);
       const matching=rowsForSelectedColor().filter(item=>(parseItemVariant(item).sizes||[]).includes(size));
-      b.classList.toggle('is-sold-out',matching.length>0&&matching.every(item=>getItemOrderInfo(item).tagKey==='SOLD OUT'));
+      if(matching.length&&matching.every(item=>getItemOrderInfo(item,size).tagKey==='SOLD OUT')){
+        b.classList.add('is-sold-out');
+        b.setAttribute('aria-label',size+' 缺貨');
+      }
 
       b.onclick=ev=>{
         ev.stopPropagation();
@@ -1660,7 +1703,7 @@ function renderItems(){
 
 function createCard(variants,sectionColor=""){
   const usable=variants.filter(canAddItem);
-  const item=usable.find(x=>String(x.stock||"").trim()!=="-")||usable[0]||variants[0];
+  const item=usable.find(row=>!(catalogSizeStockOverride(row)??(String(row.stock||"").trim()==='-')))||usable[0]||variants[0];
   const card=document.createElement('div');
   card.className='card';card.dataset.catalogSkus=JSON.stringify(variants.map(v=>String(v.sn||'')));card.dataset.catalogIds=JSON.stringify(variants.map(v=>String(v.launchItemId||'')));
 
@@ -1669,7 +1712,7 @@ function createCard(variants,sectionColor=""){
     card.style.borderColor=borderColor.startsWith("#")?borderColor:"#"+borderColor;
   }
 
-  const allSoldOut=variants.every(x=>(x.stockOutWhenEmpty===true||String(x.stock||"").trim()==='-')&&!(Number(x.stock)>0||Number(x.preorderQuantity)>0));
+  const allSoldOut=variants.every(row=>catalogSizeStockOverride(row)??catalogLegacySoldOut(row));
   const info=item.paused?getItemOrderInfo(item):allSoldOut?getItemOrderInfo(variants[0]):getItemOrderInfo(item);
   if(allSoldOut)card.classList.add('is-sold-out');
 
