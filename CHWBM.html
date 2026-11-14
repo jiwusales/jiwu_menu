@@ -515,7 +515,15 @@ function loadData() {
         return stockVal !== 'x' && stockVal !== 'ｘ';
       });
 
-      allCategories = [...new Set(allItems.map(i => i.role))];
+      const roleOrder = [
+        "吉伊", "小八", "兔兔", "小桃", "師傅", "栗子", "獅薩", "古本",
+        "其他角色", "三小隻", "綜合角色", "全角色"
+      ];
+      const availableRoles = new Set(allItems.map(i => i.role));
+      allCategories = [
+        ...roleOrder.filter(role => availableRoles.has(role)),
+        ...[...availableRoles].filter(role => !roleOrder.includes(role))
+      ];
       allTypes = [...new Set(allItems.map(i => i.type))];
       
       renderSideMenu();
