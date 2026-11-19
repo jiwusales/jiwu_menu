@@ -1,4 +1,4 @@
-import {cartChanges} from './cart-catalog.mjs?v=20261030-cart-source-v2';
+import {cartChanges} from './cart-catalog.mjs?v=20261119-soldout-cart-status';
 let pending=null,checking=false;
 const current=()=>typeof cart!=='undefined'&&Array.isArray(cart)?cart:[];
 function paint(items){

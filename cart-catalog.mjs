@@ -59,10 +59,16 @@ export function quoteItems(items,products){
   const hidden=hiddenProduct(p);
   const paused=p.paused,disabled=norm(p.price).toLowerCase()==='n'||(p.sheet!=='商品庫存'&&norm(p.price)==='0');
   const soldOut=stock==='-'||/^(?:缺貨|SOLD OUT|S☹LD OUT)$/i.test(p.status);
+  const soldOutTag=/^(?:SOLD OUT|S☹LD OUT)$/i.test(text(item.currentStatus));
+  const oldSoldOutConversion=text(item.currentStatus)==='補貨登記'&&text(item._cartIssue)==='商品缺貨，已改為補貨登記';
+  const keepSoldOutTag=soldOutTag||oldSoldOutConversion;
   const recovered=restock(item.currentStatus)&&/^(商品已下架，已改為補貨登記|商品缺貨，已改為補貨登記)$/.test(text(item._cartIssue))&&!hidden&&!soldOut&&!paused&&!disabled;
   let currentStatus,tagBg=p.sheet==='商品庫存'?'#C197D2':'#fab460',tagColor='#fff';
   if(paused){currentStatus='暫停收單';tagBg='#A68C73';}
-  else if(hidden||soldOut){currentStatus='補貨登記';tagBg='#3a3a3a';}
+  else if(hidden||soldOut){
+   if(soldOut&&keepSoldOutTag){currentStatus=soldOutTag?text(item.currentStatus):'S☹LD OUT';tagBg=item.tagBg||'#3a3a3a';tagColor=item.tagColor||'#fff';}
+   else{currentStatus='補貨登記';tagBg='#3a3a3a';}
+  }
   else if(p.sheet!=='商品庫存'&&(!priorIntent||recovered)){
    if(Number(p.stock)===1){currentStatus='最後一個';tagBg='#E24C60';}
    else if(Number(p.stock)>0){currentStatus='現貨';tagBg='#FFF4BD';tagColor='#333';}
@@ -81,7 +87,7 @@ export function quoteItems(items,products){
   else if(parseFloat(p.non)>0){currentStatus='路上';tagBg='#6C95B0';}
   else currentStatus='預訂';
   const blocked=paused||(disabled&&!hidden&&!soldOut);
-  const issue=paused?'商品暫停收單，請先移除':hidden?'商品已下架，已改為補貨登記':soldOut?'商品缺貨，已改為補貨登記':disabled?'商品目前無法訂購，請先移除':'';
+  const issue=paused?'商品暫停收單，請先移除':hidden?'商品已下架，已改為補貨登記':soldOut&&!keepSoldOutTag?'商品缺貨，已改為補貨登記':disabled?'商品目前無法訂購，請先移除':'';
   return {...item,...(p.masterId?{productMasterId:p.masterId,catalogRecordId:p.recordId,name:p.name,role:p.role}:{}),catalogSheet:p.sheet,price:p.price,stock:p.stock,colStock:p.stock,colShop:p.shop,colNonStock:p.non,status:p.status,currentStatus,tagBg,tagColor,_cartRestockIntent:hidden||soldOut||(priorIntent&&!recovered),_cartOrphanRestock:false,_cartBlocked:blocked,_cartIssue:issue};
  });
 }
